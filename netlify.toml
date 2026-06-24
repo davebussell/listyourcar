@@ -1,0 +1,36 @@
+# Netlify configuration for listyourcar.ca
+# Static site — no build step. Files are served from the repo root.
+
+[build]
+  publish = "."
+  command = ""
+
+# Friendly redirect: /rent → browse rentals (matches strategy's /rent channel)
+[[redirects]]
+  from = "/rent"
+  to = "/browse.html?intent=rental"
+  status = 302
+
+# Legacy path from the original sell-only build
+[[redirects]]
+  from = "/sell"
+  to = "/list.html"
+  status = 301
+
+# Security & caching headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
