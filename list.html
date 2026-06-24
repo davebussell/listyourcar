@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>List your car — sell, rent, or both | listyourcar.ca</title>
+  <meta name="description" content="Create one listing and choose to sell, rent, or both. Set rates, availability, and renter requirements in minutes." />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body data-page="list">
+  <header class="site-header">
+    <div class="container nav">
+      <a href="index.html" class="logo">List<span>Your</span>Car<span class="tld">.ca</span></a>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span><span></span></button>
+      <nav class="nav-links">
+        <a href="browse.html">Browse</a>
+        <a href="list.html" class="active">List Your Car</a>
+        <a href="guides.html">Guides</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="dashboard.html" class="inbox-link">Dashboard <span id="inbox-count" class="inbox-badge" hidden></span></a>
+        <a href="list.html" class="btn btn-primary btn-sm">List a Car</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container section narrow" id="list-wrap">
+    <h1>List your car</h1>
+    <p class="lead">One listing, your choice of intent. Fields marked * are required.</p>
+
+    <form id="list-form" class="form-card">
+      <!-- Intent selector -->
+      <fieldset class="intent-select">
+        <legend>What do you want to do?</legend>
+        <label class="intent-radio">
+          <input type="radio" name="intent" value="sale" checked />
+          <span><strong>Sell it</strong><br><small>One-time sale</small></span>
+        </label>
+        <label class="intent-radio">
+          <input type="radio" name="intent" value="rental" />
+          <span><strong>Rent it</strong><br><small>Recurring income</small></span>
+        </label>
+        <label class="intent-radio">
+          <input type="radio" name="intent" value="both" />
+          <span><strong>Both</strong><br><small>Sell or rent</small></span>
+        </label>
+      </fieldset>
+
+      <h2>Vehicle</h2>
+      <label>VIN <span class="muted">(optional — decode to auto-fill)</span>
+        <span class="vin-row">
+          <input type="text" name="vin" id="vin" maxlength="17" placeholder="1HGCM82633A004352" autocomplete="off" />
+          <button type="button" id="vin-decode" class="btn btn-outline">Decode</button>
+        </span>
+      </label>
+      <p id="vin-status" class="vin-status muted small" hidden></p>
+      <div class="form-row">
+        <label>Make *<input type="text" name="make" required placeholder="Toyota" /></label>
+        <label>Model *<input type="text" name="model" required placeholder="Corolla" /></label>
+      </div>
+      <div class="form-row">
+        <label>Year *<input type="number" name="year" required min="1900" max="2026" placeholder="2019" /></label>
+        <label>Mileage (km)<input type="number" name="mileage" min="0" placeholder="62000" /></label>
+      </div>
+      <div class="form-row">
+        <label>City *
+          <select name="city" required>
+            <option value="">Select a city</option>
+            <option value="toronto">Toronto</option>
+            <option value="ottawa">Ottawa</option>
+            <option value="calgary">Calgary</option>
+            <option value="vancouver">Vancouver</option>
+            <option value="edmonton">Edmonton</option>
+          </select>
+        </label>
+        <label>Condition
+          <select name="condition">
+            <option value="excellent">Excellent</option>
+            <option value="good" selected>Good</option>
+            <option value="fair">Fair</option>
+            <option value="needs-work">Needs work</option>
+          </select>
+        </label>
+      </div>
+      <label>Description<textarea name="description" rows="4" placeholder="Features, history, why you're listing."></textarea></label>
+      <label>Photos<input type="file" name="photos" accept="image/*" multiple /></label>
+
+      <!-- SALE fields -->
+      <fieldset id="sale-fields" class="dyn-block">
+        <legend>Sale details</legend>
+        <label>Asking price (CAD) *<input type="number" id="price" name="price" min="0" placeholder="18500" /></label>
+      </fieldset>
+
+      <!-- RENTAL fields -->
+      <fieldset id="rental-fields" class="dyn-block" hidden>
+        <legend>Rental details</legend>
+        <div class="form-row">
+          <label>Daily rate (CAD) *<input type="number" id="dailyRate" name="dailyRate" min="0" placeholder="65" /></label>
+          <label>Weekly rate<input type="number" name="weeklyRate" min="0" placeholder="390" /></label>
+        </div>
+        <div class="form-row">
+          <label>Monthly rate<input type="number" name="monthlyRate" min="0" placeholder="1400" /></label>
+          <label>Security deposit<input type="number" name="deposit" min="0" placeholder="500" /></label>
+        </div>
+        <h3>Availability</h3>
+        <div class="form-row">
+          <label>Available from<input type="date" name="availFrom" /></label>
+          <label>Available until<input type="date" name="availTo" /></label>
+        </div>
+        <h3>Renter requirements</h3>
+        <div class="form-row">
+          <label>Minimum age<input type="number" name="minAge" min="18" placeholder="25" /></label>
+          <label class="check"><input type="checkbox" name="licenceReq" checked /> Valid licence required</label>
+        </div>
+        <p class="muted small">💡 Renting out your car? Confirm your insurance covers it first — see our <a href="article.html?slug=insurance-to-rent-out-your-car-ontario">insurance guide</a> (OPCF 27 in Ontario).</p>
+      </fieldset>
+
+      <hr />
+      <h2>Your contact info</h2>
+      <div class="form-row">
+        <label>Name *<input type="text" name="name" required /></label>
+        <label>Email *<input type="email" name="email" required /></label>
+      </div>
+      <label>Phone<input type="tel" name="phone" placeholder="(555) 123-4567" /></label>
+
+      <button type="submit" class="btn btn-primary btn-block">Publish listing</button>
+      <p class="form-note muted">Prototype — listings save to your browser (localStorage) so you can see the full flow.</p>
+    </form>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-bottom"><p class="muted">&copy; <span id="year"></span> listyourcar.ca — All rights reserved.</p></div>
+  </footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

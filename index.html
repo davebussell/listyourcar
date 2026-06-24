@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>List Your Car — Sell it, rent it, or both | listyourcar.ca</title>
+  <meta name="description" content="List your car to sell or rent across Canada from one dashboard. Crosspost everywhere, manage every inquiry in one inbox. Free to start." />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body data-page="home">
+  <header class="site-header">
+    <div class="container nav">
+      <a href="index.html" class="logo">List<span>Your</span>Car<span class="tld">.ca</span></a>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span><span></span></button>
+      <nav class="nav-links">
+        <a href="browse.html">Browse</a>
+        <a href="list.html">List Your Car</a>
+        <a href="guides.html">Guides</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="dashboard.html" class="inbox-link">Dashboard <span id="inbox-count" class="inbox-badge" hidden></span></a>
+        <a href="list.html" class="btn btn-primary btn-sm">List a Car</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container hero-inner">
+      <p class="eyebrow">Canada's two-sided car marketplace</p>
+      <h1>List your car. Sell it, rent it, or both.</h1>
+      <p class="lead">One listing. Crosspost to AutoTrader, Kijiji, Facebook &amp; more — and manage every buyer and renter inquiry from a single inbox.</p>
+      <div class="hero-actions">
+        <a href="list.html" class="btn btn-primary">List Your Car</a>
+        <a href="browse.html" class="btn btn-outline">Browse Listings</a>
+      </div>
+
+      <form class="search-bar" action="browse.html" method="get">
+        <select name="intent">
+          <option value="">Buy or rent?</option>
+          <option value="sale">For sale</option>
+          <option value="rental">For rent</option>
+        </select>
+        <input type="text" name="make" placeholder="Make (e.g. Toyota)" />
+        <select name="city">
+          <option value="">Any city</option>
+          <option value="toronto">Toronto</option>
+          <option value="ottawa">Ottawa</option>
+          <option value="calgary">Calgary</option>
+          <option value="vancouver">Vancouver</option>
+          <option value="edmonton">Edmonton</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Search</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Dual-intent explainer -->
+  <section class="section">
+    <div class="container">
+      <h2 class="center">One listing, two ways to win</h2>
+      <div class="intent-cards">
+        <div class="intent-card">
+          <div class="intent-icon">💰</div>
+          <h3>Sell it</h3>
+          <p>Reach buyers across Canada. VIN decode, price comparables, and crossposting to AutoTrader, Kijiji, Facebook &amp; Craigslist.</p>
+          <a href="list.html?intent=sale" class="link">Sell your car →</a>
+        </div>
+        <div class="intent-card">
+          <div class="intent-icon">🔑</div>
+          <h3>Rent it</h3>
+          <p>Turn an idle car into income. Set your rates, block dates, screen renters, and generate a rental agreement.</p>
+          <a href="list.html?intent=rental" class="link">Rent out your car →</a>
+        </div>
+        <div class="intent-card">
+          <div class="intent-icon">🔄</div>
+          <h3>Or both</h3>
+          <p>Not sure? List for sale <em>and</em> rent. If it sells, rental auto-delists. Let the market decide.</p>
+          <a href="list.html?intent=both" class="link">Do both →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-alt">
+    <div class="container">
+      <div class="section-head">
+        <h2>Featured listings</h2>
+        <a href="browse.html" class="link">View all →</a>
+      </div>
+      <div class="card-grid" id="featured-listings"></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <h2 class="center">How it works</h2>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><h3>Create one listing</h3><p>Add your car once. Choose sell, rent, or both at the intent step.</p></div>
+        <div class="step"><div class="step-num">2</div><h3>Crosspost everywhere</h3><p>Push it to the channels that fit — buyers and renters both find you.</p></div>
+        <div class="step"><div class="step-num">3</div><h3>Manage in one inbox</h3><p>Every lead, from every channel, lands in your dashboard.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="container center">
+      <h2>Ready to list your car?</h2>
+      <p>Free to start. Sell it, rent it, or both.</p>
+      <a href="list.html" class="btn btn-primary">Get started</a>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <a href="index.html" class="logo">List<span>Your</span>Car<span class="tld">.ca</span></a>
+        <p class="muted">Canada's two-sided car marketplace — sell or rent from one listing.</p>
+      </div>
+      <div><h4>Marketplace</h4><a href="browse.html">Browse</a><a href="list.html">List Your Car</a><a href="pricing.html">Pricing</a></div>
+      <div><h4>Guides</h4><a href="guides.html">All guides</a><a href="article.html?slug=should-i-sell-or-rent-my-car">Sell or rent?</a><a href="article.html?slug=how-to-rent-out-your-car-canada">Rent out your car</a></div>
+      <div><h4>Company</h4><a href="about.html">About</a><a href="contact.html">Contact</a></div>
+    </div>
+    <div class="container footer-bottom"><p class="muted">&copy; <span id="year"></span> listyourcar.ca — All rights reserved.</p></div>
+  </footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

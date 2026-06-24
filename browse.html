@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Browse cars for sale &amp; rent | listyourcar.ca</title>
+  <meta name="description" content="Browse cars for sale and for rent across Canada. Filter by intent, make, city, and price." />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body data-page="browse">
+  <header class="site-header">
+    <div class="container nav">
+      <a href="index.html" class="logo">List<span>Your</span>Car<span class="tld">.ca</span></a>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span><span></span></button>
+      <nav class="nav-links">
+        <a href="browse.html" class="active">Browse</a>
+        <a href="list.html">List Your Car</a>
+        <a href="guides.html">Guides</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="dashboard.html" class="inbox-link">Dashboard <span id="inbox-count" class="inbox-badge" hidden></span></a>
+        <a href="list.html" class="btn btn-primary btn-sm">List a Car</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container section">
+    <h1>Browse cars</h1>
+    <div class="browse-layout">
+      <aside class="filters">
+        <h2>Filters</h2>
+        <form id="filter-form">
+          <label>Looking to
+            <select name="intent">
+              <option value="">Buy or rent</option>
+              <option value="sale">Buy (for sale)</option>
+              <option value="rental">Rent (for rent)</option>
+            </select>
+          </label>
+          <label>Make<input type="text" name="make" placeholder="Any make" /></label>
+          <label>Model<input type="text" name="model" placeholder="Any model" /></label>
+          <label>City
+            <select name="city">
+              <option value="">Any city</option>
+              <option value="toronto">Toronto</option>
+              <option value="ottawa">Ottawa</option>
+              <option value="calgary">Calgary</option>
+              <option value="vancouver">Vancouver</option>
+              <option value="edmonton">Edmonton</option>
+            </select>
+          </label>
+          <label>Max price / daily rate
+            <input type="number" name="price" min="0" placeholder="Any" />
+          </label>
+          <button type="submit" class="btn btn-primary btn-block">Apply</button>
+          <button type="reset" class="btn btn-outline btn-block">Reset</button>
+        </form>
+      </aside>
+      <section class="results">
+        <p class="results-count" id="results-count"></p>
+        <div class="card-grid" id="listings"></div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-bottom"><p class="muted">&copy; <span id="year"></span> listyourcar.ca — All rights reserved.</p></div>
+  </footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
