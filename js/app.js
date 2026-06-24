@@ -25,6 +25,49 @@ function intentBadge(intent) {
   return map[intent] || "";
 }
 
+/* ---------- Price comparables (Pro Pack feature) ----------
+   Compares a sale listing's price against similar cars in the
+   marketplace. Prefers same-make comps, falls back to all sale
+   listings. Returns null if there isn't enough data. */
+function priceComparables(listing) {
+  if (!listing.price) return null;
+  const pool = Store.allListings().filter(
+    (l) => l.id !== listing.id && (l.intent === "sale" || l.intent === "both") && l.price
+  );
+  let comps = pool.filter((l) => l.make.toLowerCase() === listing.make.toLowerCase());
+  let basis = `${listing.make} listings`;
+  if (comps.length < 2) { comps = pool; basis = "comparable sale listings"; }
+  if (comps.length < 2) return null;
+
+  const prices = comps.map((l) => l.price).sort((a, b) => a - b);
+  const mid = Math.floor(prices.length / 2);
+  const median = prices.length % 2 ? prices[mid] : Math.round((prices[mid - 1] + prices[mid]) / 2);
+  const ratio = listing.price / median;
+  let verdict, cls;
+  if (ratio <= 0.95) { verdict = "Below market — priced to move"; cls = "good"; }
+  else if (ratio >= 1.05) { verdict = "Above market — expect negotiation"; cls = "high"; }
+  else { verdict = "Right around market value"; cls = "ok"; }
+  // position 0–100% across the min..max range for the bar marker
+  const lo = prices[0], hi = prices[prices.length - 1];
+  const pos = hi === lo ? 50 : Math.max(2, Math.min(98, ((listing.price - lo) / (hi - lo)) * 100));
+  return { count: comps.length, median, lo, hi, verdict, cls, pos, basis };
+}
+
+function comparablesCard(listing) {
+  const c = priceComparables(listing);
+  if (!c) return "";
+  return `
+    <div class="comp-card">
+      <h3>Price check <span class="pro-tag">Pro</span></h3>
+      <p class="comp-verdict comp-${c.cls}">${c.verdict}</p>
+      <div class="comp-bar">
+        <span class="comp-marker" style="left:${c.pos}%"></span>
+      </div>
+      <div class="comp-scale"><span>${fmtPrice(c.lo)}</span><span>${fmtPrice(c.hi)}</span></div>
+      <p class="muted small">Based on ${c.count} ${c.basis} — median ${fmtPrice(c.median)}.</p>
+    </div>`;
+}
+
 /* ---------- Listing card ---------- */
 function listingCard(l) {
   const priceLine =
@@ -254,7 +297,8 @@ function pageListing() {
         <li>Run a CARFAX Canada history report</li>
         <li>${city ? city.note : "Check provincial lien/transfer rules"}</li>
       </ul>
-    </div>` : "";
+    </div>
+    ${comparablesCard(l)}` : "";
 
   const rentPane = showRent ? `
     <div class="price-card">

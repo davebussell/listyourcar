@@ -183,6 +183,18 @@ legend { font-weight: 700; padding: 0 .5rem; }
 .mini-checklist li::before { content: "•"; position: absolute; left: 0; color: var(--brand); }
 .booking-form .form-note { margin-top: .5rem; }
 
+/* Price comparables (Pro) */
+.comp-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 1.5rem; box-shadow: var(--shadow); }
+.comp-card h3 { font-size: 1.05rem; display: flex; align-items: center; gap: .5rem; }
+.pro-tag { font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: #fff; background: var(--brand); padding: .15rem .45rem; border-radius: 999px; }
+.comp-verdict { font-weight: 700; margin: .25rem 0 1rem; }
+.comp-good { color: var(--rent-dark); }
+.comp-ok { color: var(--brand-dark); }
+.comp-high { color: #c0392b; }
+.comp-bar { position: relative; height: 8px; border-radius: 999px; background: linear-gradient(90deg, #16a34a, #eab308, #dc2626); margin: .5rem 0 .35rem; }
+.comp-marker { position: absolute; top: 50%; width: 16px; height: 16px; background: #fff; border: 3px solid var(--ink); border-radius: 50%; transform: translate(-50%, -50%); }
+.comp-scale { display: flex; justify-content: space-between; font-size: .75rem; color: var(--muted); }
+
 dialog { border: none; border-radius: var(--radius); padding: 1.75rem; max-width: 460px; width: 90%; box-shadow: var(--shadow); }
 dialog::backdrop { background: rgba(0,0,0,.4); }
 

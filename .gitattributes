@@ -1,0 +1,20 @@
+# Normalize line endings: store text as LF in the repo, check out native.
+* text=auto
+
+# Explicit text files
+*.html  text
+*.css   text
+*.js    text
+*.sql   text
+*.md    text
+*.json  text
+
+# Binary assets — never normalize
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.svg   text
+*.ico   binary
+*.pdf   binary
