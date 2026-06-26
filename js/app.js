@@ -271,6 +271,17 @@ function pageHome() {
   const CATS = D.CATEGORIES;
   const all = Store.allListings().filter((l) => l.shootReady);
 
+  // Every word that actually appears in the catalogue — so we only
+  // require text tokens that exist (descriptor words like "convertible"
+  // or "classic" steer the category via parse() instead of forcing 0).
+  const CORPUS = (() => {
+    const s = new Set();
+    all.forEach((l) => `${l.year} ${l.make} ${l.model} ${l.category} ${cityName(l.city)} ${l.description}`
+      .toLowerCase().split(/[^a-z0-9]+/).forEach((w) => w && s.add(w)));
+    return s;
+  })();
+  const scrollToResults = () => { const g = document.querySelector(".gallery-wrap"); if (g) g.scrollIntoView({ behavior: "smooth", block: "start" }); };
+
   // Front-of-house ordering for the "Featured" sort
   const featuredIds = [
     "cat-exotic-toronto-1", "cat-vintage-vancouver-1", "cat-luxury-toronto-2",
@@ -346,15 +357,15 @@ function pageHome() {
   EXAMPLES.slice(0, 4).forEach((ex) => {
     const b = document.createElement("button");
     b.textContent = ex;
-    b.addEventListener("click", () => { input.value = ex; state.q = ex; shown = 24; render(); input.focus(); });
+    b.addEventListener("click", () => { input.value = ex; state.q = ex; shown = 24; render(); scrollToResults(); });
     $("#ss-eg").appendChild(b);
   });
 
   // ---- Search input ----
-  const runSearch = () => { state.q = input.value; shown = 24; render(); };
-  $("#ss-go").addEventListener("click", runSearch);
-  input.addEventListener("input", runSearch);
-  input.addEventListener("keydown", (e) => { if (e.key === "Enter") runSearch(); });
+  const runSearch = (scroll) => { state.q = input.value; shown = 24; render(); if (scroll) scrollToResults(); };
+  $("#ss-go").addEventListener("click", () => runSearch(true));
+  input.addEventListener("input", () => runSearch(false));
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter") { runSearch(true); input.blur(); } });
 
   // Typewriter ghost placeholder ending in a blinking red period
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -405,7 +416,9 @@ function pageHome() {
       if (state.q) {
         const hay = `${l.year} ${l.make} ${l.model} ${l.category} ${cityName(l.city)} ${l.description}`.toLowerCase();
         const tokens = state.q.toLowerCase().split(/\s+/).filter((t) => t && !STOP.test(t) && !/^\$?\d+$/.test(t));
-        if (!tokens.every((t) => hay.includes(t))) return false;
+        // Only enforce tokens that exist in the catalogue; descriptor words
+        // (convertible, classic, supercar…) are already applied via parse().
+        for (const t of tokens) { if (CORPUS.has(t) && !hay.includes(t)) return false; }
       }
       return true;
     });

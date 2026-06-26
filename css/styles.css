@@ -505,7 +505,7 @@ dialog::backdrop{background:rgba(0,0,0,.25);backdrop-filter:blur(3px);}
 .ss-eg button:hover{border-color:var(--signal);color:var(--signal-bright);}
 
 /* Gallery toolbar */
-.gallery-wrap{padding:1rem 0 5rem;}
+.gallery-wrap{padding:1rem 0 5rem;scroll-margin-top:84px;}
 .gallery-bar{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1.25rem;}
 .gallery-count{font-family:var(--f-mono);font-size:.85rem;letter-spacing:.03em;color:var(--mist2);}
 .gallery-count b{color:var(--bone);}
