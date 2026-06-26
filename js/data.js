@@ -47,45 +47,7 @@ const CAR_IMAGES = {
 };
 
 /* ---------- Seed listings (sale + rental + both) ---------- */
-const SEED_LISTINGS = [
-  { id: "seed-1", category: "modern", intent: "sale",   make: "Toyota", model: "Corolla", year: 2019, price: 18500,
-    mileage: 62000, city: "toronto", condition: "good", emoji: "🚗",
-    description: "Well-maintained Corolla LE, one owner, no accidents. Winter tires included.",
-    seller: "Private seller", created: "2026-06-10" },
-  { id: "seed-2", category: "modern", intent: "rental", make: "Honda", model: "Civic", year: 2020, dailyRate: 62,
-    weeklyRate: 370, monthlyRate: 1300, deposit: 500, mileage: 41000, city: "vancouver",
-    condition: "excellent", emoji: "🚙", minAge: 23,
-    description: "Fuel-efficient Civic, perfect for city trips and weekend getaways. Bluetooth, backup camera.",
-    seller: "Private owner", created: "2026-06-12" },
-  { id: "seed-3", category: "military", intent: "both",   make: "Ford", model: "F-150", year: 2018, price: 31500,
-    dailyRate: 120, weeklyRate: 720, monthlyRate: 2600, deposit: 1000, mileage: 88000,
-    city: "calgary", condition: "good", emoji: "🛻", minAge: 25,
-    description: "Capable half-ton. Available to buy outright or rent for your move/project. Tow package.",
-    seller: "Private owner", created: "2026-06-14" },
-  { id: "seed-4", category: "modern", intent: "rental", make: "Tesla", model: "Model 3", year: 2021, dailyRate: 95,
-    weeklyRate: 560, monthlyRate: 2000, deposit: 750, mileage: 30000, city: "toronto",
-    condition: "excellent", emoji: "⚡", minAge: 25,
-    description: "Long Range Model 3. Supercharger access. Great for trying an EV before you buy.",
-    seller: "Private owner", created: "2026-06-15" },
-  { id: "seed-5", category: "modern", intent: "sale",   make: "Mazda", model: "CX-5", year: 2019, price: 24500,
-    mileage: 55000, city: "ottawa", condition: "good", emoji: "🚙",
-    description: "AWD CX-5 GS. Heated seats, Apple CarPlay. Clean CARFAX, recent brakes.",
-    seller: "Private seller", created: "2026-06-16" },
-  { id: "seed-6", category: "modern", intent: "sale",   make: "Subaru", model: "Outback", year: 2017, price: 19900,
-    mileage: 97000, city: "edmonton", condition: "fair", emoji: "🚗",
-    description: "Reliable Outback, symmetrical AWD. Some wear but mechanically sound. Priced to sell.",
-    seller: "Private seller", created: "2026-06-17" },
-  { id: "seed-7", category: "military", intent: "rental", make: "Jeep", model: "Wrangler", year: 2022, dailyRate: 110,
-    weeklyRate: 660, monthlyRate: 2400, deposit: 900, mileage: 22000, city: "calgary",
-    condition: "excellent", emoji: "🚙", minAge: 25,
-    description: "Wrangler Sport for mountain weekends. Soft top, all-terrain tires. Rocky Mountain ready.",
-    seller: "Private owner", created: "2026-06-18" },
-  { id: "seed-8", category: "modern", intent: "both",   make: "Hyundai", model: "Tucson", year: 2020, price: 27200,
-    dailyRate: 70, weeklyRate: 420, monthlyRate: 1500, deposit: 600, mileage: 38000,
-    city: "vancouver", condition: "excellent", emoji: "🚙", minAge: 23,
-    description: "Low-km Tucson. Open to selling or renting — let's talk. Factory warranty remaining.",
-    seller: "Private owner", created: "2026-06-19" },
-];
+const SEED_LISTINGS = [];
 
 /* ---------- Content pillars (SEO architecture) ---------- */
 const PILLARS = [
@@ -404,7 +366,7 @@ const CATEGORIES = [
     id: "vintage", name: "Vintage & Classic", emoji: "🚗",
     tagline: "Pre-1975 character cars with patina and period charm.",
     use: "period pieces, weddings, editorial fashion, album covers",
-    rate: 220,
+    rate: 220, sale: 55000,
     images: [
       WM("Red 1959 Cadillac Series 62 Convertible.jpg"),
       WM("2009 05 31 Cadillac Coupe deVille.jpg"),
@@ -420,7 +382,7 @@ const CATEGORIES = [
     id: "luxury", name: "Luxury", emoji: "🚘",
     tagline: "Premium marques for high-gloss, aspirational frames.",
     use: "luxury brands, music videos, real-estate & lifestyle shoots",
-    rate: 340,
+    rate: 340, sale: 90000,
     images: [
       WM("2025 Bentley Continental GTC - 01.jpg"),
       WM("Moscow, Bentley Continental, Aug 2025 01.jpg"),
@@ -435,7 +397,7 @@ const CATEGORIES = [
     id: "muscle", name: "Muscle & American", emoji: "🏎️",
     tagline: "V8 muscle and chrome — loud, low and cinematic.",
     use: "action films, car culture, streetwear, hip-hop videos",
-    rate: 240,
+    rate: 240, sale: 52000,
     images: [
       WM("1969 Chevrolet Camaro.jpg"),
       WM("1969 Chevrolet Camaro SS 3.jpg"),
@@ -449,9 +411,9 @@ const CATEGORIES = [
   },
   {
     id: "exotic", name: "Exotic & Supercar", emoji: "🏎️",
-    tagline: "Wedge-era and modern exotics for showstopper hero shots.",
+    tagline: "Wedge-era icons and today's supercars for showstopper hero shots.",
     use: "luxury campaigns, music videos, supercar content, launches",
-    rate: 520,
+    rate: 520, sale: 150000,
     images: [
       WM("Ferrari 308 GTS 5312189.jpg"),
       WM("Lamborghini Countach LP500S IMG 4464.jpg"),
@@ -467,7 +429,7 @@ const CATEGORIES = [
     id: "military", name: "Military & Utility", emoji: "🛻",
     tagline: "Jeeps, trucks and hardware for grit and scale.",
     use: "war films, period drama, rugged brand shoots, documentaries",
-    rate: 280,
+    rate: 280, sale: 38000,
     images: [
       WM("Jeep Willys MB.jpg"),
       WM("M35.jpg"),
@@ -477,21 +439,6 @@ const CATEGORIES = [
       ["Willys", "MB Jeep", 1944], ["AM General", "M35 Cargo Truck", 1968],
       ["Land Rover", "Defender", 1995], ["AM General", "Humvee", 1998],
       ["Dodge", "WC Carryall", 1942], ["Jeep", "M606", 1965],
-    ],
-  },
-  {
-    id: "modern", name: "Modern & EV", emoji: "⚡",
-    tagline: "Clean contemporary cars and EVs for crisp, current frames.",
-    use: "tech brands, lifestyle, commercials, social content",
-    rate: 150,
-    images: [
-      CAR_IMAGES["tesla|model 3"], CAR_IMAGES["honda|civic"],
-      CAR_IMAGES["mazda|cx-5"], CAR_IMAGES["hyundai|tucson"],
-      CAR_IMAGES["toyota|corolla"],
-    ],
-    models: [
-      ["Tesla", "Model 3", 2023], ["BMW", "i4", 2023], ["Audi", "e-tron GT", 2022],
-      ["Mercedes-Benz", "EQS", 2023], ["Polestar", "2", 2022], ["Genesis", "G70", 2021],
     ],
   },
 ];
@@ -512,9 +459,10 @@ const CATALOGUE = (() => {
         out.push({
           id: `cat-${cat.id}-${city}-${i + 1}`,
           category: cat.id,
-          intent: "rental",
+          intent: "both",
           make, model, year: baseYear,
           dailyRate,
+          price: cat.sale + i * 8000 + cityIdx * 2000,
           weeklyRate: dailyRate * 5,
           deposit: Math.round((dailyRate * 6) / 50) * 50,
           mileage: null,

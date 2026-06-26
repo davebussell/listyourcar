@@ -531,7 +531,7 @@ function pageListing() {
           carImage(l)
             ? `<img src="${carImage(l)}" alt="${titleOf(l)}" loading="lazy" onerror="this.parentNode.classList.remove('has-img');this.replaceWith(document.createTextNode('${l.emoji || "🚗"}'))" />`
             : (l.emoji || "🚗")
-        }<div class="badges">${intentBadge(l.intent)}</div></div>
+        }<div class="badges">${l.shootReady ? '<span class="badge badge-rent">For shoots</span>' + (l.price ? '<span class="badge badge-sale">For sale</span>' : "") : intentBadge(l.intent)}</div></div>
         <h1>${titleOf(l)}</h1>
         <p class="meta-row">${l.mileage ? fmtKm(l.mileage) + " &middot; " : ""}${cityName(l.city)}${l.condition ? " &middot; " + l.condition + " condition" : ""}</p>
         <h2>Description</h2>
@@ -823,7 +823,7 @@ function pageCategory() {
   if (!cat) {
     setSeo({
       title: "Collections — cars for photo & film shoots | listyourcar.ca",
-      desc: "Browse cars for photo and film shoots by collection and city — vintage, luxury, military, muscle, exotic and modern, across Canada's film metros.",
+      desc: "Browse cars for photo and film shoots by collection and city — vintage, luxury, military, muscle and exotic, across Canada's film metros.",
       canonical: `${ORIGIN}/collections/`,
       image: (cats[0] && cats[0].images[0]) || "",
     });

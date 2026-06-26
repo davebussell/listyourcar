@@ -89,7 +89,7 @@ const idxBody = `
   </div>`;
 write("collections/index.html", page({
   title: "Collections — cars for photo & film shoots | listyourcar.ca",
-  desc: "Browse cars for photo and film shoots by collection and city — vintage, luxury, military, muscle, exotic and modern, across Canada's film metros.",
+  desc: "Browse cars for photo and film shoots by collection and city — vintage, luxury, military, muscle and exotic, across Canada's film metros.",
   canonical: `${ORIGIN}/collections/`, image: D.CATEGORIES[0].images[0], body: idxBody,
 }));
 count++;
