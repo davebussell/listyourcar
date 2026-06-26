@@ -805,7 +805,7 @@ function pageCategory() {
     setSeo({
       title: "Collections — cars for photo & film shoots | listyourcar.ca",
       desc: "Browse cars for photo and film shoots by collection and city — vintage, luxury, military, muscle, exotic and modern, across Canada's film metros.",
-      canonical: `${ORIGIN}/category.html`,
+      canonical: `${ORIGIN}/collections/`,
       image: (cats[0] && cats[0].images[0]) || "",
     });
     wrap.innerHTML = `
@@ -843,7 +843,7 @@ function pageCategory() {
   setSeo({
     title: `${cat.name} cars for photo & film shoots ${where} | listyourcar.ca`,
     desc: `Rent ${titleLook} cars as backdrops for photo and film shoots ${where}. ${cat.tagline} Browse ${cat.use}.`,
-    canonical: `${ORIGIN}/category.html?cat=${cat.id}${city ? "&city=" + city.slug : ""}`,
+    canonical: `${ORIGIN}/collections/${cat.id}/${city ? city.slug + "/" : ""}`,
     image: cat.images[0],
   });
 
