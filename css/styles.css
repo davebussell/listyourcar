@@ -286,6 +286,16 @@ legend{font-weight:700;padding:0 .5rem;font-family:var(--f-display);}
 .mini-checklist li::before{content:"›";position:absolute;left:0;color:var(--signal);}
 .booking-form .form-note{margin-top:.5rem;}
 
+/* Shoot rate tiers */
+.rate-tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;margin:.5rem 0 1.25rem;}
+.rate-tier{background:var(--slate);border:1.5px solid var(--border);border-radius:10px;padding:.7rem .4rem;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:.15rem;transition:border-color .2s,background .2s;color:var(--bone);font-family:var(--f-body);}
+.rate-tier:hover{border-color:var(--mist);}
+.rate-tier.active{border-color:var(--signal);background:var(--signal-dim);}
+.rate-amt{font-family:var(--f-display);font-weight:700;font-size:1.05rem;color:var(--bone);}
+.rate-unit{font-family:var(--f-mono);font-size:.62rem;letter-spacing:.04em;color:var(--mist2);text-transform:uppercase;}
+.shoot-total{margin:.5rem 0;padding:.6rem .8rem;background:var(--slate);border-radius:8px;font-size:.95rem;}
+.shoot-total strong{color:var(--signal-bright);font-family:var(--f-display);}
+
 dialog{border:none;border-radius:var(--radius);padding:2rem;max-width:460px;width:90%;background:var(--ink2);color:var(--bone);box-shadow:0 30px 80px rgba(0,0,0,.7);}
 dialog::backdrop{background:rgba(0,0,0,.7);backdrop-filter:blur(3px);}
 

@@ -16,6 +16,28 @@ const cityName = (slug) => (D.CITIES.find((c) => c.slug === slug)?.name) || slug
 const titleOf = (l) => `${l.year} ${l.make} ${l.model}`;
 const qs = () => new URLSearchParams(location.search);
 
+/* Set/refresh SEO + Open Graph tags for JS-rendered pages */
+function setSeo({ title, desc, canonical, image }) {
+  if (title) document.title = title;
+  const meta = (sel, attr, key, val) => {
+    if (!val) return;
+    let el = document.head.querySelector(sel);
+    if (!el) { el = document.createElement("meta"); el.setAttribute(attr, key); document.head.appendChild(el); }
+    el.setAttribute("content", val);
+  };
+  if (desc) meta('meta[name="description"]', "name", "description", desc);
+  meta('meta[property="og:title"]', "property", "og:title", title);
+  meta('meta[property="og:description"]', "property", "og:description", desc);
+  meta('meta[property="og:type"]', "property", "og:type", "website");
+  meta('meta[property="og:image"]', "property", "og:image", image);
+  meta('meta[name="twitter:card"]', "name", "twitter:card", image ? "summary_large_image" : "summary");
+  if (canonical) {
+    let link = document.head.querySelector('link[rel="canonical"]');
+    if (!link) { link = document.createElement("link"); link.rel = "canonical"; document.head.appendChild(link); }
+    link.href = canonical;
+  }
+}
+
 /* Resolve a real photo for a listing, or null to fall back to emoji */
 function carImage(l) {
   if (l.image) return l.image; // explicit override
@@ -431,7 +453,39 @@ function pageListing() {
     </div>
     ${comparablesCard(l)}` : "";
 
-  const rentPane = showRent ? `
+  // Shoot rate tiers, derived from the day rate
+  const round5 = (n) => Math.round(n / 5) * 5;
+  const tiers = {
+    hourly: round5(l.dailyRate / 6),
+    half: round5(l.dailyRate * 0.6),
+    full: l.dailyRate,
+  };
+
+  const shootPane = (showRent && l.shootReady) ? `
+    <div class="price-card">
+      <span class="kicker">Shoot rates</span>
+      <div class="rate-tiers">
+        <button type="button" class="rate-tier" data-tier="hourly" data-amt="${tiers.hourly}"><span class="rate-amt">${fmtPrice(tiers.hourly)}</span><span class="rate-unit">/ hour</span></button>
+        <button type="button" class="rate-tier active" data-tier="half" data-amt="${tiers.half}"><span class="rate-amt">${fmtPrice(tiers.half)}</span><span class="rate-unit">/ half-day</span></button>
+        <button type="button" class="rate-tier" data-tier="full" data-amt="${tiers.full}"><span class="rate-amt">${fmtPrice(tiers.full)}</span><span class="rate-unit">/ full day</span></button>
+      </div>
+      <form id="shoot-form" class="booking-form">
+        <label>Shoot date<input type="date" name="date" required></label>
+        <label>Shoot type
+          <select name="shoot">
+            <option>Photoshoot</option><option>Film / commercial</option>
+            <option>Music video</option><option>Wedding</option>
+            <option>Event / brand</option><option>Student / indie</option>
+          </select>
+        </label>
+        <div class="shoot-total">Estimated: <strong id="shoot-est">${fmtPrice(tiers.half)}</strong> <span class="muted small">+ ${fmtPrice(l.deposit || 0)} deposit</span></div>
+        <button class="btn btn-primary btn-block" type="submit">Request this car</button>
+        <p class="form-note muted">Inquiry-based — the owner confirms the slot and on-set details with you.</p>
+      </form>
+      ${l.minAge ? `<p class="muted small">Owner present on set. Driver (if needed): ${l.minAge}+, valid licence, insurance confirmation.</p>` : ""}
+    </div>` : "";
+
+  const rentPane = (showRent && !l.shootReady) ? `
     <div class="price-card">
       <div class="price-big">${fmtPrice(l.dailyRate)}<span class="per">/day</span></div>
       <p class="muted">
@@ -474,6 +528,7 @@ function pageListing() {
         ${carImage(l) ? `<p class="muted small">Photo: Wikimedia Commons</p>` : ""}
       </div>
       <aside class="listing-side">
+        ${shootPane}
         ${salePane}
         ${rentPane}
       </aside>
@@ -522,6 +577,32 @@ function pageListing() {
     });
     window.submitForm({ _subject: `Booking request: ${titleOf(l)}`, kind: "renter", listing: titleOf(l), start: f.start, end: f.end, days, estTotal: total });
     e.target.innerHTML = `<div class="notice ok">Booking request sent for ${days} day(s) — est. <strong>${fmtPrice(total)}</strong>. The owner will confirm availability. <a href="dashboard.html">View in dashboard →</a></div>`;
+  });
+
+  // Shoot booking — tier selector + request
+  let shootTier = { label: "half-day", amt: tiers.half };
+  $$(".rate-tier").forEach((b) => b.addEventListener("click", () => {
+    $$(".rate-tier").forEach((x) => x.classList.remove("active"));
+    b.classList.add("active");
+    shootTier = { label: b.dataset.tier === "hourly" ? "hour" : b.dataset.tier === "full" ? "full day" : "half-day", amt: Number(b.dataset.amt) };
+    const est = $("#shoot-est");
+    if (est) est.textContent = fmtPrice(shootTier.amt);
+  }));
+  $("#shoot-form")?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const f = Object.fromEntries(new FormData(e.target));
+    Store.addBooking({
+      listingId: l.id, listingTitle: titleOf(l),
+      start: f.date, end: f.date, days: 1, dailyRate: shootTier.amt,
+      total: shootTier.amt, deposit: l.deposit || 0, shoot: f.shoot, tier: shootTier.label,
+    });
+    Store.addInquiry({
+      listingId: l.id, listingTitle: titleOf(l), channel: "listyourcar.ca",
+      kind: "renter", name: "Creator", email: "",
+      message: `Shoot request: ${f.shoot} on ${f.date}, ${shootTier.label} (est. ${fmtPrice(shootTier.amt)})`,
+    });
+    window.submitForm({ _subject: `Shoot request: ${titleOf(l)}`, kind: "shoot", listing: titleOf(l), date: f.date, shootType: f.shoot, tier: shootTier.label, est: shootTier.amt });
+    e.target.innerHTML = `<div class="notice ok">Shoot request sent — <strong>${f.shoot}</strong> on ${f.date} (${shootTier.label}, est. ${fmtPrice(shootTier.amt)}). The owner will confirm. <a href="dashboard.html">View in dashboard →</a></div>`;
   });
 }
 
@@ -717,9 +798,16 @@ function pageCategory() {
   const citySlug = qs().get("city");
   const cat = cats.find((c) => c.id === catId);
 
+  const ORIGIN = "https://listyourcar.ca";
+
   // ---- Collections index (no category selected) ----
   if (!cat) {
-    document.title = "Collections — cars for photo & film shoots | listyourcar.ca";
+    setSeo({
+      title: "Collections — cars for photo & film shoots | listyourcar.ca",
+      desc: "Browse cars for photo and film shoots by collection and city — vintage, luxury, military, muscle, exotic and modern, across Canada's film metros.",
+      canonical: `${ORIGIN}/category.html`,
+      image: (cats[0] && cats[0].images[0]) || "",
+    });
     wrap.innerHTML = `
       <span class="eyebrow">Browse by look</span>
       <h1>Collections</h1>
@@ -752,9 +840,12 @@ function pageCategory() {
   const city = citySlug && D.CITIES.find((c) => c.slug === citySlug);
   const where = city ? `in ${city.name}` : "across Canada";
   const titleLook = cat.name.toLowerCase();
-  document.title = `${cat.name} cars for photo & film shoots ${where} | listyourcar.ca`;
-  const metaEl = $('meta[name="description"]');
-  if (metaEl) metaEl.setAttribute("content", `Rent ${titleLook} cars as backdrops for photo and film shoots ${where}. ${cat.tagline} Browse ${cat.use}.`);
+  setSeo({
+    title: `${cat.name} cars for photo & film shoots ${where} | listyourcar.ca`,
+    desc: `Rent ${titleLook} cars as backdrops for photo and film shoots ${where}. ${cat.tagline} Browse ${cat.use}.`,
+    canonical: `${ORIGIN}/category.html?cat=${cat.id}${city ? "&city=" + city.slug : ""}`,
+    image: cat.images[0],
+  });
 
   const items = Store.allListings().filter((l) =>
     l.category === cat.id &&
