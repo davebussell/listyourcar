@@ -124,9 +124,10 @@ function listingCard(l) {
     ? `<div class="thumb has-img"><img src="${img}" alt="${titleOf(l)}" loading="lazy"
          onerror="this.parentNode.classList.remove('has-img');this.replaceWith(document.createTextNode('${l.emoji || "🚗"}'))" />`
     : `<div class="thumb">${l.emoji || "🚗"}`;
+  const badge = l.shootReady ? '<span class="badge badge-rent">For shoots</span>' : intentBadge(l.intent);
   return `
     <a class="car-card" href="listing.html?id=${encodeURIComponent(l.id)}">
-      ${thumb}<div class="badges">${intentBadge(l.intent)}</div></div>
+      ${thumb}<div class="badges">${badge}</div></div>
       <div class="body">
         <h3>${titleOf(l)}</h3>
         ${priceLine}
@@ -263,7 +264,25 @@ function animateCount(el) {
    PAGE: Home
    ============================================================ */
 function pageHome() {
-  renderInto("featured-listings", Store.allListings().slice(0, 4), "No listings yet.");
+  // Hand-picked showstoppers (make matches the real photo) over the boring seeds
+  const showIds = [
+    "cat-exotic-toronto-1",   // Ferrari 308 GTS
+    "cat-exotic-toronto-2",   // Lamborghini Countach
+    "cat-luxury-toronto-2",   // Bentley Continental GT
+    "cat-muscle-toronto-1",   // Chevrolet Camaro SS
+    "cat-military-toronto-1", // Willys MB Jeep
+    "cat-military-toronto-2", // M35 Cargo Truck
+  ];
+  const all = Store.allListings();
+  const picks = showIds.map((id) => all.find((l) => l.id === id)).filter(Boolean);
+  // Top up from any catalogue cars if ids ever change
+  if (picks.length < 6) {
+    for (const l of all) {
+      if (picks.length >= 6) break;
+      if (l.image && !picks.includes(l)) picks.push(l);
+    }
+  }
+  renderInto("featured-listings", picks.slice(0, 6), "No listings yet.");
 }
 
 /* ============================================================
