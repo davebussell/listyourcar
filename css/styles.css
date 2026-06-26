@@ -520,3 +520,24 @@ dialog::backdrop{background:rgba(0,0,0,.25);backdrop-filter:blur(3px);}
 .gallery-empty{padding:3rem 1rem;text-align:center;color:var(--mist2);grid-column:1/-1;}
 .gallery-more{display:flex;justify-content:center;margin-top:2rem;}
 @media(max-width:680px){.home-hero{padding:6rem 0 1.5rem;}.smartsearch .ss-go span{display:none;}}
+
+/* ── Gallery toolbar — consolidated filter dropdowns ───────── */
+.gallery-toolbar{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem;padding-bottom:1.1rem;border-bottom:1px solid var(--border);}
+.filter-group{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;}
+.toolbar-right{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
+.toolbar-clear{background:none;border:none;color:var(--mist2);font-family:var(--f-mono);font-size:.72rem;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;width:auto;margin:0;padding:0;text-decoration:underline;}
+.toolbar-clear:hover{color:var(--signal-bright);}
+
+.fdrop{position:relative;}
+.fdrop-btn{display:inline-flex;align-items:center;gap:.5rem;background:var(--ink2);border:1px solid var(--border);border-radius:999px;padding:.5rem .95rem;font-size:.88rem;color:var(--bone);cursor:pointer;font-family:var(--f-body);white-space:nowrap;transition:border-color .18s,background .18s,color .18s;}
+.fdrop-btn:hover{border-color:var(--mist);}
+.fdrop.active .fdrop-btn{background:var(--signal);border-color:var(--signal);color:var(--on-signal);}
+.fdrop-btn .caret{font-size:.58rem;opacity:.65;transition:transform .2s;}
+.fdrop[aria-expanded="true"] .caret{transform:rotate(180deg);}
+.fdrop-menu{position:absolute;top:calc(100% + 6px);left:0;z-index:60;min-width:200px;max-height:320px;overflow:auto;background:var(--ink2);border:1px solid var(--border);border-radius:12px;box-shadow:0 16px 44px rgba(0,0,0,.14);padding:.35rem;display:none;}
+.fdrop[aria-expanded="true"] .fdrop-menu{display:block;animation:fade-in-page .14s var(--ease);}
+.fdrop-menu button{display:flex;align-items:center;justify-content:space-between;gap:1rem;width:100%;background:none;border:none;text-align:left;padding:.55rem .7rem;border-radius:8px;font-size:.9rem;color:var(--bone);cursor:pointer;font-family:var(--f-body);margin:0;}
+.fdrop-menu button:hover{background:var(--slate);}
+.fdrop-menu button.sel{color:var(--signal-bright);font-weight:600;}
+.fdrop-menu button.sel::after{content:"✓";color:var(--signal);font-size:.85rem;}
+@media(max-width:680px){.gallery-toolbar{align-items:flex-start;}.toolbar-right{width:100%;justify-content:space-between;}}

@@ -286,23 +286,56 @@ function pageHome() {
   const state = { q: "", type: "", city: "", cost: "", sort: "featured" };
   let shown = 24;
 
-  // ---- Filter chips ----
-  function chip(label, isActive, onClick) {
-    const b = document.createElement("button");
-    b.className = "fchip";
-    b.textContent = label;
-    b._active = isActive;
-    b.addEventListener("click", () => { onClick(); shown = 24; refreshChips(); render(); });
-    return b;
+  // ---- Consolidated filter dropdowns ----
+  const drops = [];
+  function closeAll() { drops.forEach((d) => d.removeAttribute("aria-expanded")); }
+  function dropdown({ label, options, get, set, noAny, activeWhen, resetsPage }) {
+    const wrap = document.createElement("div"); wrap.className = "fdrop";
+    const btn = document.createElement("button"); btn.type = "button"; btn.className = "fdrop-btn";
+    const menu = document.createElement("div"); menu.className = "fdrop-menu";
+    const opts = noAny ? options.slice() : [{ v: "", l: "Any " + label.toLowerCase() }].concat(options);
+    function paint() {
+      const cur = options.find((o) => o.v === get());
+      btn.innerHTML = `${cur ? cur.l : label} <span class="caret">▾</span>`;
+      wrap.classList.toggle("active", activeWhen ? activeWhen() : !!get());
+      [...menu.children].forEach((b, i) => b.classList.toggle("sel", opts[i].v === get()));
+    }
+    opts.forEach((o) => {
+      const b = document.createElement("button"); b.type = "button"; b.textContent = o.l;
+      b.addEventListener("click", (e) => {
+        e.stopPropagation(); set(o.v); if (resetsPage !== false) shown = 24;
+        closeAll(); paint(); render();
+      });
+      menu.appendChild(b);
+    });
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const open = wrap.getAttribute("aria-expanded") === "true";
+      closeAll(); if (!open) wrap.setAttribute("aria-expanded", "true");
+    });
+    wrap.append(btn, menu); wrap._paint = paint; paint(); drops.push(wrap);
+    return wrap;
   }
-  function refreshChips() { $$(".fchip").forEach((b) => b.classList.toggle("active", b._active())); }
+  document.addEventListener("click", closeAll);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAll(); });
 
-  CATS.forEach((c) => $("#chip-type").appendChild(
-    chip(c.name.replace(/ &.*/, ""), () => state.type === c.id, () => state.type = state.type === c.id ? "" : c.id)));
-  CITY_SLUGS.forEach((cs) => $("#chip-city").appendChild(
-    chip(cityName(cs), () => state.city === cs, () => state.city = state.city === cs ? "" : cs)));
-  COSTS.forEach(([id, label]) => $("#chip-cost").appendChild(
-    chip(label, () => state.cost === id, () => state.cost = state.cost === id ? "" : id)));
+  $("#filters").append(
+    dropdown({ label: "Type", options: CATS.map((c) => ({ v: c.id, l: c.name.replace(/ &.*/, "") })), get: () => state.type, set: (v) => state.type = v }),
+    dropdown({ label: "City", options: CITY_SLUGS.map((cs) => ({ v: cs, l: cityName(cs) })), get: () => state.city, set: (v) => state.city = v }),
+    dropdown({ label: "Budget", options: COSTS.map(([v, l]) => ({ v, l })), get: () => state.cost, set: (v) => state.cost = v }),
+  );
+  const SORTS = [["featured", "Featured"], ["rate-asc", "Day rate ↑"], ["rate-desc", "Day rate ↓"], ["price-asc", "Buy price ↑"], ["price-desc", "Buy price ↓"], ["az", "A–Z"]];
+  $("#sort-mount").appendChild(dropdown({
+    label: "Sort", noAny: true, resetsPage: false,
+    options: SORTS.map(([v, l]) => ({ v, l })),
+    get: () => state.sort, set: (v) => state.sort = v || "featured",
+    activeWhen: () => state.sort !== "featured",
+  }));
+
+  $("#clear-all").addEventListener("click", () => {
+    state.type = state.city = state.cost = state.q = ""; state.sort = "featured"; shown = 24;
+    input.value = ""; drops.forEach((d) => d._paint()); render();
+  });
 
   // ---- Example "autofill" chips ----
   const EXAMPLES = [
@@ -394,8 +427,9 @@ function pageHome() {
     if (cnt) cnt.innerHTML = `<b>${total}</b> car${total === 1 ? "" : "s"} available`;
     const more = $("#gallery-more");
     if (more) more.hidden = total <= shown;
+    const ca = $("#clear-all");
+    if (ca) ca.hidden = !(state.type || state.city || state.cost || state.q);
   }
-  $("#sort").addEventListener("change", (e) => { state.sort = e.target.value; render(); });
   $("#gallery-more").addEventListener("click", () => { shown += 24; render(); });
 
   render();
