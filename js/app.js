@@ -16,6 +16,27 @@ const cityName = (slug) => (D.CITIES.find((c) => c.slug === slug)?.name) || slug
 const titleOf = (l) => `${l.year} ${l.make} ${l.model}`;
 const qs = () => new URLSearchParams(location.search);
 
+/* Resolve a real photo for a listing, or null to fall back to emoji */
+function carImage(l) {
+  if (l.image) return l.image; // explicit override
+  const key = `${(l.make || "").toLowerCase()}|${(l.model || "").toLowerCase()}`;
+  return (D.CAR_IMAGES && D.CAR_IMAGES[key]) || null;
+}
+
+/* OpenStreetMap embed (no API key) centred on a city */
+function cityMapEmbed(slug, label) {
+  const c = D.CITIES.find((x) => x.slug === slug);
+  if (!c) return "";
+  const d = 0.06; // bounding-box half-size in degrees (~city view)
+  const bbox = `${c.lon - d},${c.lat - d},${c.lon + d},${c.lat + d}`;
+  const src = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${c.lat},${c.lon}`;
+  return `
+    <div class="map-embed">
+      <iframe title="Map of ${label}" loading="lazy" src="${src}"></iframe>
+    </div>
+    <p class="muted small">Approximate area — ${label}. <a href="https://www.openstreetmap.org/?mlat=${c.lat}&mlon=${c.lon}#map=12/${c.lat}/${c.lon}" target="_blank" rel="noopener">View larger map</a></p>`;
+}
+
 function intentBadge(intent) {
   const map = {
     sale:   '<span class="badge badge-sale">For sale</span>',
@@ -76,9 +97,14 @@ function listingCard(l) {
       : l.intent === "both"
       ? `<div class="price">${fmtPrice(l.price)} <span class="or">or</span> ${fmtPrice(l.dailyRate)}<span class="per">/day</span></div>`
       : `<div class="price">${fmtPrice(l.price)}</div>`;
+  const img = carImage(l);
+  const thumb = img
+    ? `<div class="thumb has-img"><img src="${img}" alt="${titleOf(l)}" loading="lazy"
+         onerror="this.parentNode.classList.remove('has-img');this.replaceWith(document.createTextNode('${l.emoji || "🚗"}'))" />`
+    : `<div class="thumb">${l.emoji || "🚗"}`;
   return `
     <a class="car-card" href="listing.html?id=${encodeURIComponent(l.id)}">
-      <div class="thumb">${l.emoji || "🚗"}<div class="badges">${intentBadge(l.intent)}</div></div>
+      ${thumb}<div class="badges">${intentBadge(l.intent)}</div></div>
       <div class="body">
         <h3>${titleOf(l)}</h3>
         ${priceLine}
@@ -323,7 +349,11 @@ function pageListing() {
     <a href="browse.html" class="link back">&larr; Back to browse</a>
     <div class="listing-grid">
       <div>
-        <div class="listing-hero">${l.emoji || "🚗"}<div class="badges">${intentBadge(l.intent)}</div></div>
+        <div class="listing-hero ${carImage(l) ? "has-img" : ""}">${
+          carImage(l)
+            ? `<img src="${carImage(l)}" alt="${titleOf(l)}" loading="lazy" onerror="this.parentNode.classList.remove('has-img');this.replaceWith(document.createTextNode('${l.emoji || "🚗"}'))" />`
+            : (l.emoji || "🚗")
+        }<div class="badges">${intentBadge(l.intent)}</div></div>
         <h1>${titleOf(l)}</h1>
         <p class="meta-row">${l.mileage ? fmtKm(l.mileage) + " &middot; " : ""}${cityName(l.city)}${l.condition ? " &middot; " + l.condition + " condition" : ""}</p>
         <h2>Description</h2>
@@ -334,6 +364,9 @@ function pageListing() {
           <tr><th>Year</th><td>${l.year}</td><th>Mileage</th><td>${l.mileage ? fmtKm(l.mileage) : "—"}</td></tr>
           <tr><th>City</th><td>${cityName(l.city)}</td><th>Listed by</th><td>${l.seller || "Private"}</td></tr>
         </table>
+        <h2>Location</h2>
+        ${cityMapEmbed(l.city, cityName(l.city))}
+        ${carImage(l) ? `<p class="muted small">Photo: Wikimedia Commons</p>` : ""}
       </div>
       <aside class="listing-side">
         ${salePane}

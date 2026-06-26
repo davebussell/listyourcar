@@ -4,19 +4,37 @@
    In production, listings/content come from an API + CMS.
    ============================================================ */
 
-/* ---------- Cities (local landing-page targets) ---------- */
+/* ---------- Cities (local landing-page targets) ----------
+   lat/lon power the OpenStreetMap location embed on listings. */
 const CITIES = [
-  { slug: "toronto",   name: "Toronto",   region: "GTA", province: "ON",
+  { slug: "toronto",   name: "Toronto",   region: "GTA", province: "ON", lat: 43.6532, lon: -79.3832,
     note: "Highest private-sale volume in Canada. Ontario buyers must run a PPSA lien check before purchase." },
-  { slug: "ottawa",    name: "Ottawa",    region: "Ottawa", province: "ON",
+  { slug: "ottawa",    name: "Ottawa",    region: "Ottawa", province: "ON", lat: 45.4215, lon: -75.6972,
     note: "Strong bilingual market — list in English and French to widen reach. Ontario PPSA lien check applies." },
-  { slug: "calgary",   name: "Calgary",   region: "Calgary", province: "AB",
+  { slug: "calgary",   name: "Calgary",   region: "Calgary", province: "AB", lat: 51.0447, lon: -114.0719,
     note: "No provincial sales tax on private sales in Alberta — a selling point worth noting in your listing." },
-  { slug: "vancouver", name: "Vancouver", region: "Metro Vancouver", province: "BC",
+  { slug: "vancouver", name: "Vancouver", region: "Metro Vancouver", province: "BC", lat: 49.2827, lon: -123.1207,
     note: "BC's Motor Dealer Act sets rules for private vs dealer sales. ICBC transfer required at sale." },
-  { slug: "edmonton",  name: "Edmonton",  region: "Edmonton", province: "AB",
+  { slug: "edmonton",  name: "Edmonton",  region: "Edmonton", province: "AB", lat: 53.5461, lon: -113.4938,
     note: "Alberta has no PST on private vehicle sales. Registry agent handles the transfer." },
 ];
+
+/* ---------- Car photos (Wikimedia Commons, hotlinked) ----------
+   Keyed by "make|model" (lowercased). Served via Special:FilePath,
+   which resizes server-side. Real, freely-licensed photos. User
+   listings match here when make+model line up; otherwise the UI
+   falls back to an illustrative gradient + emoji. */
+const WM = (file) => "https://commons.wikimedia.org/wiki/Special:FilePath/" + encodeURIComponent(file) + "?width=800";
+const CAR_IMAGES = {
+  "toyota|corolla":  WM("Toyota_Corolla_Hybrid_(E210)_IMG_4338.jpg"),
+  "honda|civic":     WM("Honda_Civic_e-HEV_Sport_(XI)_–_f_30062024.jpg"),
+  "ford|f-150":      WM("2018_Ford_F-150_XLT_Crew_Cab,_front_11.10.19.jpg"),
+  "tesla|model 3":   WM("Tesla_Model_3_(2023)_Autofrühling_Ulm_IMG_9282.jpg"),
+  "mazda|cx-5":      WM("2024_Mazda_CX-5_2.5_S_Select_in_Platinum_Quartz_Metallic,_front_right.jpg"),
+  "subaru|outback":  WM("2026_Subaru_Outback_Wilderness,_front_left,_05-24-2026.jpg"),
+  "jeep|wrangler":   WM("2018_Jeep_Wrangler_Sahara_Unlimited_Multijet_2.1_Front.jpg"),
+  "hyundai|tucson":  WM("2022_Hyundai_Tucson_Preferred,_Front_Right,_05-24-2021.jpg"),
+};
 
 /* ---------- Seed listings (sale + rental + both) ---------- */
 const SEED_LISTINGS = [
@@ -356,4 +374,4 @@ const CHANNELS = [
 ];
 
 /* Expose globally for the prototype (no module bundler). */
-window.LYC_DATA = { CITIES, SEED_LISTINGS, PILLARS, ARTICLES, CHANNELS };
+window.LYC_DATA = { CITIES, SEED_LISTINGS, PILLARS, ARTICLES, CHANNELS, CAR_IMAGES };
