@@ -264,25 +264,141 @@ function animateCount(el) {
    PAGE: Home
    ============================================================ */
 function pageHome() {
-  // Hand-picked showstoppers (make matches the real photo) over the boring seeds
-  const showIds = [
-    "cat-exotic-toronto-1",   // Ferrari 308 GTS
-    "cat-exotic-toronto-2",   // Lamborghini Countach
-    "cat-luxury-toronto-2",   // Bentley Continental GT
-    "cat-muscle-toronto-1",   // Chevrolet Camaro SS
-    "cat-military-toronto-1", // Willys MB Jeep
-    "cat-military-toronto-2", // M35 Cargo Truck
+  const gallery = $("#gallery");
+  if (!gallery) return;
+
+  const CITY_SLUGS = D.FILM_CITIES;
+  const CATS = D.CATEGORIES;
+  const all = Store.allListings().filter((l) => l.shootReady);
+
+  // Front-of-house ordering for the "Featured" sort
+  const featuredIds = [
+    "cat-exotic-toronto-1", "cat-vintage-vancouver-1", "cat-luxury-toronto-2",
+    "cat-muscle-toronto-1", "cat-military-toronto-1", "cat-exotic-toronto-2",
   ];
-  const all = Store.allListings();
-  const picks = showIds.map((id) => all.find((l) => l.id === id)).filter(Boolean);
-  // Top up from any catalogue cars if ids ever change
-  if (picks.length < 6) {
-    for (const l of all) {
-      if (picks.length >= 6) break;
-      if (l.image && !picks.includes(l)) picks.push(l);
-    }
+  const featuredRank = (l) => { const i = featuredIds.indexOf(l.id); return i === -1 ? 999 : i; };
+
+  const COSTS = [
+    ["u250", "Under $250/day", (r) => r < 250],
+    ["mid", "$250–$400", (r) => r >= 250 && r <= 400],
+    ["hi", "$400+", (r) => r > 400],
+  ];
+  const state = { q: "", type: "", city: "", cost: "", sort: "featured" };
+  let shown = 24;
+
+  // ---- Filter chips ----
+  function chip(label, isActive, onClick) {
+    const b = document.createElement("button");
+    b.className = "fchip";
+    b.textContent = label;
+    b._active = isActive;
+    b.addEventListener("click", () => { onClick(); shown = 24; refreshChips(); render(); });
+    return b;
   }
-  renderInto("featured-listings", picks.slice(0, 6), "No listings yet.");
+  function refreshChips() { $$(".fchip").forEach((b) => b.classList.toggle("active", b._active())); }
+
+  CATS.forEach((c) => $("#chip-type").appendChild(
+    chip(c.name.replace(/ &.*/, ""), () => state.type === c.id, () => state.type = state.type === c.id ? "" : c.id)));
+  CITY_SLUGS.forEach((cs) => $("#chip-city").appendChild(
+    chip(cityName(cs), () => state.city === cs, () => state.city = state.city === cs ? "" : cs)));
+  COSTS.forEach(([id, label]) => $("#chip-cost").appendChild(
+    chip(label, () => state.cost === id, () => state.cost = state.cost === id ? "" : id)));
+
+  // ---- Example "autofill" chips ----
+  const EXAMPLES = [
+    "vintage convertible in Toronto", "muscle car under $300", "Ferrari for a music video",
+    "military jeep in Vancouver", "luxury car for a wedding", "exotic supercar in Montreal",
+  ];
+  const input = $("#ss-input"), ghost = $("#ss-ghost");
+  EXAMPLES.slice(0, 4).forEach((ex) => {
+    const b = document.createElement("button");
+    b.textContent = ex;
+    b.addEventListener("click", () => { input.value = ex; state.q = ex; shown = 24; render(); input.focus(); });
+    $("#ss-eg").appendChild(b);
+  });
+
+  // ---- Search input ----
+  const runSearch = () => { state.q = input.value; shown = 24; render(); };
+  $("#ss-go").addEventListener("click", runSearch);
+  input.addEventListener("input", runSearch);
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter") runSearch(); });
+
+  // Typewriter ghost placeholder ending in a blinking red period
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let exIdx = 0, chIdx = 0, deleting = false;
+  function tw() {
+    if (input.value || document.activeElement === input) { ghost.innerHTML = ""; setTimeout(tw, 450); return; }
+    const word = EXAMPLES[exIdx % EXAMPLES.length];
+    chIdx = Math.max(0, Math.min(word.length, chIdx + (deleting ? -1 : 1)));
+    ghost.innerHTML = word.slice(0, chIdx) + '<span class="blink-dot">.</span>';
+    let delay = deleting ? 35 : 65;
+    if (!deleting && chIdx === word.length) { deleting = true; delay = 1500; }
+    else if (deleting && chIdx === 0) { deleting = false; exIdx++; delay = 300; }
+    setTimeout(tw, delay);
+  }
+  input.addEventListener("focus", () => { ghost.innerHTML = ""; });
+  if (reduce) ghost.innerHTML = EXAMPLES[0] + '<span class="blink-dot">.</span>'; else tw();
+
+  // ---- Parse free text into structured filters ----
+  function parse(q) {
+    q = (q || "").toLowerCase();
+    const out = { city: "", cat: "", maxRate: null };
+    CITY_SLUGS.forEach((cs) => { if (q.includes(cs) || q.includes(cityName(cs).toLowerCase())) out.city = cs; });
+    const catWords = {
+      vintage: ["vintage", "classic", "retro", "convertible", "cadillac"],
+      luxury: ["luxury", "rolls", "bentley", "mercedes", "jaguar", "aston"],
+      muscle: ["muscle", "mustang", "camaro", "charger", "v8", "gto"],
+      exotic: ["exotic", "supercar", "ferrari", "lamborghini", "porsche", "mclaren"],
+      military: ["military", "jeep", "army", "willys", "humvee", "tank"],
+    };
+    Object.entries(catWords).forEach(([id, words]) => { if (words.some((w) => q.includes(w))) out.cat = id; });
+    const m = q.match(/under\s*\$?\s*(\d+)/) || q.match(/\$\s*(\d+)/);
+    if (m) out.maxRate = Number(m[1]);
+    return out;
+  }
+  const STOP = /^(in|for|a|an|the|under|video|wedding|shoot|music|car|cars|with|my|to)$/;
+
+  // ---- Filter + sort + render ----
+  function render() {
+    const p = parse(state.q);
+    const costFn = (COSTS.find(([id]) => id === state.cost) || [])[2];
+    let items = all.filter((l) => {
+      if (state.type && l.category !== state.type) return false;
+      if (state.city && l.city !== state.city) return false;
+      if (state.cost && costFn && !costFn(l.dailyRate)) return false;
+      if (p.cat && l.category !== p.cat) return false;
+      if (p.city && l.city !== p.city) return false;
+      if (p.maxRate && l.dailyRate > p.maxRate) return false;
+      if (state.q) {
+        const hay = `${l.year} ${l.make} ${l.model} ${l.category} ${cityName(l.city)} ${l.description}`.toLowerCase();
+        const tokens = state.q.toLowerCase().split(/\s+/).filter((t) => t && !STOP.test(t) && !/^\$?\d+$/.test(t));
+        if (!tokens.every((t) => hay.includes(t))) return false;
+      }
+      return true;
+    });
+
+    items.sort((a, b) => {
+      switch (state.sort) {
+        case "rate-asc": return a.dailyRate - b.dailyRate;
+        case "rate-desc": return b.dailyRate - a.dailyRate;
+        case "price-asc": return (a.price || 0) - (b.price || 0);
+        case "price-desc": return (b.price || 0) - (a.price || 0);
+        case "az": return titleOf(a).localeCompare(titleOf(b));
+        default: return featuredRank(a) - featuredRank(b) || a.dailyRate - b.dailyRate;
+      }
+    });
+
+    const total = items.length;
+    renderInto("gallery", items.slice(0, shown), "No cars match — try clearing a filter.");
+    const cnt = $("#gallery-count");
+    if (cnt) cnt.innerHTML = `<b>${total}</b> car${total === 1 ? "" : "s"} available`;
+    const more = $("#gallery-more");
+    if (more) more.hidden = total <= shown;
+  }
+  $("#sort").addEventListener("change", (e) => { state.sort = e.target.value; render(); });
+  $("#gallery-more").addEventListener("click", () => { shown += 24; render(); });
+
+  render();
 }
 
 /* ============================================================

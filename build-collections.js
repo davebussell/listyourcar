@@ -35,7 +35,7 @@ function navHTML() {
 }
 function footHTML() {
   return `<footer class="site-footer"><div class="footer-bottom"><p>&copy; <span id="year"></span> listyourcar.ca — All rights reserved.</p></div></footer>
-  <script src="/js/data.js?v=3"></script><script src="/js/store.js?v=3"></script><script src="/js/config.js?v=3"></script><script src="/js/app.js?v=3"></script>`;
+  <script src="/js/data.js?v=4"></script><script src="/js/store.js?v=4"></script><script src="/js/config.js?v=4"></script><script src="/js/app.js?v=4"></script>`;
 }
 function page({ title, desc, canonical, image, body }) {
   return `<!DOCTYPE html><html lang="en"><head>
@@ -46,7 +46,7 @@ function page({ title, desc, canonical, image, body }) {
 <meta property="og:type" content="website" /><meta property="og:title" content="${esc(title)}" />
 <meta property="og:description" content="${esc(desc)}" /><meta property="og:image" content="${image}" />
 <meta property="og:url" content="${canonical}" /><meta name="twitter:card" content="summary_large_image" />
-<link rel="stylesheet" href="/css/styles.css?v=3" />
+<link rel="stylesheet" href="/css/styles.css?v=4" />
 </head><body data-page="collections-static">
 ${navHTML()}
 <main class="container section">${body}</main>

@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>List Your Car — Your car belongs on camera | listyourcar.ca</title>
-  <meta name="description" content="Rent out your car as a backdrop for photo shoots, films, and music videos across Canada — or sell it, or rent it for the weekend. One listing, every way to earn." />
-  <link rel="stylesheet" href="css/styles.css?v=3" />
+  <title>List Your Car — Cars that belong on camera | listyourcar.ca</title>
+  <meta name="description" content="Search Canada's gallery of characterful cars for photo shoots, films and music videos — vintage, luxury, muscle, exotic and military. Filter by city, type and budget." />
+  <link rel="stylesheet" href="css/styles.css?v=4" />
 </head>
 <body data-page="home">
   <header class="site-header">
@@ -13,7 +13,6 @@
       <a href="index.html" class="logo">List<span>Your</span>Car<span class="tld">.ca</span></a>
       <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span><span></span></button>
       <nav class="nav-links">
-        <a href="browse.html">Browse</a>
         <a href="/collections/">Collections</a>
         <a href="list.html">List Your Car</a>
         <a href="guides.html">Guides</a>
@@ -25,156 +24,49 @@
     </div>
   </header>
 
-  <!-- HERO -->
-  <section class="hero">
-    <div class="hero-bg">
-      <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Red%201959%20Cadillac%20Series%2062%20Convertible.jpg?width=1600" alt="Red 1959 Cadillac convertible" loading="eager" />
-      <span class="img-credit">1959 Cadillac Series 62 · Public domain</span>
-    </div>
-    <div class="viewfinder"><span></span><span></span><span></span><span></span></div>
-    <span class="orb orb-lime"></span>
-    <span class="orb orb-bone"></span>
+  <!-- HERO + SMART SEARCH -->
+  <section class="home-hero">
     <div class="container">
-      <div class="hero-inner">
-        <span class="eyebrow"><span class="live-dot"></span>Now casting · Canada's car marketplace for shoots</span>
-        <h1>
-          <span class="hero-word">Your</span> <span class="hero-word">car</span>
-          <span class="hero-word">belongs</span> <span class="hero-word accent">on</span>
-          <span class="hero-word accent">camera<span class="blink-dot">.</span></span>
-        </h1>
-        <p class="lead">Rent your car as a backdrop for photo shoots, films &amp; music videos — or sell it, or rent it for the weekend. One listing. You choose how it earns.</p>
-        <div class="hero-actions">
-          <a href="list.html" class="btn btn-primary">List your car</a>
-          <a href="/collections/" class="btn btn-ghost">Find a car for your shoot</a>
+      <span class="eyebrow"><span class="live-dot"></span>Now casting · Canada's cars for hire</span>
+      <h1>Find a car that belongs on camera<span class="blink-dot">.</span></h1>
+      <p class="lead">Vintage, luxury, muscle, exotic and military cars across Canada — for photo shoots, films &amp; music videos. Search the lot.</p>
+
+      <div class="smartsearch">
+        <div class="ss-field">
+          <span class="ss-rec" aria-hidden="true"></span>
+          <input id="ss-input" type="text" autocomplete="off" spellcheck="false" aria-label="Search cars by make, type, city or budget" />
+          <span class="ss-ghost" id="ss-ghost" aria-hidden="true"></span>
+          <button class="btn btn-primary btn-sm ss-go" id="ss-go">Search</button>
         </div>
-        <div class="hero-metrics">
-          <div class="hero-metric"><span class="metric-n count">$0</span><span class="metric-l">to list</span></div>
-          <div class="hero-metric"><span class="metric-n count">5</span><span class="metric-l">collections</span></div>
-          <div class="hero-metric"><span class="metric-n count">7</span><span class="metric-l">film metros</span></div>
-        </div>
-        <p class="hero-tagline">Lights. Camera. Ignition<span class="blink-dot">.</span></p>
+        <div class="ss-eg" id="ss-eg"><span class="muted">Try:</span></div>
       </div>
     </div>
   </section>
 
-  <!-- MARQUEE -->
-  <div class="marquee" aria-hidden="true">
-    <div class="marquee-track">
-      <span>Vintage</span><span class="star">✦</span><span class="dim">Luxury</span><span class="star">✦</span><span>Muscle</span><span class="star">✦</span><span class="dim">Exotic</span><span class="star">✦</span><span>Military</span><span class="star">✦</span>
-      <span>Vintage</span><span class="star">✦</span><span class="dim">Luxury</span><span class="star">✦</span><span>Muscle</span><span class="star">✦</span><span class="dim">Exotic</span><span class="star">✦</span><span>Military</span><span class="star">✦</span>
-    </div>
-  </div>
-
-  <!-- THE WEDGE -->
-  <section class="section">
-    <div class="container narrow center reveal">
-      <span class="eyebrow">The gap nobody's filled</span>
-      <h2>There's nowhere to rent a car that looks <em>right</em> on camera.</h2>
-      <p class="lead">Photographers, filmmakers, brands, and content creators spend hours hunting for the perfect vehicle — a chrome-laden classic, a wedge-era exotic, a war-worn jeep. Turo bans filming. Classifieds are full of econoboxes. So that head-turner in your garage? It's a daily rate waiting to happen.</p>
-    </div>
-  </section>
-
-  <!-- THREE WAYS -->
-  <section class="section section-alt">
+  <!-- SORTABLE GALLERY -->
+  <section class="gallery-wrap">
     <div class="container">
-      <div class="section-head reveal">
-        <div>
-          <span class="eyebrow">One listing, three ways to earn</span>
-          <h2>However your car makes money.</h2>
-        </div>
-      </div>
-      <div class="intent-cards" data-stagger>
-        <div class="intent-card">
-          <span class="num">01 / SHOOT</span>
-          <h3>Rent it for shoots</h3>
-          <p>Creators book your car as a prop or backdrop — by the hour or the day. Stationary, insured, low-mileage. The highest-value, lowest-wear way to earn.</p>
-          <a href="list.html?intent=rental" class="link">List for shoots →</a>
-        </div>
-        <div class="intent-card">
-          <span class="num">02 / RENT</span>
-          <h3>Rent it to drive</h3>
-          <p>Turn an idle car into weekly income. Set your rates, block your dates, screen renters, generate the agreement. Income without selling.</p>
-          <a href="list.html?intent=rental" class="link">Rent it out →</a>
-        </div>
-        <div class="intent-card">
-          <span class="num">03 / SELL</span>
-          <h3>Sell it outright</h3>
-          <p>Ready to part with it? Crosspost to AutoTrader, Kijiji &amp; Facebook, get price comparables, and manage every buyer in one inbox.</p>
-          <a href="list.html?intent=sale" class="link">Sell your car →</a>
-        </div>
-      </div>
-    </div>
-  </section>
+      <div class="chipbar" id="chip-type"><span class="chip-label">Type</span></div>
+      <div class="chipbar" id="chip-city"><span class="chip-label">City</span></div>
+      <div class="chipbar" id="chip-cost"><span class="chip-label">Budget</span></div>
 
-  <!-- COLLECTIONS STRIP -->
-  <section class="section">
-    <div class="container">
-      <div class="section-head reveal">
-        <div><span class="eyebrow">Browse by look</span><h2>Find the car your shoot needs.</h2></div>
-        <a href="/collections/" class="link">All collections →</a>
-      </div>
-      <div class="cat-strip reveal">
-        <a class="cat-pill" href="/collections/vintage/">🚗 Vintage &amp; Classic</a>
-        <a class="cat-pill" href="/collections/luxury/">🚘 Luxury</a>
-        <a class="cat-pill" href="/collections/muscle/">🏎️ Muscle &amp; American</a>
-        <a class="cat-pill" href="/collections/exotic/">🏎️ Exotic &amp; Supercar</a>
-        <a class="cat-pill" href="/collections/military/">🛻 Military &amp; Utility</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- FEATURED -->
-  <section class="section section-alt">
-    <div class="container">
-      <div class="section-head reveal">
-        <div><span class="eyebrow">Now showing</span><h2>Scene-stealers</h2></div>
-        <a href="/collections/" class="link">All collections →</a>
-      </div>
-      <div class="card-grid" id="featured-listings"></div>
-    </div>
-  </section>
-
-  <!-- EDITORIAL BAND -->
-  <section class="section">
-    <div class="container">
-      <div class="editorial reveal">
-        <div class="editorial-img">
-          <img src="https://commons.wikimedia.org/wiki/Special:FilePath/Stanley_McCaughey%2C_Pansy_McCaughey%2C_Ruth_Sites_Bailey%2C_and_Ed_Bailey_in_a_1925_Studebaker._(13e7526e-dd60-4cef-a391-3b2e4a205a3e).jpg?width=1400" alt="People in a 1925 Studebaker" loading="lazy" />
-          <span class="img-credit">Photo: Public domain</span>
-        </div>
-        <div class="editorial-copy">
-          <span class="eyebrow">Built for creators &amp; vintage souls</span>
-          <h2>Every great shot needs a great car.</h2>
-          <p>From wedding getaways to album covers to indie films — the right car makes the frame. We connect the people who own characterful cars with the people who need them in front of a lens.</p>
-          <p class="muted">Need a location too? Our sister marketplace lists studios, lofts &amp; rooftops for shoots.</p>
-          <div class="hero-actions">
-            <a href="https://listyourspace.ca" class="btn btn-ghost" target="_blank" rel="noopener">Explore Spaces ↗</a>
-          </div>
+      <div class="gallery-bar">
+        <div class="gallery-count" id="gallery-count"></div>
+        <div class="gallery-sort">
+          <label for="sort">Sort</label>
+          <select id="sort">
+            <option value="featured">Featured</option>
+            <option value="rate-asc">Day rate · low to high</option>
+            <option value="rate-desc">Day rate · high to low</option>
+            <option value="price-asc">Buy price · low to high</option>
+            <option value="price-desc">Buy price · high to low</option>
+            <option value="az">A to Z</option>
+          </select>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- HOW IT WORKS -->
-  <section class="section">
-    <div class="container">
-      <div class="section-head reveal"><div><span class="eyebrow">How it works</span><h2>Live in five minutes.</h2></div></div>
-      <div class="steps" data-stagger>
-        <div class="step"><div class="step-num">1</div><h3>List your car</h3><p>Add photos and details once. Pick shoot, rent, sell — or all three.</p></div>
-        <div class="step"><div class="step-num">2</div><h3>Get discovered</h3><p>Creators and buyers find you. Crosspost to every channel that fits.</p></div>
-        <div class="step"><div class="step-num">3</div><h3>Manage in one inbox</h3><p>Every booking and inquiry, from every channel, in one dashboard.</p></div>
-        <div class="step"><div class="step-num">4</div><h3>Get paid</h3><p>Generate the agreement, hand over the keys, and bank the rate.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA -->
-  <section class="cta">
-    <div class="container center reveal">
-      <span class="eyebrow">Free to start</span>
-      <h2>Your car's first day on set starts here.</h2>
-      <p>List it for shoots, rent, or sale in five minutes — no fees until it earns.</p>
-      <a href="list.html" class="btn btn-primary">List your car</a>
+      <div class="card-grid" id="gallery"></div>
+      <div class="gallery-more"><button class="btn btn-outline" id="gallery-more" hidden>Show more cars</button></div>
     </div>
   </section>
 
@@ -182,18 +74,18 @@
     <div class="footer-grid">
       <div>
         <a href="index.html" class="logo">List<span>Your</span>Car<span class="tld">.ca</span></a>
-        <p class="muted" style="margin-top:1rem;max-width:30ch">Canada's creative car marketplace — rent your car for shoots, rent it to drive, or sell it.</p>
+        <p class="muted" style="margin-top:1rem;max-width:32ch">Canada's marketplace for characterful cars — hire them for shoots, or buy them outright.</p>
       </div>
-      <div><h4>Marketplace</h4><a href="browse.html">Browse</a><a href="list.html">List Your Car</a><a href="pricing.html">Pricing</a></div>
-      <div><h4>Guides</h4><a href="guides.html">All guides</a><a href="article.html?slug=how-to-rent-out-your-car-canada">Rent out your car</a><a href="article.html?slug=should-i-sell-or-rent-my-car">Sell or rent?</a></div>
+      <div><h4>Browse</h4><a href="/collections/">Collections</a><a href="browse.html">All cars</a><a href="list.html">List Your Car</a></div>
+      <div><h4>Guides</h4><a href="guides.html">All guides</a><a href="article.html?slug=how-to-rent-out-your-car-canada">Rent out your car</a></div>
       <div><h4>Network</h4><a href="https://listyourspace.ca" target="_blank" rel="noopener">ListYourSpace ↗</a><a href="about.html">About</a><a href="contact.html">Contact</a></div>
     </div>
     <div class="footer-bottom"><p>&copy; <span id="year"></span> listyourcar.ca — All rights reserved.</p></div>
   </footer>
 
-  <script src="js/data.js?v=3"></script>
-  <script src="js/store.js?v=3"></script>
-  <script src="js/config.js?v=3"></script>
-  <script src="js/app.js?v=3"></script>
+  <script src="js/data.js?v=4"></script>
+  <script src="js/store.js?v=4"></script>
+  <script src="js/config.js?v=4"></script>
+  <script src="js/app.js?v=4"></script>
 </body>
 </html>
