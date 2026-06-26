@@ -17,7 +17,17 @@ const CITIES = [
     note: "BC's Motor Dealer Act sets rules for private vs dealer sales. ICBC transfer required at sale." },
   { slug: "edmonton",  name: "Edmonton",  region: "Edmonton", province: "AB", lat: 53.5461, lon: -113.4938,
     note: "Alberta has no PST on private vehicle sales. Registry agent handles the transfer." },
+  { slug: "montreal",  name: "Montreal",  region: "Greater Montreal", province: "QC", lat: 45.5019, lon: -73.5674,
+    note: "Quebec's biggest production hub — bilingual listings and Quebec's permit rules apply to street shoots." },
+  { slug: "winnipeg",  name: "Winnipeg",  region: "Winnipeg", province: "MB", lat: 49.8951, lon: -97.1384,
+    note: "A booming period-film location — its historic Exchange District doubles for many North American cities." },
+  { slug: "halifax",   name: "Halifax",   region: "Halifax", province: "NS", lat: 44.6488, lon: -63.5752,
+    note: "Atlantic Canada's production centre — coastal and heritage backdrops draw film and photo crews." },
 ];
+
+/* Metros where most Canadian film/photo production happens — used to
+   guarantee catalogue depth (5+ cars per category per city). */
+const FILM_CITIES = ["toronto", "vancouver", "montreal", "calgary", "ottawa", "winnipeg", "halifax"];
 
 /* ---------- Car photos (Wikimedia Commons, hotlinked) ----------
    Keyed by "make|model" (lowercased). Served via Special:FilePath,
@@ -38,39 +48,39 @@ const CAR_IMAGES = {
 
 /* ---------- Seed listings (sale + rental + both) ---------- */
 const SEED_LISTINGS = [
-  { id: "seed-1", intent: "sale",   make: "Toyota", model: "Corolla", year: 2019, price: 18500,
+  { id: "seed-1", category: "modern", intent: "sale",   make: "Toyota", model: "Corolla", year: 2019, price: 18500,
     mileage: 62000, city: "toronto", condition: "good", emoji: "🚗",
     description: "Well-maintained Corolla LE, one owner, no accidents. Winter tires included.",
     seller: "Private seller", created: "2026-06-10" },
-  { id: "seed-2", intent: "rental", make: "Honda", model: "Civic", year: 2020, dailyRate: 62,
+  { id: "seed-2", category: "modern", intent: "rental", make: "Honda", model: "Civic", year: 2020, dailyRate: 62,
     weeklyRate: 370, monthlyRate: 1300, deposit: 500, mileage: 41000, city: "vancouver",
     condition: "excellent", emoji: "🚙", minAge: 23,
     description: "Fuel-efficient Civic, perfect for city trips and weekend getaways. Bluetooth, backup camera.",
     seller: "Private owner", created: "2026-06-12" },
-  { id: "seed-3", intent: "both",   make: "Ford", model: "F-150", year: 2018, price: 31500,
+  { id: "seed-3", category: "military", intent: "both",   make: "Ford", model: "F-150", year: 2018, price: 31500,
     dailyRate: 120, weeklyRate: 720, monthlyRate: 2600, deposit: 1000, mileage: 88000,
     city: "calgary", condition: "good", emoji: "🛻", minAge: 25,
     description: "Capable half-ton. Available to buy outright or rent for your move/project. Tow package.",
     seller: "Private owner", created: "2026-06-14" },
-  { id: "seed-4", intent: "rental", make: "Tesla", model: "Model 3", year: 2021, dailyRate: 95,
+  { id: "seed-4", category: "modern", intent: "rental", make: "Tesla", model: "Model 3", year: 2021, dailyRate: 95,
     weeklyRate: 560, monthlyRate: 2000, deposit: 750, mileage: 30000, city: "toronto",
     condition: "excellent", emoji: "⚡", minAge: 25,
     description: "Long Range Model 3. Supercharger access. Great for trying an EV before you buy.",
     seller: "Private owner", created: "2026-06-15" },
-  { id: "seed-5", intent: "sale",   make: "Mazda", model: "CX-5", year: 2019, price: 24500,
+  { id: "seed-5", category: "modern", intent: "sale",   make: "Mazda", model: "CX-5", year: 2019, price: 24500,
     mileage: 55000, city: "ottawa", condition: "good", emoji: "🚙",
     description: "AWD CX-5 GS. Heated seats, Apple CarPlay. Clean CARFAX, recent brakes.",
     seller: "Private seller", created: "2026-06-16" },
-  { id: "seed-6", intent: "sale",   make: "Subaru", model: "Outback", year: 2017, price: 19900,
+  { id: "seed-6", category: "modern", intent: "sale",   make: "Subaru", model: "Outback", year: 2017, price: 19900,
     mileage: 97000, city: "edmonton", condition: "fair", emoji: "🚗",
     description: "Reliable Outback, symmetrical AWD. Some wear but mechanically sound. Priced to sell.",
     seller: "Private seller", created: "2026-06-17" },
-  { id: "seed-7", intent: "rental", make: "Jeep", model: "Wrangler", year: 2022, dailyRate: 110,
+  { id: "seed-7", category: "military", intent: "rental", make: "Jeep", model: "Wrangler", year: 2022, dailyRate: 110,
     weeklyRate: 660, monthlyRate: 2400, deposit: 900, mileage: 22000, city: "calgary",
     condition: "excellent", emoji: "🚙", minAge: 25,
     description: "Wrangler Sport for mountain weekends. Soft top, all-terrain tires. Rocky Mountain ready.",
     seller: "Private owner", created: "2026-06-18" },
-  { id: "seed-8", intent: "both",   make: "Hyundai", model: "Tucson", year: 2020, price: 27200,
+  { id: "seed-8", category: "modern", intent: "both",   make: "Hyundai", model: "Tucson", year: 2020, price: 27200,
     dailyRate: 70, weeklyRate: 420, monthlyRate: 1500, deposit: 600, mileage: 38000,
     city: "vancouver", condition: "excellent", emoji: "🚙", minAge: 23,
     description: "Low-km Tucson. Open to selling or renting — let's talk. Factory warranty remaining.",
@@ -384,5 +394,148 @@ const EDITORIAL = {
   driveIn:    WMw("DRIVE-IN_RESTAURANT_-_NARA_-_547855.jpg", 1400),
 };
 
+/* ============================================================
+   Categories — the searchable "looks" creators hunt for.
+   Each has a pool of representative vehicles + real Wikimedia
+   photos, used to stock every film metro with 5+ options.
+   ============================================================ */
+const CATEGORIES = [
+  {
+    id: "vintage", name: "Vintage & Classic", emoji: "🚗",
+    tagline: "Pre-1975 character cars with patina and period charm.",
+    use: "period pieces, weddings, editorial fashion, album covers",
+    rate: 220,
+    images: [
+      WM("Red 1959 Cadillac Series 62 Convertible.jpg"),
+      WM("2009 05 31 Cadillac Coupe deVille.jpg"),
+    ],
+    models: [
+      ["Cadillac", "Series 62", 1959], ["Chevrolet", "Bel Air", 1957],
+      ["Ford", "Mustang", 1965], ["Volkswagen", "Beetle", 1967],
+      ["Citroën", "DS", 1962], ["Cadillac", "Coupe DeVille", 1965],
+      ["Buick", "Roadmaster", 1953],
+    ],
+  },
+  {
+    id: "luxury", name: "Luxury", emoji: "🚘",
+    tagline: "Premium marques for high-gloss, aspirational frames.",
+    use: "luxury brands, music videos, real-estate & lifestyle shoots",
+    rate: 340,
+    images: [
+      WM("2025 Bentley Continental GTC - 01.jpg"),
+      WM("Moscow, Bentley Continental, Aug 2025 01.jpg"),
+    ],
+    models: [
+      ["Rolls-Royce", "Phantom", 2020], ["Bentley", "Continental GT", 2022],
+      ["Mercedes-Benz", "S-Class", 2021], ["Jaguar", "XJ", 2018],
+      ["Range Rover", "Autobiography", 2022], ["Aston Martin", "DB11", 2019],
+    ],
+  },
+  {
+    id: "muscle", name: "Muscle & American", emoji: "🏎️",
+    tagline: "V8 muscle and chrome — loud, low and cinematic.",
+    use: "action films, car culture, streetwear, hip-hop videos",
+    rate: 240,
+    images: [
+      WM("1969 Chevrolet Camaro.jpg"),
+      WM("1969 Chevrolet Camaro SS 3.jpg"),
+      WM("Ford Mustang 5312665.jpg"),
+    ],
+    models: [
+      ["Chevrolet", "Camaro SS", 1969], ["Ford", "Mustang GT", 1968],
+      ["Dodge", "Charger", 1970], ["Pontiac", "GTO", 1967],
+      ["Plymouth", "Barracuda", 1971], ["Dodge", "Challenger", 1970],
+    ],
+  },
+  {
+    id: "exotic", name: "Exotic & Supercar", emoji: "🏎️",
+    tagline: "Wedge-era and modern exotics for showstopper hero shots.",
+    use: "luxury campaigns, music videos, supercar content, launches",
+    rate: 520,
+    images: [
+      WM("Ferrari 308 GTS 5312189.jpg"),
+      WM("Lamborghini Countach LP500S IMG 4464.jpg"),
+      WM("Ferrari 308 5312150.jpg"),
+    ],
+    models: [
+      ["Ferrari", "308 GTS", 1980], ["Lamborghini", "Countach", 1983],
+      ["Porsche", "911 Turbo", 1985], ["Ferrari", "Testarossa", 1987],
+      ["Lamborghini", "Huracán", 2020], ["McLaren", "570S", 2019],
+    ],
+  },
+  {
+    id: "military", name: "Military & Utility", emoji: "🛻",
+    tagline: "Jeeps, trucks and hardware for grit and scale.",
+    use: "war films, period drama, rugged brand shoots, documentaries",
+    rate: 280,
+    images: [
+      WM("Jeep Willys MB.jpg"),
+      WM("M35.jpg"),
+      WM("Willys M606 in Switzerland (2019).jpg"),
+    ],
+    models: [
+      ["Willys", "MB Jeep", 1944], ["AM General", "M35 Cargo Truck", 1968],
+      ["Land Rover", "Defender", 1995], ["AM General", "Humvee", 1998],
+      ["Dodge", "WC Carryall", 1942], ["Jeep", "M606", 1965],
+    ],
+  },
+  {
+    id: "modern", name: "Modern & EV", emoji: "⚡",
+    tagline: "Clean contemporary cars and EVs for crisp, current frames.",
+    use: "tech brands, lifestyle, commercials, social content",
+    rate: 150,
+    images: [
+      CAR_IMAGES["tesla|model 3"], CAR_IMAGES["honda|civic"],
+      CAR_IMAGES["mazda|cx-5"], CAR_IMAGES["hyundai|tucson"],
+      CAR_IMAGES["toyota|corolla"],
+    ],
+    models: [
+      ["Tesla", "Model 3", 2023], ["BMW", "i4", 2023], ["Audi", "e-tron GT", 2022],
+      ["Mercedes-Benz", "EQS", 2023], ["Polestar", "2", 2022], ["Genesis", "G70", 2021],
+    ],
+  },
+];
+
+/* Deterministic catalogue generator: for every film metro × category,
+   produce 5 shoot-ready listings (cycling the pool + photos). No RNG —
+   stable across reloads. */
+const CATALOGUE = (() => {
+  const out = [];
+  const sellers = ["Verified owner", "Studio collective", "Private collector", "Classic garage", "Local creator"];
+  CATEGORIES.forEach((cat) => {
+    FILM_CITIES.forEach((city) => {
+      for (let i = 0; i < 5; i++) {
+        const [make, model, baseYear] = cat.models[i % cat.models.length];
+        const img = cat.images[i % cat.images.length];
+        const cityIdx = FILM_CITIES.indexOf(city);
+        const dailyRate = cat.rate + i * 20 + cityIdx * 10;
+        out.push({
+          id: `cat-${cat.id}-${city}-${i + 1}`,
+          category: cat.id,
+          intent: "rental",
+          make, model, year: baseYear,
+          dailyRate,
+          weeklyRate: dailyRate * 5,
+          deposit: Math.round((dailyRate * 6) / 50) * 50,
+          mileage: null,
+          city,
+          condition: "excellent",
+          emoji: cat.emoji,
+          image: img,
+          minAge: 25,
+          shootReady: true,
+          description: `${baseYear} ${make} ${model} available as a ${cat.name.split(" ")[0].toLowerCase()} backdrop for photo & film shoots in ${(CITIES.find((c) => c.slug === city) || {}).name}. Ideal for ${cat.use}. Stationary or driving shots by arrangement; owner present on set.`,
+          seller: sellers[i % sellers.length],
+          created: "2026-06-20",
+        });
+      }
+    });
+  });
+  return out;
+})();
+
+// Merge the generated catalogue into the seed set.
+SEED_LISTINGS.push(...CATALOGUE);
+
 /* Expose globally for the prototype (no module bundler). */
-window.LYC_DATA = { CITIES, SEED_LISTINGS, PILLARS, ARTICLES, CHANNELS, CAR_IMAGES, EDITORIAL };
+window.LYC_DATA = { CITIES, FILM_CITIES, SEED_LISTINGS, PILLARS, ARTICLES, CHANNELS, CAR_IMAGES, EDITORIAL, CATEGORIES };

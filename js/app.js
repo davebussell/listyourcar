@@ -251,16 +251,18 @@ function pageBrowse() {
   const form = $("#filter-form");
   const params = qs();
 
-  // Pre-fill from URL (home search bar / local pages)
+  // Pre-fill from URL (home search bar / local / collection pages)
   if (form) {
-    ["intent", "make", "model", "city", "price"].forEach((k) => {
+    ["intent", "make", "model", "city", "price", "category"].forEach((k) => {
       if (params.get(k) && form[k]) form[k].value = params.get(k);
     });
   }
 
+  const CAP = 48;
   function apply() {
     const f = form ? Object.fromEntries(new FormData(form)) : {};
     const intent = f.intent || params.get("intent") || "";
+    const category = f.category || params.get("category") || "";
     const make = (f.make || "").toLowerCase().trim();
     const model = (f.model || "").toLowerCase().trim();
     const city = (f.city || "").toLowerCase().trim();
@@ -269,26 +271,33 @@ function pageBrowse() {
     let items = Store.allListings().filter((l) => {
       if (intent === "sale" && !(l.intent === "sale" || l.intent === "both")) return false;
       if (intent === "rental" && !(l.intent === "rental" || l.intent === "both")) return false;
+      if (category && l.category !== category) return false;
       if (make && !l.make.toLowerCase().includes(make)) return false;
       if (model && !l.model.toLowerCase().includes(model)) return false;
       if (city && l.city !== city) return false;
       if (maxPrice != null) {
-        const p = l.intent === "rental" ? l.dailyRate : l.price;
+        const p = (l.intent === "rental" || !l.price) ? l.dailyRate : l.price;
         if (p > maxPrice) return false;
       }
       return true;
     });
 
-    renderInto("listings", items, "No cars match your search. Try widening your filters.");
+    const total = items.length;
+    const shown = items.slice(0, CAP);
+    renderInto("listings", shown, "No cars match your search. Try widening your filters.");
     const count = $("#results-count");
-    if (count) count.textContent = `${items.length} ${items.length === 1 ? "listing" : "listings"} found`;
+    if (count) count.textContent = total > CAP
+      ? `Showing ${CAP} of ${total} listings — refine your filters to narrow it down`
+      : `${total} ${total === 1 ? "listing" : "listings"} found`;
   }
 
   if (form) {
     form.addEventListener("submit", (e) => { e.preventDefault(); apply(); });
     form.addEventListener("reset", () => setTimeout(apply, 0));
-    // Toggle price label when intent changes
+    // Re-filter immediately on dropdown changes
     form.intent?.addEventListener("change", apply);
+    form.category?.addEventListener("change", apply);
+    form.city?.addEventListener("change", apply);
   }
   apply();
 }
@@ -695,6 +704,99 @@ function pageLocal() {
 }
 
 /* ============================================================
+   PAGE: Collections — category & category+city landing pages
+   category.html            → all collections (index)
+   category.html?cat=vintage         → collection across Canada
+   category.html?cat=vintage&city=toronto → collection in a city
+   ============================================================ */
+function pageCategory() {
+  const wrap = $("#category-wrap");
+  if (!wrap) return;
+  const cats = D.CATEGORIES || [];
+  const catId = qs().get("cat");
+  const citySlug = qs().get("city");
+  const cat = cats.find((c) => c.id === catId);
+
+  // ---- Collections index (no category selected) ----
+  if (!cat) {
+    document.title = "Collections — cars for photo & film shoots | listyourcar.ca";
+    wrap.innerHTML = `
+      <span class="eyebrow">Browse by look</span>
+      <h1>Collections</h1>
+      <p class="lead narrow">Find the exact car your shoot needs — by style and by city. Every collection is stocked across Canada's film metros.</p>
+      <div class="card-grid collection-grid" data-stagger>
+        ${cats.map((c) => `
+          <a class="collection-card" href="category.html?cat=${c.id}">
+            <div class="collection-thumb"><img src="${c.images[0]}" alt="${c.name}" loading="lazy" /><span class="collection-emoji">${c.emoji}</span></div>
+            <div class="collection-body">
+              <h3>${c.name}</h3>
+              <p>${c.tagline}</p>
+              <span class="link">View collection →</span>
+            </div>
+          </a>`).join("")}
+      </div>
+
+      <div class="local-strip">
+        <h2>Every collection, every city</h2>
+        <p class="muted">Jump straight to a look in your metro.</p>
+        ${cats.map((c) => `
+          <div class="dir-row">
+            <span class="dir-cat">${c.emoji} ${c.name}</span>
+            <span class="dir-links">${D.FILM_CITIES.map((cs) => `<a href="category.html?cat=${c.id}&city=${cs}">${cityName(cs)}</a>`).join("")}</span>
+          </div>`).join("")}
+      </div>`;
+    return;
+  }
+
+  // ---- A specific collection (optionally in a city) ----
+  const city = citySlug && D.CITIES.find((c) => c.slug === citySlug);
+  const where = city ? `in ${city.name}` : "across Canada";
+  const titleLook = cat.name.toLowerCase();
+  document.title = `${cat.name} cars for photo & film shoots ${where} | listyourcar.ca`;
+  const metaEl = $('meta[name="description"]');
+  if (metaEl) metaEl.setAttribute("content", `Rent ${titleLook} cars as backdrops for photo and film shoots ${where}. ${cat.tagline} Browse ${cat.use}.`);
+
+  const items = Store.allListings().filter((l) =>
+    l.category === cat.id &&
+    (l.intent === "rental" || l.intent === "both") &&
+    (city ? l.city === city.slug : true)
+  );
+
+  const otherCities = D.FILM_CITIES.filter((cs) => cs !== citySlug);
+  const otherCats = D.CATEGORIES.filter((c) => c.id !== cat.id);
+
+  wrap.innerHTML = `
+    <nav class="crumbs"><a href="index.html">Home</a> / <a href="category.html">Collections</a> / <a href="category.html?cat=${cat.id}">${cat.name}</a>${city ? " / " + city.name : ""}</nav>
+    <span class="eyebrow">${cat.emoji} ${cat.name} collection</span>
+    <h1>${cat.name} cars for photo &amp; film shoots ${where}</h1>
+    <p class="lead narrow">${cat.tagline} Perfect for ${cat.use}. ${city ? `Available now in ${city.name} — book by the hour or the day.` : "Stocked in every Canadian film metro."}</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="list.html?intent=rental">List your ${titleLook.split(" ")[0]} car</a>
+      ${city ? `<a class="btn btn-ghost" href="category.html?cat=${cat.id}">See all cities</a>` : ""}
+    </div>
+    ${city ? `<div class="local-note"><strong>${city.name}:</strong> ${city.note}</div>` : ""}
+
+    <div class="section-head" style="margin-top:2.5rem"><h2>${items.length} ${items.length === 1 ? "car" : "cars"} ${where}</h2></div>
+    <div class="card-grid" id="cat-listings"></div>
+
+    <div class="local-strip">
+      <h2>${cat.name} in other cities</h2>
+      <div class="local-links">
+        ${otherCities.map((cs) => `<a href="category.html?cat=${cat.id}&city=${cs}">${cat.name} in ${cityName(cs)}</a>`).join("")}
+      </div>
+    </div>
+
+    <div class="local-strip">
+      <h2>Other collections${city ? " in " + city.name : ""}</h2>
+      <div class="local-links">
+        ${otherCats.map((c) => `<a href="category.html?cat=${c.id}${city ? "&city=" + city.slug : ""}">${c.emoji} ${c.name}</a>`).join("")}
+      </div>
+    </div>`;
+
+  renderInto("cat-listings", items, "No cars here yet — be the first to list one.");
+}
+
+/* ============================================================
    PAGE: Rental agreement generator
    ============================================================ */
 function pageAgreement() {
@@ -804,6 +906,7 @@ document.addEventListener("DOMContentLoaded", () => {
     guides: pageGuides,
     article: pageArticle,
     local: pageLocal,
+    category: pageCategory,
     agreement: pageAgreement,
   }[page] || (() => {}))();
 });

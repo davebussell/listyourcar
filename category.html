@@ -3,35 +3,37 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rental agreement | listyourcar.ca</title>
-  <meta name="description" content="Generated vehicle rental agreement." />
+  <title>Collections | listyourcar.ca</title>
+  <meta name="description" content="Browse cars for photo and film shoots by collection and city — vintage, luxury, military, muscle, exotic and modern, across Canada's film metros." />
   <link rel="stylesheet" href="css/styles.css" />
 </head>
-<body data-page="agreement">
-  <header class="site-header no-print">
+<body data-page="category">
+  <header class="site-header">
     <div class="container nav">
       <a href="index.html" class="logo">List<span>Your</span>Car<span class="tld">.ca</span></a>
       <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span><span></span></button>
       <nav class="nav-links">
         <a href="browse.html">Browse</a>
-        <a href="category.html">Collections</a>
+        <a href="category.html" class="active">Collections</a>
         <a href="list.html">List Your Car</a>
         <a href="guides.html">Guides</a>
         <a href="pricing.html">Pricing</a>
         <a href="dashboard.html" class="inbox-link">Dashboard <span id="inbox-count" class="inbox-badge" hidden></span></a>
+        <a href="https://listyourspace.ca" class="spaces-link" target="_blank" rel="noopener">Spaces ↗</a>
         <a href="list.html" class="btn btn-primary btn-sm">List a Car</a>
       </nav>
     </div>
   </header>
 
-  <main class="container section narrow" id="agreement-wrap"></main>
+  <main class="container section" id="category-wrap"></main>
 
-  <footer class="site-footer no-print">
-    <div class="container footer-bottom"><p class="muted">&copy; <span id="year"></span> listyourcar.ca — All rights reserved.</p></div>
+  <footer class="site-footer">
+    <div class="footer-bottom"><p>&copy; <span id="year"></span> listyourcar.ca — All rights reserved.</p></div>
   </footer>
 
   <script src="js/data.js"></script>
   <script src="js/store.js"></script>
+  <script src="js/config.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

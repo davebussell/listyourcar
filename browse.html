@@ -14,6 +14,7 @@
       <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span><span></span></button>
       <nav class="nav-links">
         <a href="browse.html" class="active">Browse</a>
+        <a href="category.html">Collections</a>
         <a href="list.html">List Your Car</a>
         <a href="guides.html">Guides</a>
         <a href="pricing.html">Pricing</a>
@@ -36,6 +37,17 @@
               <option value="rental">Rent (for rent)</option>
             </select>
           </label>
+          <label>Collection
+            <select name="category">
+              <option value="">Any collection</option>
+              <option value="vintage">Vintage &amp; Classic</option>
+              <option value="luxury">Luxury</option>
+              <option value="muscle">Muscle &amp; American</option>
+              <option value="exotic">Exotic &amp; Supercar</option>
+              <option value="military">Military &amp; Utility</option>
+              <option value="modern">Modern &amp; EV</option>
+            </select>
+          </label>
           <label>Make<input type="text" name="make" placeholder="Any make" /></label>
           <label>Model<input type="text" name="model" placeholder="Any model" /></label>
           <label>City
@@ -46,6 +58,9 @@
               <option value="calgary">Calgary</option>
               <option value="vancouver">Vancouver</option>
               <option value="edmonton">Edmonton</option>
+          <option value="montreal">Montreal</option>
+          <option value="winnipeg">Winnipeg</option>
+          <option value="halifax">Halifax</option>
             </select>
           </label>
           <label>Max price / daily rate
