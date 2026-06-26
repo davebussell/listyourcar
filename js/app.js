@@ -139,6 +139,102 @@ function initChrome() {
     const n = Store.inquiries().filter((i) => !i.read).length + Store.bookings().length;
     if (n > 0) { badge.textContent = n; badge.hidden = false; }
   }
+
+  initMotion();
+}
+
+/* ============================================================
+   Motion system (adapted from the Campaign Automation build)
+   Nav scroll state · hero word reveal · scroll reveal ·
+   count-ups · stagger · parallax orbs · reduced-motion safe.
+   ============================================================ */
+function initMotion() {
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Nav scroll blur/condense
+  const header = $(".site-header");
+  if (header) {
+    const onScroll = () => header.classList.toggle("scrolled", window.scrollY > 12);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  }
+
+  // Word-by-word hero reveal
+  const words = $$(".hero-word");
+  if (words.length) {
+    if (reduce) words.forEach((w) => w.classList.add("revealed"));
+    else words.forEach((w, i) => setTimeout(() => w.classList.add("revealed"), 120 + i * 65));
+  }
+
+  // Stagger: auto-tag direct children of [data-stagger] with reveal + delay
+  $$("[data-stagger]").forEach((grid) => {
+    [...grid.children].forEach((child, i) => {
+      child.classList.add("reveal", `reveal-delay-${Math.min(i + 1, 5)}`);
+    });
+  });
+
+  // Scroll reveal observer
+  const revealEls = $$(".reveal, .reveal-left");
+  if (reduce) {
+    revealEls.forEach((el) => el.classList.add("is-visible"));
+  } else if ("IntersectionObserver" in window) {
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) { e.target.classList.add("is-visible"); obs.unobserve(e.target); }
+      });
+    }, { threshold: 0.08, rootMargin: "0px 0px -40px 0px" });
+    revealEls.forEach((el) => obs.observe(el));
+  } else {
+    revealEls.forEach((el) => el.classList.add("is-visible"));
+  }
+
+  // Count-up metrics
+  if (!reduce && "IntersectionObserver" in window) {
+    const countObs = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) { animateCount(e.target); countObs.unobserve(e.target); }
+      });
+    }, { threshold: 0.5 });
+    $$(".count").forEach((el) => countObs.observe(el));
+  }
+
+  // Hero parallax orbs (desktop only)
+  const hero = $(".hero");
+  if (hero && !reduce) {
+    const orbs = $$(".orb", hero);
+    if (orbs.length) {
+      window.addEventListener("scroll", () => {
+        if (window.innerWidth < 900) return;
+        const y = window.scrollY;
+        if (y > window.innerHeight) return;
+        orbs.forEach((o, i) => { o.style.transform = `translateY(${y * (i ? 0.04 : 0.07)}px)`; });
+      }, { passive: true });
+    }
+  }
+
+  // Page-enter flash
+  if (!reduce) {
+    document.body.classList.add("page-entering");
+    requestAnimationFrame(() => document.body.classList.remove("page-entering"));
+  }
+}
+
+function animateCount(el) {
+  const raw = el.dataset.value || el.textContent.trim();
+  el.dataset.value = raw;
+  const prefix = (raw.match(/^[^\d]*/) || [""])[0];
+  const suffix = (raw.match(/[^\d.]*$/) || [""])[0];
+  const num = parseFloat(raw.replace(/[^\d.]/g, ""));
+  if (isNaN(num)) return;
+  const dur = 1100, start = performance.now(), dec = String(num).includes(".");
+  const tick = (now) => {
+    const p = Math.min((now - start) / dur, 1);
+    const ease = 1 - Math.pow(1 - p, 3);
+    const cur = num * ease;
+    el.textContent = prefix + (dec ? cur.toFixed(1) : Math.floor(cur)) + suffix;
+    if (p < 1) requestAnimationFrame(tick); else el.textContent = raw;
+  };
+  requestAnimationFrame(tick);
 }
 
 /* ============================================================

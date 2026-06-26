@@ -373,5 +373,16 @@ const CHANNELS = [
   { name: "Turo",                 sale: false, rental: true,  note: "Export pack (guided manual post)" },
 ];
 
+/* ---------- Editorial imagery (public domain, Wikimedia) ----------
+   Vintage NARA / DOCUMERICA photographs of people and cars — the
+   cinematic, fashion-editorial backbone of the brand. All PD. */
+const WMw = (file, w) => "https://commons.wikimedia.org/wiki/Special:FilePath/" + encodeURIComponent(file) + "?width=" + w;
+const EDITORIAL = {
+  heroDrive:  WMw("YOUNG_WOMAN_HAS_STOPPED_AT_A_SERVICE_STATION_FOR_ENGINE_ADJUSTMENT_AFTER_HER_CAR_HAD_FAILED_THE_EMISSIONS_TEST_AT_AN..._-_NARA_-_557924.jpg", 1600),
+  studebaker: WMw("Stanley_McCaughey,_Pansy_McCaughey,_Ruth_Sites_Bailey,_and_Ed_Bailey_in_a_1925_Studebaker._(13e7526e-dd60-4cef-a391-3b2e4a205a3e).jpg", 1600),
+  ford1929:   WMw("WARREN_BROWN,_OWNER_OF_THE_SERVICE_STATION_AND_GROCERY_ON_MAIN_STREET_IN_HELEN,_GEORGIA,_SITS_IN_A_1929_FORD_WHILE..._-_NARA_-_557685.jpg", 1200),
+  driveIn:    WMw("DRIVE-IN_RESTAURANT_-_NARA_-_547855.jpg", 1400),
+};
+
 /* Expose globally for the prototype (no module bundler). */
-window.LYC_DATA = { CITIES, SEED_LISTINGS, PILLARS, ARTICLES, CHANNELS, CAR_IMAGES };
+window.LYC_DATA = { CITIES, SEED_LISTINGS, PILLARS, ARTICLES, CHANNELS, CAR_IMAGES, EDITORIAL };
