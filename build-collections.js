@@ -20,7 +20,7 @@ const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 
 function navHTML() {
   return `<header class="site-header"><div class="container nav">
-    <a href="/index.html" class="logo">List<span>Your</span>Car<span class="tld">.ca</span></a>
+    <div class="nav-brand"><a href="/index.html" class="logo">List<span>Your</span>Car<span class="tld">.ca</span></a><span class="now-casting"><span class="live-dot"></span>Now casting</span></div>
     <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span><span></span></button>
     <nav class="nav-links">
       <a href="/browse.html">Browse</a>
