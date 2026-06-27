@@ -86,7 +86,14 @@ const idxBody = `
   <div class="local-strip"><h2>Every collection, every city</h2><p class="muted">Jump straight to a look in your metro.</p>
   ${D.CATEGORIES.map((c) => `<div class="dir-row"><span class="dir-cat">${c.emoji} ${esc(c.name)}</span>
     <span class="dir-links">${D.FILM_CITIES.map((cs) => `<a href="/collections/${c.id}/${cs}/">${esc(cityName(cs))}</a>`).join("")}</span></div>`).join("")}
-  </div>`;
+  </div>
+  <div class="local-strip"><span class="eyebrow">Shooting an occasion?</span><h2>By the moment</h2>
+  <p class="muted">Weddings, engagements, prom, events and music videos — the right car for the day.</p>
+  <div class="card-grid collection-grid" style="margin-top:1.25rem">
+  ${(D.OCCASIONS || []).map((o) => `<a class="collection-card" href="/collections/occasion/${o.id}/">
+      <div class="collection-thumb"><img src="${o.image}" alt="${esc(o.name)}" loading="lazy" /><span class="collection-emoji">${o.emoji}</span></div>
+      <div class="collection-body"><h3>${esc(o.name)}</h3><p>${esc(o.tagline)}</p><span class="link">View collection →</span></div></a>`).join("")}
+  </div></div>`;
 write("collections/index.html", page({
   title: "Collections — cars for photo & film shoots | listyourcar.ca",
   desc: "Browse cars for photo and film shoots by collection and city — vintage, luxury, military, muscle and exotic, across Canada's film metros.",
@@ -124,6 +131,40 @@ D.CATEGORIES.forEach((cat) => {
       title: `${cat.name} cars for photo & film shoots ${where} | listyourcar.ca`,
       desc: `Rent ${titleLook} cars as backdrops for photo and film shoots ${where}. ${cat.tagline} Browse ${cat.use}.`,
       canonical, image: cat.images[0], body,
+    }));
+    count++;
+  });
+});
+
+/* ---- Occasion collections (by the moment) ---- */
+(D.OCCASIONS || []).forEach((occ) => {
+  const variants = [{ city: null }].concat(D.FILM_CITIES.map((c) => ({ city: c })));
+  variants.forEach(({ city }) => {
+    const cObj = city && D.CITIES.find((c) => c.slug === city);
+    const where = cObj ? `in ${cObj.name}` : "across Canada";
+    const items = D.SEED_LISTINGS.filter((l) =>
+      (l.occasions || []).includes(occ.id) && (l.intent === "rental" || l.intent === "both") && (city ? l.city === city : true));
+    const otherCities = D.FILM_CITIES.filter((cs) => cs !== city);
+    const otherOccs = D.OCCASIONS.filter((o) => o.id !== occ.id);
+    const body = `
+      <nav class="crumbs"><a href="/index.html">Home</a> / <a href="/collections/">Collections</a> / <a href="/collections/occasion/${occ.id}/">${esc(occ.name)}</a>${cObj ? " / " + esc(cObj.name) : ""}</nav>
+      <span class="eyebrow">${occ.emoji} ${esc(occ.name)}</span>
+      <h1>Cars to rent for ${esc(occ.name.toLowerCase())} photos ${esc(where)}</h1>
+      <p class="lead narrow">${esc(occ.tagline)} Perfect for ${esc(occ.use)}. ${cObj ? `Available now in ${esc(cObj.name)} — book by the hour or the day.` : "Stocked in every Canadian film metro."}</p>
+      <div class="hero-actions"><a class="btn btn-primary" href="/list.html">List your car for shoots</a>${cObj ? `<a class="btn btn-ghost" href="/collections/occasion/${occ.id}/">See all cities</a>` : ""}</div>
+      ${cObj ? `<div class="local-note"><strong>${esc(cObj.name)}:</strong> ${esc(cObj.note)}</div>` : ""}
+      <div class="section-head" style="margin-top:2.5rem"><h2>${items.length} ${items.length === 1 ? "car" : "cars"} ${esc(where)}</h2></div>
+      <div class="card-grid">${items.map(cardHTML).join("")}</div>
+      <div class="local-strip"><h2>${esc(occ.name)} in other cities</h2><div class="local-links">
+        ${otherCities.map((cs) => `<a href="/collections/occasion/${occ.id}/${cs}/">${esc(occ.name)} in ${esc(cityName(cs))}</a>`).join("")}</div></div>
+      <div class="local-strip"><h2>Other occasions${cObj ? " in " + esc(cObj.name) : ""}</h2><div class="local-links">
+        ${otherOccs.map((o) => `<a href="/collections/occasion/${o.id}/${cObj ? cObj.slug + "/" : ""}">${o.emoji} ${esc(o.name)}</a>`).join("")}</div></div>`;
+    const canonical = `${ORIGIN}/collections/occasion/${occ.id}/${city ? city + "/" : ""}`;
+    const rel = `collections/occasion/${occ.id}/${city ? city + "/" : ""}index.html`;
+    write(rel, page({
+      title: `Cars to rent for ${occ.name.toLowerCase()} photos ${where} | listyourcar.ca`,
+      desc: `Rent a characterful car for ${occ.name.toLowerCase()} photos ${where}. ${occ.tagline} For ${occ.use}.`,
+      canonical, image: occ.image, body,
     }));
     count++;
   });

@@ -294,7 +294,7 @@ function pageHome() {
     ["mid", "$250–$400", (r) => r >= 250 && r <= 400],
     ["hi", "$400+", (r) => r > 400],
   ];
-  const state = { q: "", type: "", city: "", cost: "", sort: "featured" };
+  const state = { q: "", type: "", occasion: "", city: "", cost: "", sort: "featured" };
   let shown = 24;
 
   // ---- Consolidated filter dropdowns ----
@@ -330,12 +330,14 @@ function pageHome() {
   document.addEventListener("click", closeAll);
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAll(); });
 
+  const OCCS = D.OCCASIONS || [];
   $("#filters").append(
     dropdown({ label: "Type", options: CATS.map((c) => ({ v: c.id, l: c.name.replace(/ &.*/, "") })), get: () => state.type, set: (v) => state.type = v }),
+    dropdown({ label: "Occasion", options: OCCS.map((o) => ({ v: o.id, l: `${o.emoji} ${o.name}` })), get: () => state.occasion, set: (v) => state.occasion = v }),
     dropdown({ label: "City", options: CITY_SLUGS.map((cs) => ({ v: cs, l: cityName(cs) })), get: () => state.city, set: (v) => state.city = v }),
     dropdown({ label: "Budget", options: COSTS.map(([v, l]) => ({ v, l })), get: () => state.cost, set: (v) => state.cost = v }),
   );
-  const SORTS = [["featured", "Featured"], ["rate-asc", "Day rate ↑"], ["rate-desc", "Day rate ↓"], ["price-asc", "Buy price ↑"], ["price-desc", "Buy price ↓"], ["az", "A–Z"]];
+  const SORTS = [["featured", "Featured"], ["rate-asc", "Day rate ↑"], ["rate-desc", "Day rate ↓"], ["az", "A–Z"]];
   $("#sort-mount").appendChild(dropdown({
     label: "Sort", noAny: true, resetsPage: false,
     options: SORTS.map(([v, l]) => ({ v, l })),
@@ -344,7 +346,7 @@ function pageHome() {
   }));
 
   $("#clear-all").addEventListener("click", () => {
-    state.type = state.city = state.cost = state.q = ""; state.sort = "featured"; shown = 24;
+    state.type = state.occasion = state.city = state.cost = state.q = ""; state.sort = "featured"; shown = 24;
     input.value = ""; drops.forEach((d) => d._paint()); render();
   });
 
@@ -396,11 +398,14 @@ function pageHome() {
       military: ["military", "jeep", "army", "willys", "humvee", "tank"],
     };
     Object.entries(catWords).forEach(([id, words]) => { if (words.some((w) => q.includes(w))) out.cat = id; });
+    const occWords = { weddings: ["wedding", "bride", "groom", "getaway"], engagement: ["engagement", "couple", "anniversary"], prom: ["prom", "grad", "graduation"], events: ["event", "party", "gala"], musicvideo: ["music", "video", "fashion"] };
+    out.occ = "";
+    Object.entries(occWords).forEach(([id, words]) => { if (words.some((w) => q.includes(w))) out.occ = id; });
     const m = q.match(/under\s*\$?\s*(\d+)/) || q.match(/\$\s*(\d+)/);
     if (m) out.maxRate = Number(m[1]);
     return out;
   }
-  const STOP = /^(in|for|a|an|the|under|video|wedding|shoot|music|car|cars|with|my|to)$/;
+  const STOP = /^(in|for|a|an|the|under|video|wedding|shoot|music|car|cars|with|my|to|party|event|prom|grad)$/;
 
   // ---- Filter + sort + render ----
   function render() {
@@ -408,9 +413,11 @@ function pageHome() {
     const costFn = (COSTS.find(([id]) => id === state.cost) || [])[2];
     let items = all.filter((l) => {
       if (state.type && l.category !== state.type) return false;
+      if (state.occasion && !(l.occasions || []).includes(state.occasion)) return false;
       if (state.city && l.city !== state.city) return false;
       if (state.cost && costFn && !costFn(l.dailyRate)) return false;
       if (p.cat && l.category !== p.cat) return false;
+      if (p.occ && !(l.occasions || []).includes(p.occ)) return false;
       if (p.city && l.city !== p.city) return false;
       if (p.maxRate && l.dailyRate > p.maxRate) return false;
       if (state.q) {
@@ -427,8 +434,6 @@ function pageHome() {
       switch (state.sort) {
         case "rate-asc": return a.dailyRate - b.dailyRate;
         case "rate-desc": return b.dailyRate - a.dailyRate;
-        case "price-asc": return (a.price || 0) - (b.price || 0);
-        case "price-desc": return (b.price || 0) - (a.price || 0);
         case "az": return titleOf(a).localeCompare(titleOf(b));
         default: return featuredRank(a) - featuredRank(b) || a.dailyRate - b.dailyRate;
       }
@@ -441,7 +446,7 @@ function pageHome() {
     const more = $("#gallery-more");
     if (more) more.hidden = total <= shown;
     const ca = $("#clear-all");
-    if (ca) ca.hidden = !(state.type || state.city || state.cost || state.q);
+    if (ca) ca.hidden = !(state.type || state.occasion || state.city || state.cost || state.q);
   }
   $("#gallery-more").addEventListener("click", () => { shown += 24; render(); });
 
@@ -513,30 +518,6 @@ function pageList() {
   const form = $("#list-form");
   if (!form) return;
 
-  const saleBlock = $("#sale-fields");
-  const rentBlock = $("#rental-fields");
-  const intentInputs = $$('input[name="intent"]');
-
-  // Pre-select intent from URL (?intent=rental etc.)
-  const wanted = qs().get("intent");
-  if (wanted) {
-    const r = intentInputs.find((i) => i.value === wanted);
-    if (r) r.checked = true;
-  }
-
-  function syncIntent() {
-    const v = (intentInputs.find((i) => i.checked) || {}).value || "sale";
-    const showSale = v === "sale" || v === "both";
-    const showRent = v === "rental" || v === "both";
-    saleBlock.hidden = !showSale;
-    rentBlock.hidden = !showRent;
-    // required toggling
-    $("#price").required = showSale;
-    $("#dailyRate").required = showRent;
-  }
-  intentInputs.forEach((i) => i.addEventListener("change", syncIntent));
-  syncIntent();
-
   // VIN decode via NHTSA vPIC (free, no key, CORS-enabled)
   let decodedVehicle = null;
   const vinBtn = $("#vin-decode");
@@ -574,7 +555,9 @@ function pageList() {
     e.preventDefault();
     const f = Object.fromEntries(new FormData(form));
     const listing = Store.addListing({
-      intent: f.intent,
+      intent: "rental",
+      shootReady: true,
+      occasions: f.occasions ? [].concat(f.occasions) : [],
       vin: f.vin || null,
       decodedVehicle: decodedVehicle || null,
       make: f.make, model: f.model, year: Number(f.year),
@@ -582,12 +565,8 @@ function pageList() {
       city: f.city, condition: f.condition,
       description: f.description,
       name: f.name, email: f.email, phone: f.phone,
-      // sale
-      price: f.price ? Number(f.price) : null,
-      // rental
       dailyRate: f.dailyRate ? Number(f.dailyRate) : null,
       weeklyRate: f.weeklyRate ? Number(f.weeklyRate) : null,
-      monthlyRate: f.monthlyRate ? Number(f.monthlyRate) : null,
       deposit: f.deposit ? Number(f.deposit) : null,
       minAge: f.minAge ? Number(f.minAge) : null,
       availFrom: f.availFrom || null,
@@ -597,9 +576,9 @@ function pageList() {
     $("#list-wrap").innerHTML = `
       <div class="success-card">
         <div class="success-icon">✓</div>
-        <h1>Your listing is live!</h1>
-        <p class="lead">${titleOf(listing)} — ${intentBadge(listing.intent)}</p>
-        <p>Next, crosspost it to other channels and manage every inquiry from your dashboard.</p>
+        <h1>Your car is listed!</h1>
+        <p class="lead">${titleOf(listing)} — <span class="badge badge-rent">For shoots</span></p>
+        <p>Creators can now find and book it. Manage every booking request from your dashboard.</p>
         <div class="hero-actions center">
           <a class="btn btn-primary" href="listing.html?id=${listing.id}">View your listing</a>
           <a class="btn btn-outline" href="dashboard.html">Go to dashboard</a>

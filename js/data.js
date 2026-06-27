@@ -58,12 +58,6 @@ const PILLARS = [
     keywords: ["should I sell or rent my car", "how much is my car worth canada", "sell vs trade in canada"],
   },
   {
-    id: "channel", phase: "Channel phase",
-    title: "Where should I list my car?",
-    blurb: "You've decided to act and you're comparing platforms. Here's the honest rundown.",
-    keywords: ["best place to list your car for sale", "where to list your car for sale", "list your car for free"],
-  },
-  {
     id: "rental", phase: "Rental phase",
     title: "How do I rent out my car?",
     blurb: "Wide open in Canada. Insurance, tax, platforms, and earnings — all in one place.",
@@ -124,49 +118,6 @@ const ARTICLES = [
       { h: "Step 4 — Factor in your local market and season", p: "Geography matters in Canada. AWD vehicles, trucks, and SUVs command a premium in Calgary, Edmonton, and Winnipeg heading into winter. Fuel-efficient compacts and hybrids move faster and hold value better in dense, congested markets like Toronto and Vancouver. Convertibles and sporty cars peak in spring and early summer. The same car can be worth several hundred dollars more or less depending on where and when you list it." },
       { h: "Step 5 — Sanity-check against trade-in and instant-offer numbers", p: "Get a dealer trade-in quote and an instant cash-offer estimate online. These come in low — they're wholesale — but they set your floor. Your private-sale target should sit comfortably above the trade-in number; the gap is what you're being paid for the effort of selling privately. If the gap is small, selling privately may not be worth the hassle, which is itself useful information." },
       { h: "Putting it together", p: "Take your comparables median, shade it down 5–10% for realism, adjust up or down for your car's condition and local demand, and confirm it sits above your trade-in floor. That's your fair-market private-sale value. From there you can decide whether to sell, and our pricing guide covers exactly how to set an asking price with the right negotiation room." },
-    ],
-  },
-
-  /* ====================== Pillar 2 — Channel ====================== */
-  { slug: "best-places-to-list-your-car-for-sale-canada", pillar: "channel", readMins: 9,
-    title: "Best places to list your car for sale in Canada (2025)",
-    meta: "An honest, ranked comparison of where to list your car for sale in Canada — AutoTrader, Kijiji, Facebook Marketplace, Craigslist, and listyourcar.ca.",
-    keywords: ["best place to list your car for sale", "where to list your car for sale", "places to list your car for sale", "best places to list your car for sale"],
-    sections: [
-      { h: null, p: "There's no single best place to list your car for sale in Canada — the right answer is almost always \"more than one.\" Each platform reaches a different slice of buyers, and the sellers who get fast, fair offers are usually the ones posting in two or three places at once. Here's how the major Canadian options actually stack up in 2025, and how to manage them without losing your mind." },
-      { h: "AutoTrader.ca — the widest reach, for a fee", p: "AutoTrader has the largest pool of serious, ready-to-buy shoppers and the best search and pricing tools in the country. Its buyers tend to be further along in the process and less likely to lowball. The trade-offs: private listings are paid, and you're competing against thousands of dealer ads. AutoTrader makes the most sense for higher-value, in-demand vehicles where the extra reach clearly justifies the listing fee." },
-      { h: "Kijiji Autos — high volume, free, intensely local", p: "Kijiji is still where a huge share of Canadian private sales happen. Basic listings are free, the local audience is enormous, and buyers expect to deal directly with owners. The downside is noise: more tire-kickers, more lowball offers, and the occasional scam attempt. Strong photos, a fair price, and a clear, detailed description do most of the work of filtering serious buyers from time-wasters." },
-      { h: "Facebook Marketplace — fast, social, and free", p: "Marketplace is quick to post, completely free, and comes with built-in messaging plus buyer profiles that add a small layer of accountability you don't get on classifieds. It's excellent for common vehicles and quick local sales. It's weaker for rare, collectible, or high-value cars, where serious buyers still gravitate to AutoTrader. Watch for the usual Marketplace scams — \"is this still available\" bots and overpayment offers." },
-      { h: "Craigslist — simple, free, fading but useful", p: "Craigslist still moves cars in some Canadian regions, especially for budget vehicles and project cars. It's free and dead simple, but the audience has thinned as Facebook and Kijiji took over, and it attracts more scams per inquiry. Treat it as a supplementary channel rather than your primary one." },
-      { h: "CarGurus — deal-rating shoppers", p: "CarGurus appeals to data-driven buyers who like its deal-rating system that labels listings as good, fair, or overpriced. If your car is competitively priced, that badge can build instant trust. It's more dealer-oriented than the classifieds but worth considering for the right vehicle." },
-      { h: "listyourcar.ca — one listing, every channel, one inbox", p: "The real pain isn't picking a platform — it's posting the same car four times by hand and then juggling messages across four inboxes. listyourcar.ca lets you build one listing and crosspost it to AutoTrader, Kijiji, Facebook, and Craigslist, then routes every reply back into a single dashboard. You can also list the same vehicle for rent at the same time, capturing demand a sale-only tool misses entirely." },
-      { h: "So where should you actually list?", p: "List on at least two channels. A practical default for most Canadians: post free on Kijiji and Facebook Marketplace for reach, add AutoTrader if your car is higher-value, and use listyourcar.ca to manage the crossposting and consolidate inquiries so you're not refreshing four apps. The goal is maximum qualified eyeballs with minimum administrative drag." },
-      { h: "The bottom line", p: "More exposure means faster sales and better offers, but only if you can keep up with the responses. Spread your listing across the channels that fit your car, respond quickly and politely, and use a single inbox to stay organized. That combination — broad reach, fast replies, one place to manage it — is what separates a two-week sale from a two-month one." },
-    ],
-  },
-  { slug: "list-your-car-for-free-canada", pillar: "channel", readMins: 6,
-    title: "Free places to list your car for sale in Canada",
-    meta: "Where to list your car for sale for free in Canada, plus how to make a no-cost listing actually perform.",
-    keywords: ["list your car for free", "free places to list your car", "list car for sale free canada"],
-    sections: [
-      { h: null, p: "You do not have to pay to sell your car privately in Canada. Several channels let you list at no cost, and a well-built free listing routinely outperforms a sloppy paid one. The trick is choosing the right free channels and using them properly." },
-      { h: "The best free channels", p: "Kijiji Autos offers free basic listings with a massive local audience. Facebook Marketplace is always free and adds built-in messaging plus buyer profiles. Craigslist is free in most regions and dead simple. And listyourcar.ca's free tier gives you a clean public listing page, shareable links, and a unified inbox for 30 days — handy as the hub you point buyers to from everywhere else." },
-      { h: "Where free has limits", p: "Free classifieds attract more lowball offers and the occasional scam, and your ad competes with thousands of others, so it can slide down the results within days. Paid placements (like AutoTrader private ads or featured upgrades) buy you reach and prominence. For most everyday vehicles, free is plenty; for higher-value or hard-to-move cars, a paid boost can pay for itself." },
-      { h: "How to make a free listing perform", p: "Free listings live or die on presentation. Shoot 10–15 clean photos in good daylight, price using real comparables, and write an honest, specific description that answers buyers' questions before they ask. Respond fast — the first owner to reply usually gets the sale. Refresh or repost periodically so your ad stays near the top." },
-      { h: "Combine free channels for maximum reach", p: "The smartest free strategy is to post on more than one platform at once and funnel everyone to a single point of contact. listyourcar.ca lets you create one listing, crosspost it to the free channels, and manage every reply in one inbox — so \"free\" doesn't have to mean \"disorganized.\"" },
-    ],
-  },
-  { slug: "how-to-list-your-car-on-autotrader", pillar: "channel", readMins: 6,
-    title: "How to list your car on AutoTrader (step by step)",
-    meta: "A step-by-step guide to listing your used car for sale on AutoTrader.ca as a private seller in Canada.",
-    keywords: ["how to list your car on autotrader", "autotrader private listing", "sell car on autotrader canada"],
-    sections: [
-      { h: null, p: "AutoTrader.ca reaches the largest pool of active car shoppers in Canada, which makes it a strong choice for higher-value or in-demand vehicles. Here's exactly how to get your private listing live and looking its best." },
-      { h: "Step 1 — Create a private seller account", p: "Go to autotrader.ca and start the \"Sell My Car\" flow, choosing the private seller option rather than dealer. You'll create an account and select a listing package. Note that private ads on AutoTrader are paid; packages vary by duration and prominence, so pick one that matches how quickly you need to sell." },
-      { h: "Step 2 — Enter your VIN to auto-fill the details", p: "AutoTrader decodes your VIN to pre-populate the year, make, model, and trim, which saves time and reduces errors. Double-check every field — VIN decoders occasionally mislabel trim or options — and correct anything that doesn't match your actual car." },
-      { h: "Step 3 — Add photos, mileage, and features", p: "Upload at least 8–12 clear photos covering all angles, the interior, the odometer, and any flaws. Enter accurate mileage and check off the features and options your car has. Complete, honest detail here is what earns serious inquiries and reduces back-and-forth later." },
-      { h: "Step 4 — Set a competitive price", p: "Use AutoTrader's built-in price analysis to see where your car sits against comparable listings. Pricing at or slightly below the market median gets you more attention and a faster sale; pricing high just to \"leave room\" often means your ad sits unseen. Build modest negotiation room into a number that's still competitive." },
-      { h: "Step 5 — Publish, then manage inquiries", p: "Review everything, pay for your package, and publish. Then respond to inquiries promptly and keep your records handy. If you're also listing elsewhere, a tool like listyourcar.ca can consolidate AutoTrader, Kijiji, and Facebook inquiries into one inbox so nothing slips through the cracks." },
     ],
   },
 
@@ -334,16 +285,6 @@ const ARTICLES = [
   },
 ];
 
-/* ---------- Crosspost channel matrix ---------- */
-const CHANNELS = [
-  { name: "AutoTrader.ca",        sale: true,  rental: false, note: "Largest buyer reach (paid)" },
-  { name: "Kijiji Autos",         sale: true,  rental: true,  note: "Free, high local volume" },
-  { name: "Facebook Marketplace", sale: true,  rental: true,  note: "Fast, social, local" },
-  { name: "Craigslist",           sale: true,  rental: true,  note: "Free, broad" },
-  { name: "CarGurus",             sale: true,  rental: false, note: "Deal-rating shoppers" },
-  { name: "listyourcar.ca/rent",  sale: false, rental: true,  note: "Canonical rental page" },
-  { name: "Turo",                 sale: false, rental: true,  note: "Export pack (guided manual post)" },
-];
 
 /* ---------- Editorial imagery (public domain, Wikimedia) ----------
    Vintage NARA / DOCUMERICA photographs of people and cars — the
@@ -366,7 +307,7 @@ const CATEGORIES = [
     id: "vintage", name: "Vintage & Classic", emoji: "🚗",
     tagline: "Pre-1975 character cars with patina and period charm.",
     use: "period pieces, weddings, editorial fashion, album covers",
-    rate: 220, sale: 55000,
+    rate: 220,
     images: [
       WM("Red 1959 Cadillac Series 62 Convertible.jpg"),
       WM("2009 05 31 Cadillac Coupe deVille.jpg"),
@@ -382,7 +323,7 @@ const CATEGORIES = [
     id: "luxury", name: "Luxury", emoji: "🚘",
     tagline: "Premium marques for high-gloss, aspirational frames.",
     use: "luxury brands, music videos, real-estate & lifestyle shoots",
-    rate: 340, sale: 90000,
+    rate: 340,
     images: [
       WM("2025 Bentley Continental GTC - 01.jpg"),
       WM("Moscow, Bentley Continental, Aug 2025 01.jpg"),
@@ -397,7 +338,7 @@ const CATEGORIES = [
     id: "muscle", name: "Muscle & American", emoji: "🏎️",
     tagline: "V8 muscle and chrome — loud, low and cinematic.",
     use: "action films, car culture, streetwear, hip-hop videos",
-    rate: 240, sale: 52000,
+    rate: 240,
     images: [
       WM("1969 Chevrolet Camaro.jpg"),
       WM("1969 Chevrolet Camaro SS 3.jpg"),
@@ -413,7 +354,7 @@ const CATEGORIES = [
     id: "exotic", name: "Exotic & Supercar", emoji: "🏎️",
     tagline: "Wedge-era icons and today's supercars for showstopper hero shots.",
     use: "luxury campaigns, music videos, supercar content, launches",
-    rate: 520, sale: 150000,
+    rate: 520,
     images: [
       WM("Ferrari 308 GTS 5312189.jpg"),
       WM("Lamborghini Countach LP500S IMG 4464.jpg"),
@@ -429,7 +370,7 @@ const CATEGORIES = [
     id: "military", name: "Military & Utility", emoji: "🛻",
     tagline: "Jeeps, trucks and hardware for grit and scale.",
     use: "war films, period drama, rugged brand shoots, documentaries",
-    rate: 280, sale: 38000,
+    rate: 280,
     images: [
       WM("Jeep Willys MB.jpg"),
       WM("M35.jpg"),
@@ -446,6 +387,39 @@ const CATEGORIES = [
 /* Deterministic catalogue generator: for every film metro × category,
    produce 5 shoot-ready listings (cycling the pool + photos). No RNG —
    stable across reloads. */
+/* ---------- Occasion collections — when & why you'd shoot with a car.
+   Each car is tagged with the occasions it suits; people-featuring
+   public-domain photography. ---------- */
+const OCC_BY_CAT = {
+  vintage:  ["weddings", "engagement", "prom", "events"],
+  luxury:   ["weddings", "events", "musicvideo", "prom"],
+  muscle:   ["musicvideo", "events", "prom"],
+  exotic:   ["musicvideo", "events"],
+  military: ["events", "musicvideo"],
+};
+const OCCASIONS = [
+  { id: "weddings",   name: "Weddings",        emoji: "💍", group: "occasion",
+    tagline: "The getaway car that steals the album.",
+    use: "wedding portraits, getaway cars, bridal-party photos",
+    image: WMw("Wedding with red car (Unsplash).jpg", 1000) },
+  { id: "engagement", name: "Engagement & Couples", emoji: "💕", group: "occasion",
+    tagline: "Two people, one unforgettable frame.",
+    use: "engagement, couples & anniversary shoots",
+    image: WMw("Young bride and groom in car (Unsplash).jpg", 1000) },
+  { id: "prom",       name: "Prom & Grad",     emoji: "🎓", group: "occasion",
+    tagline: "The grand entrance, on film.",
+    use: "prom, graduation and milestone portraits",
+    image: EDITORIAL.heroDrive },
+  { id: "events",     name: "Events & Parties", emoji: "🎉", group: "occasion",
+    tagline: "Arrivals and parties worth a photo.",
+    use: "galas, parties, brand activations, arrivals",
+    image: EDITORIAL.studebaker },
+  { id: "musicvideo", name: "Music Videos",    emoji: "🎬", group: "occasion",
+    tagline: "The hero car for your next video.",
+    use: "music videos, fashion films, brand spots",
+    image: EDITORIAL.ford1929 },
+];
+
 const CATALOGUE = (() => {
   const out = [];
   const sellers = ["Verified owner", "Studio collective", "Private collector", "Classic garage", "Local creator"];
@@ -459,10 +433,10 @@ const CATALOGUE = (() => {
         out.push({
           id: `cat-${cat.id}-${city}-${i + 1}`,
           category: cat.id,
-          intent: "both",
+          intent: "rental",
+          occasions: OCC_BY_CAT[cat.id] || [],
           make, model, year: baseYear,
           dailyRate,
-          price: cat.sale + i * 8000 + cityIdx * 2000,
           weeklyRate: dailyRate * 5,
           deposit: Math.round((dailyRate * 6) / 50) * 50,
           mileage: null,
@@ -486,4 +460,4 @@ const CATALOGUE = (() => {
 SEED_LISTINGS.push(...CATALOGUE);
 
 /* Expose globally for the prototype (no module bundler). */
-window.LYC_DATA = { CITIES, FILM_CITIES, SEED_LISTINGS, PILLARS, ARTICLES, CHANNELS, CAR_IMAGES, EDITORIAL, CATEGORIES };
+window.LYC_DATA = { CITIES, FILM_CITIES, SEED_LISTINGS, PILLARS, ARTICLES, CAR_IMAGES, EDITORIAL, CATEGORIES, OCCASIONS };
