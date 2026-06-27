@@ -38,6 +38,27 @@ function setSeo({ title, desc, canonical, image }) {
   }
 }
 
+/* ---------- Photographers ---------- */
+function phInitials(name) { return name.split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase(); }
+function phAvatar(p) {
+  const hue = [...p.id].reduce((a, c) => a + c.charCodeAt(0), 0) % 360;
+  return `<span class="ph-avatar" style="--h:${hue}">${phInitials(p.name)}</span>`;
+}
+function photographersIn(citySlug) { return (D.PHOTOGRAPHERS || []).filter((p) => p.city === citySlug); }
+function photographerCard(p) {
+  return `
+    <div class="ph-card">
+      ${phAvatar(p)}
+      <div class="ph-body">
+        <h3>${p.name}</h3>
+        <p class="ph-meta">${p.specialty} &middot; ${cityName(p.city)}</p>
+        <p class="ph-bio">${p.bio}</p>
+        <div class="ph-foot"><span class="ph-rate">${fmtPrice(p.rate)}<span class="per">/day</span></span>
+          <a class="link" href="index.html?city=${p.city}">Find a car in ${cityName(p.city)} →</a></div>
+      </div>
+    </div>`;
+}
+
 /* Resolve a real photo for a listing, or null to fall back to emoji */
 function carImage(l) {
   if (l.image) return l.image; // explicit override
@@ -295,6 +316,8 @@ function pageHome() {
     ["hi", "$400+", (r) => r > 400],
   ];
   const state = { q: "", type: "", occasion: "", city: "", cost: "", sort: "featured" };
+  // Pre-fill from URL (deep links from photographer cards, collections, etc.)
+  ["type", "occasion", "city", "q"].forEach((k) => { const v = qs().get(k); if (v) state[k] = v; });
   let shown = 24;
 
   // ---- Consolidated filter dropdowns ----
@@ -356,6 +379,7 @@ function pageHome() {
     "military jeep in Vancouver", "luxury car for a wedding", "exotic supercar in Montreal",
   ];
   const input = $("#ss-input"), ghost = $("#ss-ghost");
+  if (state.q) input.value = state.q;
   EXAMPLES.slice(0, 4).forEach((ex) => {
     const b = document.createElement("button");
     b.textContent = ex;
@@ -694,6 +718,7 @@ function pageListing() {
         ${rentPane}
       </aside>
     </div>
+    ${packagerHTML(l)}
     <dialog id="contact-dialog">
       <form method="dialog" id="contact-form">
         <h3>Contact about ${titleOf(l)}</h3>
@@ -765,6 +790,9 @@ function pageListing() {
     window.submitForm({ _subject: `Shoot request: ${titleOf(l)}`, kind: "shoot", listing: titleOf(l), date: f.date, shootType: f.shoot, tier: shootTier.label, est: shootTier.amt });
     e.target.innerHTML = `<div class="notice ok">Shoot request sent — <strong>${f.shoot}</strong> on ${f.date} (${shootTier.label}, est. ${fmtPrice(shootTier.amt)}). The owner will confirm. <a href="dashboard.html">View in dashboard →</a></div>`;
   });
+
+  // Car + photographer package builder
+  wirePackager(l);
 }
 
 /* ============================================================
@@ -943,6 +971,84 @@ function pageLocal() {
     return l.intent === "sale" || l.intent === "both";
   });
   renderInto("local-listings", items, `No ${isRent ? "rental" : "sale"} listings in ${city.name} yet — be the first!`);
+}
+
+/* ============================================================
+   PAGE: Photographers directory
+   ============================================================ */
+function pagePhotographers() {
+  const wrap = $("#photographers-wrap");
+  if (!wrap) return;
+  const phs = D.PHOTOGRAPHERS || [];
+  const cities = [...new Set(phs.map((p) => p.city))];
+  wrap.innerHTML = `
+    <span class="eyebrow">The shoot crew</span>
+    <h1>Featured photographers</h1>
+    <p class="lead narrow">Book a car and a pro from the same city as one package. Hand-picked shooters across Canada's biggest creative metros — automotive, weddings, fashion and music video.</p>
+    <div class="chipbar" id="ph-chips"><span class="chip-label">City</span></div>
+    <p class="results-count" id="ph-count"></p>
+    <div class="ph-grid" id="ph-grid"></div>`;
+  function render(sel) {
+    const list = sel ? phs.filter((p) => p.city === sel) : phs;
+    $("#ph-grid").innerHTML = list.map(photographerCard).join("");
+    $("#ph-count").textContent = `${list.length} photographer${list.length === 1 ? "" : "s"}`;
+    $$(".ph-chip").forEach((c) => c.classList.toggle("active", c.dataset.city === sel));
+  }
+  const chips = $("#ph-chips");
+  cities.forEach((cs) => {
+    const b = document.createElement("button");
+    b.className = "fchip ph-chip"; b.dataset.city = cs; b.textContent = cityName(cs);
+    b.addEventListener("click", () => render(b.classList.contains("active") ? "" : cs));
+    chips.appendChild(b);
+  });
+  render(qs().get("city") || "");
+}
+
+/* Package builder rendered on a listing detail page */
+function packagerHTML(l) {
+  const phs = photographersIn(l.city);
+  if (!phs.length) return "";
+  return `
+    <section class="packager">
+      <div class="section-head"><div><span class="eyebrow">Complete your shoot</span><h2>Add a photographer</h2></div></div>
+      <p class="muted">Book ${titleOf(l)} with a pro from ${cityName(l.city)} as one package — and save 10% on the photographer.</p>
+      <div class="ph-grid select">
+        ${phs.map((p) => `
+          <button type="button" class="ph-card selectable" data-ph="${p.id}" data-rate="${p.rate}" data-name="${p.name}">
+            ${phAvatar(p)}
+            <div class="ph-body"><h3>${p.name}</h3><p class="ph-meta">${p.specialty}</p><p class="ph-bio">${p.bio}</p>
+            <div class="ph-foot"><span class="ph-rate">${fmtPrice(p.rate)}<span class="per">/day</span></span></div></div>
+          </button>`).join("")}
+      </div>
+      <div class="package-summary" id="package-summary" hidden></div>
+    </section>`;
+}
+function wirePackager(l) {
+  const dayRate = l.dailyRate;
+  $$(".ph-card.selectable").forEach((b) => b.addEventListener("click", () => {
+    $$(".ph-card.selectable").forEach((x) => x.classList.remove("sel"));
+    b.classList.add("sel");
+    const phRate = Number(b.dataset.rate);
+    const phNet = Math.round(phRate * 0.9 / 5) * 5;
+    const total = dayRate + phNet;
+    const sum = $("#package-summary");
+    sum.hidden = false;
+    sum.innerHTML = `
+      <div class="pkg-line"><span>${titleOf(l)} — full day</span><span>${fmtPrice(dayRate)}</span></div>
+      <div class="pkg-line"><span>${b.dataset.name} <span class="muted small">· 10% bundle saving</span></span><span>${fmtPrice(phNet)}</span></div>
+      <div class="pkg-total"><span>Package total</span><span>${fmtPrice(total)}</span></div>
+      <form id="pkg-form"><label>Shoot date<input type="date" name="date" required></label>
+        <button class="btn btn-primary btn-block" type="submit">Request this package</button>
+        <p class="form-note muted">Inquiry-based — we coordinate the car owner and photographer for your date.</p></form>`;
+    $("#pkg-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const date = new FormData(e.target).get("date");
+      Store.addBooking({ listingId: l.id, listingTitle: titleOf(l), start: date, end: date, days: 1, dailyRate: dayRate, total, deposit: l.deposit || 0, photographer: b.dataset.name, package: true });
+      Store.addInquiry({ listingId: l.id, listingTitle: titleOf(l), channel: "listyourcar.ca", kind: "renter", name: "Creator", email: "", message: `Package request: ${titleOf(l)} + ${b.dataset.name} on ${date} (est. ${fmtPrice(total)})` });
+      window.submitForm({ _subject: `Package request: ${titleOf(l)} + ${b.dataset.name}`, kind: "package", car: titleOf(l), photographer: b.dataset.name, date, est: total });
+      e.target.parentNode.innerHTML = `<div class="notice ok">Package request sent — <strong>${titleOf(l)} + ${b.dataset.name}</strong> on ${date} (est. ${fmtPrice(total)}). We'll confirm the car and the photographer. <a href="dashboard.html">View in dashboard →</a></div>`;
+    });
+  }));
 }
 
 /* ============================================================
@@ -1159,6 +1265,7 @@ document.addEventListener("DOMContentLoaded", () => {
     article: pageArticle,
     local: pageLocal,
     category: pageCategory,
+    photographers: pagePhotographers,
     agreement: pageAgreement,
   }[page] || (() => {}))();
 });

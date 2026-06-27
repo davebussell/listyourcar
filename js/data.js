@@ -460,4 +460,30 @@ const CATALOGUE = (() => {
 SEED_LISTINGS.push(...CATALOGUE);
 
 /* Expose globally for the prototype (no module bundler). */
-window.LYC_DATA = { CITIES, FILM_CITIES, SEED_LISTINGS, PILLARS, ARTICLES, CAR_IMAGES, EDITORIAL, CATEGORIES, OCCASIONS };
+/* ---------- Featured photographers (per metro) ----------
+   Shoot pros you can bundle with any car as a package. Avatars are
+   rendered as initials (no external images). rate = per shoot day. */
+const PHOTOGRAPHERS = [
+  { id: "ph-to-1", name: "Maya Okonkwo",   city: "toronto",   specialty: "Automotive & editorial", rate: 1200, styles: ["musicvideo", "events"],
+    bio: "Shoots cars like characters — moody, cinematic, magazine-ready. 10+ years on car campaigns across the GTA." },
+  { id: "ph-to-2", name: "Daniel Reyes",   city: "toronto",   specialty: "Weddings & couples",      rate: 900,  styles: ["weddings", "engagement"],
+    bio: "Documentary-style wedding photographer who loves a great getaway car. Featured in Toronto Life weddings." },
+  { id: "ph-va-1", name: "Priya Sharma",   city: "vancouver", specialty: "Fashion & editorial",     rate: 1350, styles: ["musicvideo", "events"],
+    bio: "Editorial and lookbook specialist. West-coast light, clean lines, bold colour. Works with brands and labels." },
+  { id: "ph-va-2", name: "Liam Chen",      city: "vancouver", specialty: "Music video & motion",    rate: 1500, styles: ["musicvideo", "events"],
+    bio: "Director-DP hybrid for music videos and brand films. Hero-car visuals are his signature." },
+  { id: "ph-mo-1", name: "Camille Tremblay", city: "montreal", specialty: "Fashion & portraits",    rate: 1100, styles: ["engagement", "events", "musicvideo"],
+    bio: "Montréal fashion and portrait photographer. Bilingue. A warm, filmic eye for people and machines." },
+  { id: "ph-mo-2", name: "Étienne Lefebvre", city: "montreal", specialty: "Weddings & events",      rate: 850,  styles: ["weddings", "engagement", "events"],
+    bio: "Candid wedding and event coverage across Greater Montréal. Calm on set, beautiful in the album." },
+  { id: "ph-ca-1", name: "Sarah MacLeod",  city: "calgary",   specialty: "Automotive & lifestyle",  rate: 950,  styles: ["events", "musicvideo"],
+    bio: "Big-sky backdrops and clean automotive work. Calgary-based, mountains an hour away." },
+  { id: "ph-ot-1", name: "Noah Bélanger",  city: "ottawa",    specialty: "Portraits & prom",        rate: 700,  styles: ["prom", "engagement", "weddings"],
+    bio: "Portrait and milestone photographer — prom, grad and engagements with a polished, friendly style." },
+  { id: "ph-wi-1", name: "Grace Beaulieu", city: "winnipeg",  specialty: "Period & film looks",     rate: 800,  styles: ["weddings", "events", "musicvideo"],
+    bio: "Period-accurate styling in Winnipeg's heritage districts — perfect for a vintage car story." },
+  { id: "ph-ha-1", name: "Owen Murphy",    city: "halifax",   specialty: "Coastal & lifestyle",     rate: 750,  styles: ["weddings", "engagement", "events"],
+    bio: "Atlantic-coast light, relaxed sessions. Weddings, couples and brand shoots around Halifax." },
+];
+
+window.LYC_DATA = { CITIES, FILM_CITIES, SEED_LISTINGS, PILLARS, ARTICLES, CAR_IMAGES, EDITORIAL, CATEGORIES, OCCASIONS, PHOTOGRAPHERS };

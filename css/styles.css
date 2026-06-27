@@ -548,3 +548,26 @@ dialog::backdrop{background:rgba(0,0,0,.25);backdrop-filter:blur(3px);}
 .fdrop-menu button.sel{color:var(--signal-bright);font-weight:600;}
 .fdrop-menu button.sel::after{content:"✓";color:var(--signal);font-size:.85rem;}
 @media(max-width:680px){.gallery-toolbar{align-items:flex-start;}.toolbar-right{width:100%;justify-content:space-between;}}
+
+/* ── Photographers + car/photographer packages ────────────── */
+.ph-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:1.25rem;margin-top:1.25rem;}
+.ph-card{display:flex;gap:1rem;background:var(--ink2);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;text-align:left;color:inherit;}
+.ph-grid.select .ph-card.selectable{cursor:pointer;width:100%;font-family:inherit;transition:border-color .18s,box-shadow .18s,transform .18s var(--ease);}
+.ph-card.selectable:hover{border-color:var(--mist);transform:translateY(-2px);}
+.ph-card.selectable.sel{border-color:var(--signal);box-shadow:0 0 0 3px var(--signal-dim);}
+.ph-avatar{flex-shrink:0;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-weight:700;font-size:1.1rem;background:hsl(var(--h),46%,92%);color:hsl(var(--h),42%,32%);}
+.ph-body{min-width:0;}
+.ph-body h3{font-size:1.15rem;margin:0 0 .15rem;}
+.ph-meta{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.03em;color:var(--signal-bright);text-transform:uppercase;margin:0 0 .5rem;}
+.ph-bio{color:var(--mist2);font-size:.9rem;margin:0 0 .75rem;}
+.ph-foot{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.ph-rate{font-family:var(--f-display);font-weight:700;color:var(--bone);}
+.ph-rate .per{font-size:.8rem;font-weight:400;color:var(--mist2);}
+.ph-foot .link{font-family:var(--f-mono);font-size:.78rem;}
+
+.packager{margin-top:3rem;padding-top:2.5rem;border-top:1px solid var(--border);}
+.package-summary{max-width:460px;margin-top:1.5rem;background:var(--ink2);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;}
+.pkg-line{display:flex;justify-content:space-between;gap:1rem;padding:.4rem 0;color:var(--mist2);}
+.pkg-total{display:flex;justify-content:space-between;gap:1rem;padding:.75rem 0 .25rem;margin-top:.5rem;border-top:1px solid var(--border);font-family:var(--f-display);font-weight:700;font-size:1.2rem;color:var(--bone);}
+.package-summary form{margin-top:1rem;}
+@media(max-width:680px){.ph-card{flex-direction:column;}}

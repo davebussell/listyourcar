@@ -25,6 +25,7 @@ function navHTML() {
     <nav class="nav-links">
       <a href="/browse.html">Browse</a>
       <a href="/collections/" class="active">Collections</a>
+      <a href="/photographers.html">Photographers</a>
       <a href="/list.html">List Your Car</a>
       <a href="/guides.html">Guides</a>
       <a href="/pricing.html">Pricing</a>
