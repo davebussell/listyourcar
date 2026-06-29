@@ -571,3 +571,12 @@ dialog::backdrop{background:rgba(0,0,0,.25);backdrop-filter:blur(3px);}
 .pkg-total{display:flex;justify-content:space-between;gap:1rem;padding:.75rem 0 .25rem;margin-top:.5rem;border-top:1px solid var(--border);font-family:var(--f-display);font-weight:700;font-size:1.2rem;color:var(--bone);}
 .package-summary form{margin-top:1rem;}
 @media(max-width:680px){.ph-card{flex-direction:column;}}
+
+/* photographer verified badge, portfolio strip, package banner */
+.ph-verified{font-family:var(--f-mono);font-size:.6rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--signal-bright);border:1px solid rgba(229,9,20,.3);border-radius:999px;padding:.05rem .4rem;vertical-align:middle;white-space:nowrap;}
+.ph-shots{display:grid;grid-template-columns:repeat(3,1fr);gap:.3rem;margin:0 0 .85rem;}
+.ph-shot{display:block;height:56px;border-radius:8px;background:#ece9e2 center/cover no-repeat;filter:grayscale(.1);}
+.packager{scroll-margin-top:84px;}
+.pkg-banner{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-top:1.5rem;background:var(--signal-dim);border:1px solid rgba(229,9,20,.28);border-radius:999px;padding:.6rem 1.1rem;font-size:.9rem;color:var(--bone);}
+.pkg-banner .live-dot{margin:0;}
+.pkg-banner a{font-family:var(--f-mono);font-size:.78rem;margin-left:auto;}

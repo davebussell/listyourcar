@@ -45,16 +45,23 @@ function phAvatar(p) {
   return `<span class="ph-avatar" style="--h:${hue}">${phInitials(p.name)}</span>`;
 }
 function photographersIn(citySlug) { return (D.PHOTOGRAPHERS || []).filter((p) => p.city === citySlug); }
+function phPortfolio(p) {
+  const pool = (phPortfolio._pool || (phPortfolio._pool =
+    [].concat(...(D.CATEGORIES || []).map((c) => c.images), Object.values(D.EDITORIAL || {}))));
+  const start = [...p.id].reduce((a, c) => a + c.charCodeAt(0), 0);
+  return [0, 1, 2].map((k) => pool[(start + k * 7) % pool.length]);
+}
 function photographerCard(p) {
   return `
     <div class="ph-card">
       ${phAvatar(p)}
       <div class="ph-body">
-        <h3>${p.name}</h3>
+        <h3>${p.name} <span class="ph-verified" title="Verified pro">✓ Verified</span></h3>
         <p class="ph-meta">${p.specialty} &middot; ${cityName(p.city)}</p>
         <p class="ph-bio">${p.bio}</p>
+        <div class="ph-shots" aria-hidden="true">${phPortfolio(p).map((u) => `<span class="ph-shot" style="background-image:url('${u}')"></span>`).join("")}</div>
         <div class="ph-foot"><span class="ph-rate">${fmtPrice(p.rate)}<span class="per">/day</span></span>
-          <a class="link" href="index.html?city=${p.city}">Find a car in ${cityName(p.city)} →</a></div>
+          <a class="link" href="index.html?city=${p.city}&ph=${p.id}">Build a package →</a></div>
       </div>
     </div>`;
 }
@@ -292,6 +299,19 @@ function pageHome() {
   const CATS = D.CATEGORIES;
   const all = Store.allListings().filter((l) => l.shootReady);
 
+  // Photographer-first packaging: if ?ph= is present, we're building a
+  // package — banner the gallery and carry the photographer into car links.
+  const pkgPh = (D.PHOTOGRAPHERS || []).find((p) => p.id === qs().get("ph")) || null;
+  if (pkgPh) {
+    const host = document.querySelector(".home-hero .container");
+    if (host) {
+      const b = document.createElement("div");
+      b.className = "pkg-banner";
+      b.innerHTML = `<span class="live-dot"></span> Building a package with <strong>${pkgPh.name}</strong> — pick a car in ${cityName(pkgPh.city)}, then add ${pkgPh.name.split(" ")[0]} on the car's page. <a href="index.html">Clear</a>`;
+      host.appendChild(b);
+    }
+  }
+
   // Every word that actually appears in the catalogue — so we only
   // require text tokens that exist (descriptor words like "convertible"
   // or "classic" steer the category via parse() instead of forcing 0).
@@ -305,8 +325,8 @@ function pageHome() {
 
   // Front-of-house ordering for the "Featured" sort
   const featuredIds = [
-    "cat-exotic-toronto-1", "cat-vintage-vancouver-1", "cat-luxury-toronto-2",
-    "cat-muscle-toronto-1", "cat-military-toronto-1", "cat-exotic-toronto-2",
+    "car-exotic-1", "car-vintage-1", "car-luxury-2",
+    "car-muscle-1", "car-military-1", "car-exotic-2",
   ];
   const featuredRank = (l) => { const i = featuredIds.indexOf(l.id); return i === -1 ? 999 : i; };
 
@@ -465,6 +485,7 @@ function pageHome() {
 
     const total = items.length;
     renderInto("gallery", items.slice(0, shown), "No cars match — try clearing a filter.");
+    if (pkgPh) $$("#gallery .car-card").forEach((a) => { if (!a.href.includes("ph=")) a.href += "&ph=" + pkgPh.id; });
     const cnt = $("#gallery-count");
     if (cnt) cnt.innerHTML = `<b>${total}</b> car${total === 1 ? "" : "s"} available`;
     const more = $("#gallery-more");
@@ -793,6 +814,12 @@ function pageListing() {
 
   // Car + photographer package builder
   wirePackager(l);
+  // Arriving from a "build a package" link — pre-select that photographer
+  const wantPh = qs().get("ph");
+  if (wantPh) {
+    const btn = $(`.ph-card.selectable[data-ph="${wantPh}"]`);
+    if (btn) { btn.click(); setTimeout(() => $(".packager")?.scrollIntoView({ behavior: "smooth", block: "start" }), 200); }
+  }
 }
 
 /* ============================================================

@@ -52,33 +52,15 @@ const SEED_LISTINGS = [];
 /* ---------- Content pillars (SEO architecture) ---------- */
 const PILLARS = [
   {
-    id: "decide", phase: "Decision phase",
-    title: "Should I sell or rent my car?",
-    blurb: "Weighing your options. We give you the framework — the platform handles either path.",
-    keywords: ["should I sell or rent my car", "how much is my car worth canada", "sell vs trade in canada"],
-  },
-  {
-    id: "rental", phase: "Rental phase",
-    title: "How do I rent out my car?",
-    blurb: "Wide open in Canada. Insurance, tax, platforms, and earnings — all in one place.",
+    id: "rental", phase: "Earn with your car",
+    title: "Rent your car out for shoots",
+    blurb: "Turn a characterful car into income — insurance, earnings and how shoot rentals work.",
     keywords: ["how to list your car for rent", "list your car for rent", "rent my car out canada"],
   },
   {
-    id: "trust", phase: "Trust phase",
-    title: "Is this safe? Will I get scammed?",
-    blurb: "Real fears, real answers. Scam protection, bills of sale, and safe-sale checklists.",
-    keywords: ["bill of sale ontario car", "car sale scams canada", "sell car privately safely ontario"],
-  },
-  {
-    id: "price", phase: "Pricing phase",
-    title: "What should I ask for it?",
-    blurb: "Price with confidence so you don't underprice, overprice, or abandon the sale.",
-    keywords: ["how to price my car for private sale", "used car value canada", "best time to sell car canada"],
-  },
-  {
-    id: "craft", phase: "Listing craft phase",
-    title: "How do I write a good listing?",
-    blurb: "You're ready to list — let's make it convert. Descriptions, photos, and templates.",
+    id: "craft", phase: "Make it shine",
+    title: "Make your listing book",
+    blurb: "Photos and descriptions that get your car booked for shoots.",
     keywords: ["how to list your car for sale", "list your car for sale for free", "how to write a car listing"],
   },
 ];
@@ -89,37 +71,6 @@ const PILLARS = [
    tax, or insurance advice. */
 const ARTICLES = [
 
-  /* ====================== Pillar 1 — Decide ====================== */
-  { slug: "should-i-sell-or-rent-my-car", pillar: "decide", readMins: 9,
-    title: "Should I sell or rent my car? A Canadian owner's guide",
-    meta: "A clear framework for deciding whether to sell your car outright or rent it out for ongoing income in Canada, with the math and the trade-offs.",
-    keywords: ["should I sell or rent my car", "sell vs rent your car canada", "rent or sell my car"],
-    sections: [
-      { h: null, p: "Every owner with a vehicle they're not driving much hits the same fork in the road: sell it for a lump sum, or rent it out for recurring income? There's no universal right answer — it depends on your cash needs, what the car is worth, how reliable it is, and how much hands-on management you'll tolerate. This guide gives you a framework to decide the way a Canadian owner actually should, and shows why you may not have to choose at all." },
-      { h: "Start with one question: do you need the money now or over time?", p: "Selling converts your car into a single payment, usually within a few weeks. Renting trickles income in month after month but ties up the asset and your time. If you're buying a replacement vehicle, paying down high-interest debt, or moving and can't manage handoffs, the lump sum almost always wins. If the car is paid off, reliable, and would otherwise sit in the driveway, renting can quietly outperform a sale over a couple of years." },
-      { h: "When selling is the right call", p: "Sell if any of these are true: you need the cash quickly; the car is approaching a costly maintenance cliff (timing belt, major brakes, an aging transmission); you're carrying insurance and parking costs you'd rather drop; or you simply don't want the ongoing responsibility. A clean private sale is final — you hand over the keys, file the paperwork, and you're done. For higher-mileage or older vehicles, selling also caps your exposure: you're not on the hook if a renter discovers a problem mid-trip." },
-      { h: "When renting is the right call", p: "Rent if the car is dependable, fairly new, and frequently idle. A vehicle parked five days a week is a depreciating asset doing nothing. Renting it can turn that dead time into $500–$1,500 a month gross in a major Canadian city, depending on the vehicle. Renting also keeps your options open — you still own the car, can sell it later, and can stop any time. The trade-offs are real: you'll arrange specialized insurance, handle pickups and returns, clean between rentals, and absorb extra wear." },
-      { h: "The break-even math, simplified", p: "Here's a quick way to compare. Estimate your car's realistic private-sale value (see our guide on what your car is worth). Then estimate your monthly net rental income — gross rental minus the insurance increase, cleaning, added maintenance, and any platform fees. Divide the sale price by that monthly net. The result is roughly how many months of renting it takes to equal selling today. If that number is under about 24 months and you're confident you'll keep the calendar reasonably full, renting likely comes out ahead. If it's longer, or you doubt you'll rent it consistently, take the sale." },
-      { h: "Worked example", p: "Say your car would sell privately for $18,000. You think you can net $700/month renting it after expenses. $18,000 ÷ $700 ≈ 26 months to break even against selling. That's borderline — it only makes sense if you'll rent it steadily for well over two years and you value keeping the asset. Now imagine the same car nets $1,000/month: break-even drops to 18 months, and renting looks much stronger." },
-      { h: "Don't forget the hidden costs of each path", p: "Selling has costs too: your time creating the listing and meeting buyers, possible safety-certificate or inspection fees, and the opportunity cost of the car sitting unsold. Renting's hidden costs are mostly ongoing — the mental load of managing bookings, the risk of damage or a bad renter, and the tax reporting obligation on rental income. Be honest with yourself about whether you'll actually enjoy (or at least tolerate) being a micro-rental operator." },
-      { h: "You don't actually have to choose", p: "This is the part most owners miss. On listyourcar.ca you can list a vehicle as \"for sale, for rent, or both\" from a single listing. Choosing \"both\" puts your car in front of buyers and renters at the same time and lets the market tell you which demand is stronger. If a sale closes, your rental listing auto-delists; if you book a rental first, you keep earning while you wait for the right buyer. For owners genuinely on the fence, listing both ways is the lowest-risk way to decide." },
-      { h: "A simple decision checklist", p: "Choose SELL if: you need cash soon, the car is older or maintenance-heavy, or you don't want ongoing hassle. Choose RENT if: the car is newer and reliable, it's often idle, and you're comfortable managing bookings and insurance. Choose BOTH if: you're unsure, the car is in good shape, and you'd be happy with either outcome. Whatever you pick, you can start free on listyourcar.ca and change course later." },
-    ],
-  },
-  { slug: "how-much-is-my-car-worth-canada", pillar: "decide", readMins: 7,
-    title: "How much is my used car worth in Canada? (2025 guide)",
-    meta: "How to estimate your used car's private-sale value in Canada using live comparables, condition, history, and regional demand.",
-    keywords: ["how much is my car worth canada", "used car value canada", "what is my car worth"],
-    sections: [
-      { h: null, p: "Before you decide to sell or rent — and certainly before you set a price — you need a defensible number. Canadian used-car values move with region, season, trim, and condition, not just the year and mileage on the window sticker. Here's how to triangulate a realistic figure you can stand behind when a buyer pushes back." },
-      { h: "Step 1 — Pin down exactly what you have", p: "Value starts with specifics. Note the year, make, model, and — critically — the trim level, because a base model and a top trim of the same car can differ by thousands. Record the mileage, drivetrain (FWD/AWD/4x4), transmission, and standout options (sunroof, leather, tow package, winter tires on rims). The more precisely you describe your car, the more accurate your comparison set." },
-      { h: "Step 2 — Build a live comparables set", p: "The single best valuation tool is the market itself. Search the major Canadian marketplaces for your exact trim within roughly 20,000 km of your mileage, in your province. Pull together 8–10 active listings and note both the asking prices and how long each has been listed. Asking prices run optimistic, so expect real sale prices to land about 5–10% below the median ask. Listings that have sat for weeks tell you where the ceiling is; fresh, well-priced ones show you the moving market." },
-      { h: "Step 3 — Adjust for condition and history", p: "Condition can swing value by 15% or more. A clean CARFAX, complete service records, two sets of tires, and a no-accident history push you toward the top of your range. Cosmetic damage, mechanical needs, high mileage, aftermarket modifications, or a branded/rebuilt title pull you down — sometimes sharply. Be honest in your own assessment; buyers will discover the truth on the test drive and inspection, and an inflated price just wastes everyone's time." },
-      { h: "Step 4 — Factor in your local market and season", p: "Geography matters in Canada. AWD vehicles, trucks, and SUVs command a premium in Calgary, Edmonton, and Winnipeg heading into winter. Fuel-efficient compacts and hybrids move faster and hold value better in dense, congested markets like Toronto and Vancouver. Convertibles and sporty cars peak in spring and early summer. The same car can be worth several hundred dollars more or less depending on where and when you list it." },
-      { h: "Step 5 — Sanity-check against trade-in and instant-offer numbers", p: "Get a dealer trade-in quote and an instant cash-offer estimate online. These come in low — they're wholesale — but they set your floor. Your private-sale target should sit comfortably above the trade-in number; the gap is what you're being paid for the effort of selling privately. If the gap is small, selling privately may not be worth the hassle, which is itself useful information." },
-      { h: "Putting it together", p: "Take your comparables median, shade it down 5–10% for realism, adjust up or down for your car's condition and local demand, and confirm it sits above your trade-in floor. That's your fair-market private-sale value. From there you can decide whether to sell, and our pricing guide covers exactly how to set an asking price with the right negotiation room." },
-    ],
-  },
 
   /* ====================== Pillar 3 — Rental ====================== */
   { slug: "how-to-rent-out-your-car-canada", pillar: "rental", readMins: 11,
@@ -168,78 +119,7 @@ const ARTICLES = [
     ],
   },
 
-  /* ====================== Pillar 4 — Trust ====================== */
-  { slug: "private-car-sale-scams-canada", pillar: "trust", readMins: 8,
-    title: "Private car sale scams in Canada: how to protect yourself (2025)",
-    meta: "The most common private car sale scams in Canada targeting both buyers and sellers, with concrete steps to avoid each one.",
-    keywords: ["car sale scams canada", "private car sale scams", "used car scams canada"],
-    sections: [
-      { h: null, p: "The vast majority of private car sales in Canada go smoothly. But scammers actively target both sellers and buyers, and their tactics are predictable once you know them. Recognizing the common playbooks — and following a few firm rules — is most of the protection you need." },
-      { h: "Overpayment and fake-cheque scams (targets sellers)", p: "A \"buyer\" offers to pay more than your asking price, sends a cheque, money order, or e-transfer for the inflated amount, then asks you to refund the difference or forward money to a \"shipper.\" The original payment later bounces or is reversed, and your refund is gone. The rule: never refund an overpayment, and only release the car against fully cleared funds. Be especially wary of any buyer who hasn't seen the car but is eager to overpay." },
-      { h: "Curbstoning (targets buyers)", p: "Curbstoners are unlicensed dealers posing as private sellers to offload problem cars — often with hidden damage, rolled-back odometers, or branded titles disguised as clean. Warning signs: the same phone number attached to multiple listings, reluctance to meet at a home address, a name on the ownership that doesn't match the seller, or pressure to close fast. Always verify that the seller's name matches the registration, and run a vehicle history report." },
-      { h: "Test-drive theft and the 'my mechanic' trick (targets sellers)", p: "Some thieves use a test drive to steal the car or swap keys; others insist their mechanic must take the vehicle away alone for inspection. Protect yourself: photograph the buyer's driver's licence before any test drive, always ride along, meet in a public place during daylight, and never let the car leave with someone unaccompanied. A genuine buyer will happily bring a mechanic to you or meet at a shop with you present." },
-      { h: "Fake escrow and 'shipping' scams (targets both)", p: "Scammers invent fake escrow services or shipping companies, often with convincing websites, to intercept payment. If someone insists on a specific escrow site you didn't choose, or wants the car shipped and paid through an unfamiliar third party, treat it as fraud. Stick to in-person transactions for local private sales." },
-      { h: "Identity and 'verification code' scams", p: "A common newer scam: a supposed buyer asks to \"verify you're real\" by sending you a code, then uses it to hijack an account or set up fraud in your name. Never share verification codes sent to your phone, and be suspicious of any inquiry that immediately tries to move you off the platform and through hoops before discussing the actual car." },
-      { h: "Safe-payment rules that defeat most scams", p: "Cash counted and verified at a bank branch, a bank draft confirmed directly with the issuing bank (not just by appearance), or an in-person e-transfer you watch land in your account are the safest options. Avoid personal cheques, money orders from strangers, and any payment you can't confirm has truly settled. Complete the bill of sale and ownership transfer before the keys change hands." },
-      { h: "General habits that keep you safe", p: "Meet in public during the day, bring a friend, trust your instincts, and slow down — urgency is the scammer's favourite tool. For sellers, verify the buyer; for buyers, verify the car and the seller's identity, and get a pre-purchase inspection. Keep communication and records in one place. None of this is complicated, and together it shuts down nearly every scam in circulation." },
-    ],
-  },
-  { slug: "ontario-car-bill-of-sale", pillar: "trust", readMins: 6,
-    title: "Ontario car bill of sale: what you need and how to fill it out",
-    meta: "What an Ontario car bill of sale must include, how the UVIP works, and how to complete a private sale correctly.",
-    keywords: ["bill of sale ontario car", "ontario bill of sale", "uvip ontario"],
-    sections: [
-      { h: null, p: "In Ontario, a private used-vehicle sale runs through the Used Vehicle Information Package (UVIP), and the bill of sale is part of that process. Getting the paperwork right protects both parties and lets the buyer register the car without a hitch. Here's what you need and how to complete it." },
-      { h: "The UVIP is the central document", p: "Ontario law requires the seller of a used vehicle to provide the buyer with a Used Vehicle Information Package, which you purchase from ServiceOntario (online or in person). The UVIP includes the vehicle's description, registration history, any liens registered against it, and the wholesale/retail value used to calculate tax. It also contains the bill of sale section the buyer needs at registration." },
-      { h: "What the bill of sale must include", p: "A complete Ontario bill of sale records the date of sale, the purchase price, the vehicle's year, make, model, and VIN, and the full names, addresses, and signatures of both the seller and the buyer. Accuracy matters — the VIN and price especially — because the buyer relies on this document to transfer ownership and the Ministry uses the price to assess tax." },
-      { h: "Check for liens before money changes hands", p: "The UVIP shows whether there's a lien registered against the vehicle. A buyer should never pay for a car with an outstanding lien unless it's being cleared as part of the sale, because the lienholder can have a claim on the vehicle even after purchase. Sellers should resolve any lien before listing, or be transparent about how it will be discharged at closing." },
-      { h: "Completing the sale and transfer", p: "At the sale, the seller signs the transfer portion and the bill of sale, removes the licence plates (plates stay with the seller in Ontario), and hands over the UVIP and signed documents. The buyer then takes everything to ServiceOntario to register the vehicle, provide proof of insurance, and pay retail sales tax — calculated on the greater of the purchase price or the vehicle's wholesale value shown in the UVIP." },
-      { h: "Keep copies and stay safe", p: "Both parties should keep a signed copy of the bill of sale for their records. Combine correct paperwork with safe selling habits — verified payment, a public meeting place, and confirming the buyer's identity — and your Ontario private sale should close cleanly. This is general information, not legal advice; check current ServiceOntario requirements, which can change." },
-    ],
-  },
-  { slug: "sell-car-privately-safely-ontario", pillar: "trust", readMins: 7,
-    title: "How to safely sell your car privately in Ontario",
-    meta: "A safety-first checklist for selling your car privately in Ontario, from screening buyers to handing over the keys.",
-    keywords: ["sell car privately safely ontario", "private car sale checklist canada", "safe car sale ontario"],
-    sections: [
-      { h: null, p: "Selling privately in Ontario nets you more than a trade-in, but only if you handle the meeting, the money, and the paperwork safely. Use this checklist to protect yourself at every stage of the sale." },
-      { h: "Before you list", p: "Purchase your Used Vehicle Information Package (UVIP) from ServiceOntario, gather your service records, and resolve any outstanding lien. Decide your asking price and your walk-away number in advance. Take clear photos and write an honest description so the buyers who contact you are realistic about the car — this filters out a lot of wasted time before anyone shows up." },
-      { h: "Screening inquiries", p: "Do a quick phone or message screen before agreeing to meet. Serious buyers ask specific questions about the car; scammers and time-wasters tend to be vague, pushy about price before seeing it, or eager to move off-platform. Trust your instincts — you're under no obligation to meet anyone who feels off." },
-      { h: "At the meeting", p: "Meet in a public, well-lit place during daylight — many police stations offer safe-exchange zones. Bring a friend or family member. Before any test drive, photograph the buyer's driver's licence and always ride along; never hand over the keys to drive off alone. Keep your phone on you and your own valuables out of the car." },
-      { h: "Handling payment safely", p: "Accept only payment you can verify has truly cleared: cash counted at a bank, a bank draft confirmed directly with the issuing bank, or an in-person e-transfer you watch arrive. Decline personal cheques and any 'overpayment' arrangement. Don't release the vehicle or sign over ownership until the funds are confirmed in your account or hand." },
-      { h: "Closing the sale", p: "Complete the UVIP bill of sale with the date, price, VIN, and both parties' names, addresses, and signatures. Sign the transfer portion, remove your licence plates (they stay with you in Ontario), and give the buyer the UVIP and signed documents. Keep a copy for yourself." },
-      { h: "After the sale", p: "Notify your insurer that you've sold the vehicle and cancel or transfer coverage. Keep your copy of the bill of sale in case of any future questions about liability or tax. Following these steps turns a private sale from a nerve-wracking unknown into a routine, low-risk transaction. This is general guidance, not legal advice — confirm current ServiceOntario rules before you sell." },
-    ],
-  },
 
-  /* ====================== Pillar 5 — Price ====================== */
-  { slug: "how-to-price-used-car-private-sale-canada", pillar: "price", readMins: 8,
-    title: "How to price your used car for private sale in Canada",
-    meta: "A practical, repeatable method for pricing your used car for private sale in Canada so it sells fast without leaving money on the table.",
-    keywords: ["how to price my car for private sale", "used car value canada", "price used car canada"],
-    sections: [
-      { h: null, p: "Pricing is where private sellers most often go wrong. Price too high and your listing goes stale while buyers scroll past; price too low and you hand money to a stranger. Here's a repeatable method to land in the sweet spot — a number that sells reasonably fast and still respects your car's value." },
-      { h: "Step 1 — Build a comparable set", p: "Find 8–10 active listings of your exact trim within roughly 20,000 km of your mileage, in your province. Record each asking price and, just as importantly, how long it's been listed. Stale, high-priced ads mark the ceiling buyers are ignoring; fresh, competitively priced ones show you the real market. This live snapshot beats any single online \"value estimate.\"" },
-      { h: "Step 2 — Find your fair-market value", p: "Take the median of your comparables and shade it down 5–10%, because asking prices sit above actual sale prices. Then adjust for your car's specifics: a clean history, full service records, new tires or brakes, and desirable options nudge you up; high mileage, cosmetic damage, or mechanical needs pull you down. The result is your honest fair-market value." },
-      { h: "Step 3 — Set an asking price with negotiation room", p: "Most Canadian buyers expect to negotiate, so list about 5–8% above your true target to give yourself room to come down to it. If your fair value is $20,000, listing around $21,000–$21,500 lets you settle near $20,000 while the buyer feels they won a discount. Don't overshoot — too far above market and you get no inquiries to negotiate with in the first place." },
-      { h: "Step 4 — Price to how search works", p: "Buyers filter by round numbers, so price just under common thresholds: $19,900 captures everyone searching \"under $20,000,\" while $20,100 misses them entirely. Round, searchable numbers ($19,500, not $19,473) also read as more credible. Small choices here meaningfully affect how many people even see your ad." },
-      { h: "Step 5 — Justify your price in the listing", p: "A price lands better when you back it up. Spell out the value drivers: clean CARFAX, complete service history, recent maintenance, two sets of tires, single owner, non-smoker. When buyers understand why you're priced where you are, they're less likely to lowball and more likely to accept your number." },
-      { h: "Step 6 — Read the market response and adjust", p: "Your inquiries are data. Lots of messages and quick showings mean you're priced right — or even a touch low. Crickets for a week or two usually means you're priced too high for the market. Don't be stubborn: a modest, timely price drop re-surfaces your ad and signals seriousness far better than letting it rot for a month. Set your walk-away number in advance so you negotiate from confidence, not pressure." },
-      { h: "Pulling it together", p: "Comparables down 5–10% for realism, adjusted for condition, plus a small negotiation cushion, priced to a searchable threshold, and justified in the listing — that's a number that sells. Revisit it if the market goes quiet, and you'll avoid both the stale-listing trap and the leaving-money-behind trap." },
-    ],
-  },
-  { slug: "best-time-to-sell-a-used-car-canada", pillar: "price", readMins: 5,
-    title: "When is the best time to sell a used car privately in Canada?",
-    meta: "How seasonality affects used car prices in Canada and when to list your vehicle for the best result.",
-    keywords: ["best time to sell car canada", "when to sell used car", "best season to sell car"],
-    sections: [
-      { h: null, p: "Timing won't make or break a sale, but in Canada's seasonal market it can add a few hundred dollars and shave days off your listing. Here's when different vehicles sell best — and the stretches to avoid." },
-      { h: "Spring and early summer are the strongest window", p: "Demand peaks from roughly March through June. Tax refunds land, the weather lifts, and buyers shop ahead of road-trip season. Most vehicles sell faster and for a bit more during this window. Convertibles, sports cars, and motorcycles do especially well as the snow clears." },
-      { h: "Winter favours specific vehicles", p: "Heading into winter — late fall through the first snowfalls — AWD vehicles, trucks, and SUVs come into their own, particularly across the Prairies and in snowbelt regions. If you're selling one of these, listing as the temperature drops can work in your favour. Including a set of winter tires sweetens the deal and supports your price." },
-      { h: "Avoid the dead weeks", p: "Mid-December through early January is the slowest stretch of the year: buyers are distracted by the holidays and holding onto cash. Unless you need to sell immediately, list before the holidays or wait until the new year when shoppers return and resolutions (and refunds) kick in." },
-      { h: "Match timing to your situation", p: "Seasonality is a tailwind, not a rule. If you need the money now, the best time to sell is now — a fair price and a strong listing matter far more than the calendar. But if you can choose, align your timing with your vehicle type and avoid the December lull to get the most from your sale." },
-    ],
-  },
 
   /* ====================== Pillar 6 — Craft ====================== */
   { slug: "how-to-write-a-car-listing-that-sells", pillar: "craft", readMins: 7,
@@ -311,12 +191,14 @@ const CATEGORIES = [
     images: [
       WM("Red 1959 Cadillac Series 62 Convertible.jpg"),
       WM("2009 05 31 Cadillac Coupe deVille.jpg"),
+      WM("57 Chevy BelAir.jpg"),
+      WM("Buick Roadmaster -- 04-22-2010.jpg"),
+      WM("1963 Cadillac Series 62 Convertible (35566724566).jpg"),
     ],
     models: [
-      ["Cadillac", "Series 62", 1959], ["Chevrolet", "Bel Air", 1957],
-      ["Ford", "Mustang", 1965], ["Volkswagen", "Beetle", 1967],
-      ["Citroën", "DS", 1962], ["Cadillac", "Coupe DeVille", 1965],
-      ["Buick", "Roadmaster", 1953],
+      ["Cadillac", "Series 62", 1959], ["Cadillac", "Coupe DeVille", 1965],
+      ["Chevrolet", "Bel Air", 1957], ["Buick", "Roadmaster", 1953],
+      ["Cadillac", "Series 62 Convertible", 1963],
     ],
   },
   {
@@ -325,13 +207,16 @@ const CATEGORIES = [
     use: "luxury brands, music videos, real-estate & lifestyle shoots",
     rate: 340,
     images: [
-      WM("2025 Bentley Continental GTC - 01.jpg"),
+      WM("2019 Rolls-Royce Phantom V12 Automatic 6.75.jpg"),
+      WM("Bentley Continental GT First Edition (49919050697) (cropped) (cropped).jpg"),
+      WM("Mercedes-Benz W223 IMG 6663.jpg"),
+      WM("2018 Aston Martin DB11 V8 Automatic 4.0 Front.jpg"),
       WM("Moscow, Bentley Continental, Aug 2025 01.jpg"),
     ],
     models: [
-      ["Rolls-Royce", "Phantom", 2020], ["Bentley", "Continental GT", 2022],
-      ["Mercedes-Benz", "S-Class", 2021], ["Jaguar", "XJ", 2018],
-      ["Range Rover", "Autobiography", 2022], ["Aston Martin", "DB11", 2019],
+      ["Rolls-Royce", "Phantom", 2019], ["Bentley", "Continental GT", 2022],
+      ["Mercedes-Benz", "S-Class", 2021], ["Aston Martin", "DB11", 2019],
+      ["Bentley", "Flying Spur", 2021],
     ],
   },
   {
@@ -340,14 +225,16 @@ const CATEGORIES = [
     use: "action films, car culture, streetwear, hip-hop videos",
     rate: 240,
     images: [
-      WM("1969 Chevrolet Camaro.jpg"),
       WM("1969 Chevrolet Camaro SS 3.jpg"),
       WM("Ford Mustang 5312665.jpg"),
+      WM("Dodge Challenger SRT8 (2015) Hirschaid-20220709-RM-120221 (cropped).jpg"),
+      WM("2005 Pontiac GTO, front left, 10-28-2022.jpg"),
+      WM("Chevrolet Camaro RS 327 1968 (cropped).jpg"),
     ],
     models: [
       ["Chevrolet", "Camaro SS", 1969], ["Ford", "Mustang GT", 1968],
-      ["Dodge", "Charger", 1970], ["Pontiac", "GTO", 1967],
-      ["Plymouth", "Barracuda", 1971], ["Dodge", "Challenger", 1970],
+      ["Dodge", "Challenger", 2015], ["Pontiac", "GTO", 2005],
+      ["Chevrolet", "Camaro RS", 1968],
     ],
   },
   {
@@ -358,12 +245,12 @@ const CATEGORIES = [
     images: [
       WM("Ferrari 308 GTS 5312189.jpg"),
       WM("Lamborghini Countach LP500S IMG 4464.jpg"),
+      WM("Porsche 911 No 1000000, 70 Years Porsche Sports Car, Berlin (1X7A3888).jpg"),
       WM("Ferrari 308 5312150.jpg"),
     ],
     models: [
       ["Ferrari", "308 GTS", 1980], ["Lamborghini", "Countach", 1983],
-      ["Porsche", "911 Turbo", 1985], ["Ferrari", "Testarossa", 1987],
-      ["Lamborghini", "Huracán", 2020], ["McLaren", "570S", 2019],
+      ["Porsche", "911 Turbo", 1985], ["Ferrari", "308 GTB", 1982],
     ],
   },
   {
@@ -375,11 +262,11 @@ const CATEGORIES = [
       WM("Jeep Willys MB.jpg"),
       WM("M35.jpg"),
       WM("Willys M606 in Switzerland (2019).jpg"),
+      WM("2015 Land Rover Defender (L316 MY15) 90 3-door wagon (2015-10-24) 01.jpg"),
     ],
     models: [
       ["Willys", "MB Jeep", 1944], ["AM General", "M35 Cargo Truck", 1968],
-      ["Land Rover", "Defender", 1995], ["AM General", "Humvee", 1998],
-      ["Dodge", "WC Carryall", 1942], ["Jeep", "M606", 1965],
+      ["Jeep", "M606", 1965], ["Land Rover", "Defender 90", 2015],
     ],
   },
 ];
@@ -423,34 +310,32 @@ const OCCASIONS = [
 const CATALOGUE = (() => {
   const out = [];
   const sellers = ["Verified owner", "Studio collective", "Private collector", "Classic garage", "Local creator"];
+  let cursor = 0;
   CATEGORIES.forEach((cat) => {
-    FILM_CITIES.forEach((city) => {
-      for (let i = 0; i < 5; i++) {
-        const [make, model, baseYear] = cat.models[i % cat.models.length];
-        const img = cat.images[i % cat.images.length];
-        const cityIdx = FILM_CITIES.indexOf(city);
-        const dailyRate = cat.rate + i * 20 + cityIdx * 10;
-        out.push({
-          id: `cat-${cat.id}-${city}-${i + 1}`,
-          category: cat.id,
-          intent: "rental",
-          occasions: OCC_BY_CAT[cat.id] || [],
-          make, model, year: baseYear,
-          dailyRate,
-          weeklyRate: dailyRate * 5,
-          deposit: Math.round((dailyRate * 6) / 50) * 50,
-          mileage: null,
-          city,
-          condition: "excellent",
-          emoji: cat.emoji,
-          image: img,
-          minAge: 25,
-          shootReady: true,
-          description: `${baseYear} ${make} ${model} available as a ${cat.name.split(" ")[0].toLowerCase()} backdrop for photo & film shoots in ${(CITIES.find((c) => c.slug === city) || {}).name}. Ideal for ${cat.use}. Stationary or driving shots by arrangement; owner present on set.`,
-          seller: sellers[i % sellers.length],
-          created: "2026-06-20",
-        });
-      }
+    cat.models.forEach(([make, model, baseYear], i) => {
+      const city = FILM_CITIES[cursor % FILM_CITIES.length]; cursor++;
+      const cityNm = (CITIES.find((c) => c.slug === city) || {}).name || city;
+      const dailyRate = cat.rate + i * 25;
+      out.push({
+        id: `car-${cat.id}-${i + 1}`,
+        category: cat.id,
+        intent: "rental",
+        occasions: OCC_BY_CAT[cat.id] || [],
+        make, model, year: baseYear,
+        dailyRate,
+        weeklyRate: dailyRate * 5,
+        deposit: Math.round((dailyRate * 6) / 50) * 50,
+        mileage: null,
+        city,
+        condition: "excellent",
+        emoji: cat.emoji,
+        image: cat.images[i],
+        minAge: 25,
+        shootReady: true,
+        description: `${baseYear} ${make} ${model} available as a ${cat.name.split(" ")[0].toLowerCase()} backdrop for photo & film shoots in ${cityNm}. Ideal for ${cat.use}. Stationary or driving shots by arrangement; owner present on set.`,
+        seller: sellers[i % sellers.length],
+        created: "2026-06-20",
+      });
     });
   });
   return out;
