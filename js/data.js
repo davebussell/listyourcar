@@ -5,23 +5,24 @@
    ============================================================ */
 
 /* ---------- Cities (local landing-page targets) ----------
-   lat/lon power the OpenStreetMap location embed on listings. */
+   lat/lon power the OpenStreetMap location embed on listings and
+   the Shoot Planner's golden-hour engine; tz formats sun times. */
 const CITIES = [
-  { slug: "toronto",   name: "Toronto",   region: "GTA", province: "ON", lat: 43.6532, lon: -79.3832,
+  { slug: "toronto",   name: "Toronto",   region: "GTA", province: "ON", lat: 43.6532, lon: -79.3832, tz: "America/Toronto",
     note: "Highest private-sale volume in Canada. Ontario buyers must run a PPSA lien check before purchase." },
-  { slug: "ottawa",    name: "Ottawa",    region: "Ottawa", province: "ON", lat: 45.4215, lon: -75.6972,
+  { slug: "ottawa",    name: "Ottawa",    region: "Ottawa", province: "ON", lat: 45.4215, lon: -75.6972, tz: "America/Toronto",
     note: "Strong bilingual market — list in English and French to widen reach. Ontario PPSA lien check applies." },
-  { slug: "calgary",   name: "Calgary",   region: "Calgary", province: "AB", lat: 51.0447, lon: -114.0719,
+  { slug: "calgary",   name: "Calgary",   region: "Calgary", province: "AB", lat: 51.0447, lon: -114.0719, tz: "America/Edmonton",
     note: "No provincial sales tax on private sales in Alberta — a selling point worth noting in your listing." },
-  { slug: "vancouver", name: "Vancouver", region: "Metro Vancouver", province: "BC", lat: 49.2827, lon: -123.1207,
+  { slug: "vancouver", name: "Vancouver", region: "Metro Vancouver", province: "BC", lat: 49.2827, lon: -123.1207, tz: "America/Vancouver",
     note: "BC's Motor Dealer Act sets rules for private vs dealer sales. ICBC transfer required at sale." },
-  { slug: "edmonton",  name: "Edmonton",  region: "Edmonton", province: "AB", lat: 53.5461, lon: -113.4938,
+  { slug: "edmonton",  name: "Edmonton",  region: "Edmonton", province: "AB", lat: 53.5461, lon: -113.4938, tz: "America/Edmonton",
     note: "Alberta has no PST on private vehicle sales. Registry agent handles the transfer." },
-  { slug: "montreal",  name: "Montreal",  region: "Greater Montreal", province: "QC", lat: 45.5019, lon: -73.5674,
+  { slug: "montreal",  name: "Montreal",  region: "Greater Montreal", province: "QC", lat: 45.5019, lon: -73.5674, tz: "America/Toronto",
     note: "Quebec's biggest production hub — bilingual listings and Quebec's permit rules apply to street shoots." },
-  { slug: "winnipeg",  name: "Winnipeg",  region: "Winnipeg", province: "MB", lat: 49.8951, lon: -97.1384,
+  { slug: "winnipeg",  name: "Winnipeg",  region: "Winnipeg", province: "MB", lat: 49.8951, lon: -97.1384, tz: "America/Winnipeg",
     note: "A booming period-film location — its historic Exchange District doubles for many North American cities." },
-  { slug: "halifax",   name: "Halifax",   region: "Halifax", province: "NS", lat: 44.6488, lon: -63.5752,
+  { slug: "halifax",   name: "Halifax",   region: "Halifax", province: "NS", lat: 44.6488, lon: -63.5752, tz: "America/Halifax",
     note: "Atlantic Canada's production centre — coastal and heritage backdrops draw film and photo crews." },
 ];
 
@@ -307,6 +308,123 @@ const OCCASIONS = [
     image: EDITORIAL.ford1929 },
 ];
 
+/* ============================================================
+   SHOOT PLANNER — styles, shot lists, budget tiers
+   The planner is the site's single-player hook: it produces a
+   real call sheet (light windows, shots, cars, crew, budget)
+   before the user ever creates an account.
+   ============================================================ */
+
+/* Aesthetic profiles. `cats` ranks which collections carry the look;
+   `for` lists the occasions where the style is a natural fit
+   (used to sort "recommended" first — every style stays pickable). */
+const STYLES = [
+  { id: "timeless", name: "Timeless Romance", emoji: "🕊️",
+    desc: "Soft light, classic lines, film grain — the album that never dates.",
+    cats: ["vintage", "luxury"], for: ["weddings", "engagement"],
+    image: null /* filled below from CATEGORIES */ },
+  { id: "oldmoney", name: "Old Money", emoji: "🥂",
+    desc: "Quiet wealth — tailored, understated, expensive without trying.",
+    cats: ["luxury", "vintage"], for: ["weddings", "events", "engagement"],
+    image: null },
+  { id: "chrome", name: "Chrome & Attitude", emoji: "⚡",
+    desc: "V8 rumble, low sun, denim and leather. Loud on purpose.",
+    cats: ["muscle", "vintage"], for: ["prom", "musicvideo", "events"],
+    image: null },
+  { id: "neon", name: "Night Neon", emoji: "🌃",
+    desc: "Wet asphalt, city light, a hero car that owns the frame.",
+    cats: ["exotic", "luxury", "muscle"], for: ["musicvideo", "prom", "events"],
+    image: null },
+  { id: "grit", name: "Field & Grit", emoji: "🪖",
+    desc: "Utility, dust and documentary texture — workwear cinema.",
+    cats: ["military", "muscle"], for: ["musicvideo", "events"],
+    image: null },
+  { id: "directors", name: "Director's Cut", emoji: "🎬",
+    desc: "No single look — we mix collections and cut the best of everything.",
+    cats: ["exotic", "vintage", "luxury", "muscle", "military"],
+    for: ["musicvideo", "weddings", "engagement", "prom", "events"],
+    image: null },
+];
+
+/* Shot lists per occasion — the craft layer of the call sheet.
+   tag: golden (needs the light window) · detail · motion · portrait.
+   plus: true → part of the extended list unlocked on the Plus tier. */
+const SHOT_LISTS = {
+  weddings: [
+    { t: "The pull-away", d: "Getaway car leaving, shot from behind — ribbon and cans optional.", tag: "motion" },
+    { t: "Through the rear glass", d: "Couple in the back seat, framed through the rear window.", tag: "portrait" },
+    { t: "Rings on chrome", d: "Bands resting on the hood ornament or grille badge, macro.", tag: "detail" },
+    { t: "Veil in the wind", d: "Veil trailing from the open window at walking speed (closed lot).", tag: "motion" },
+    { t: "Doors-open portrait", d: "Both doors open, couple framed in the opening, sun low.", tag: "golden" },
+    { t: "The mirror kiss", d: "Kiss caught small and sharp in the driver's side mirror.", tag: "detail" },
+    { t: "Headlight backlight", d: "Sun behind the car, headlights on, couple silhouetted.", tag: "golden" },
+    { t: "Full party wide", d: "Wedding party arranged symmetrically along the car.", tag: "portrait" },
+    { t: "Rain-glass night shot", d: "Mist the glass, light the interior — quiet and cinematic.", tag: "detail", plus: true },
+    { t: "Overhead confetti", d: "High angle from a balcony or ladder, confetti over the roof.", tag: "motion", plus: true },
+  ],
+  engagement: [
+    { t: "Hood sit", d: "Both on the hood, feet on the bumper, city or field behind.", tag: "golden" },
+    { t: "Ring on the badge", d: "The ring against the marque badge — tell the make story.", tag: "detail" },
+    { t: "Drive-in", d: "Through the windshield, faces lit warm from the dash.", tag: "portrait" },
+    { t: "Walking away", d: "Couple walking from the car, vehicle anchoring the frame.", tag: "golden" },
+    { t: "Slow-roll laughter", d: "Low-speed follow, windows down, candid laughter.", tag: "motion" },
+    { t: "Framed by the door", d: "One seated, one leaning on the open door — classic cover shot.", tag: "portrait" },
+    { t: "Roofline silhouette", d: "Sunset over the roofline, two silhouettes just touching.", tag: "golden" },
+    { t: "Trunk picnic", d: "Blanket, thermos, tailgate or trunk lid down.", tag: "detail" },
+    { t: "Coordinates on the dash", d: "A vintage map with 'the spot' marked, shallow focus.", tag: "detail", plus: true },
+    { t: "Smoke-bomb pass", d: "One colour, upwind, let it drift across the tail lights.", tag: "motion", plus: true },
+  ],
+  prom: [
+    { t: "The arrival", d: "Door opens, one heel or loafer out first — shot low and wide.", tag: "motion" },
+    { t: "Squad line-up", d: "The whole crew along the body line, arms crossed, no smiles.", tag: "portrait" },
+    { t: "Corsage on the wheel", d: "Corsage or boutonnière resting on the steering wheel.", tag: "detail" },
+    { t: "Window lean", d: "Leaning out the window or through the sunroof, gold light.", tag: "golden" },
+    { t: "Paint reflections", d: "Faces mirrored in deep polished paint — get low.", tag: "detail" },
+    { t: "The formal", d: "Straight-on classic by the grille for the mantelpiece.", tag: "portrait" },
+    { t: "Golden-hour lean", d: "One subject, one fender, sun at 10 degrees.", tag: "golden" },
+    { t: "Keys handoff", d: "Parent to grad, keys mid-air, everyone laughing.", tag: "motion" },
+    { t: "Paparazzi flash", d: "Direct on-camera flash at dusk — tabloid energy.", tag: "portrait", plus: true },
+    { t: "Slow-shutter drive-by", d: "Panned drive-by at 1/30s, background streaking.", tag: "motion", plus: true },
+  ],
+  events: [
+    { t: "The step-out", d: "Door open, guest of honour emerging — shoot from a knee.", tag: "motion" },
+    { t: "Red-carpet door", d: "Attendant stance at the open rear door, symmetrical.", tag: "portrait" },
+    { t: "Hero wide", d: "Car and venue in one clean establishing frame.", tag: "golden" },
+    { t: "Detail pass", d: "Badge, wheels, stitching, switchgear — a set of four.", tag: "detail" },
+    { t: "Crowd candids", d: "Guests reacting to the car — the shots people share.", tag: "portrait" },
+    { t: "Golden-hour hero", d: "Three-quarter front at last light, lights on.", tag: "golden" },
+    { t: "On and around", d: "Group staged on and around the car (owner-approved).", tag: "portrait" },
+    { t: "Brand pairing", d: "Signage or product composed with the car's strongest line.", tag: "detail" },
+    { t: "Light-painting pass", d: "30-second exposure, one LED wand orbit.", tag: "detail", plus: true },
+    { t: "Gimbal walkthrough", d: "One continuous take: arrival → door → reveal.", tag: "motion", plus: true },
+  ],
+  musicvideo: [
+    { t: "Slow-roll follow", d: "Car-to-car follow at 20 km/h, artist framed in the rear seat.", tag: "motion" },
+    { t: "Hood pose wide", d: "Static wide, artist on the hood, symmetrical one-point frame.", tag: "portrait" },
+    { t: "Whip-pan pass-bys", d: "Three pass-bys, whip-panning with the car for the edit.", tag: "motion" },
+    { t: "Dash-lit interior", d: "Performance verse inside, faces lit by dash and street light.", tag: "portrait" },
+    { t: "Wet-asphalt reflection", d: "Hose the lot — double the car, double the neon.", tag: "golden" },
+    { t: "Headlight walk-in", d: "Artist walks into the beams, silhouette to reveal.", tag: "golden" },
+    { t: "Detail cuts", d: "Exhaust tick, badge, spinning wheel — cutaways for the edit.", tag: "detail" },
+    { t: "Locked-off wides", d: "Tripod wides at three locations for edit glue.", tag: "portrait" },
+    { t: "Orbit move", d: "Gimbal or FPV orbit while the car idles, hazards off.", tag: "motion", plus: true },
+    { t: "Smoke and backlight", d: "Hazer behind the car, one hard backlight, night.", tag: "golden", plus: true },
+  ],
+};
+
+/* Budget tiers — the plan prices itself from the matched car + pro. */
+const PLAN_TIERS = [
+  { id: "essential", name: "Essential", emoji: "○",
+    desc: "The car and the light. Bring your own shooter.",
+    parts: ["car-half"] },
+  { id: "signature", name: "Signature", emoji: "◐",
+    desc: "The car plus a verified local pro, bundled — save 10%.",
+    parts: ["car-full", "ph"] },
+  { id: "showstopper", name: "Showstopper", emoji: "●",
+    desc: "Full production: car, pro, styling & location allowance.",
+    parts: ["car-full", "ph", "extras"] },
+];
+
 const CATALOGUE = (() => {
   const out = [];
   const sellers = ["Verified owner", "Studio collective", "Private collector", "Classic garage", "Local creator"];
@@ -371,4 +489,15 @@ const PHOTOGRAPHERS = [
     bio: "Atlantic-coast light, relaxed sessions. Weddings, couples and brand shoots around Halifax." },
 ];
 
-window.LYC_DATA = { CITIES, FILM_CITIES, SEED_LISTINGS, PILLARS, ARTICLES, CAR_IMAGES, EDITORIAL, CATEGORIES, OCCASIONS, PHOTOGRAPHERS };
+/* Give each style a face from its lead collection (staggered image
+   indexes so no two styles share a photo). */
+(() => {
+  const byId = Object.fromEntries(CATEGORIES.map((c) => [c.id, c]));
+  const pick = { timeless: 0, oldmoney: 1, chrome: 0, neon: 1, grit: 0, directors: 2 };
+  STYLES.forEach((s) => {
+    const cat = byId[s.cats[0]];
+    if (cat) s.image = cat.images[pick[s.id] % cat.images.length];
+  });
+})();
+
+window.LYC_DATA = { CITIES, FILM_CITIES, SEED_LISTINGS, PILLARS, ARTICLES, CAR_IMAGES, EDITORIAL, CATEGORIES, OCCASIONS, PHOTOGRAPHERS, STYLES, SHOT_LISTS, PLAN_TIERS };

@@ -3,22 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Guide | listyourcar.ca</title>
-  <meta name="description" content="A guide for Canadian car owners from listyourcar.ca." />
+  <title>The Shoot Planner — plan a car photoshoot in 60 seconds | listyourcar.ca</title>
+  <meta name="description" content="Free shoot planner: pick the occasion, the look, your city and date — get a production call sheet with golden-hour times, a shot list, matched picture cars and photographers." />
+  <link rel="canonical" href="https://listyourcar.ca/plan.html" />
   <link rel="stylesheet" href="css/styles.css?v=7" />
 </head>
-<body data-page="article">
+<body data-page="plan">
   <header class="site-header">
     <div class="container nav">
       <div class="nav-brand"><a href="index.html" class="logo">List<span>Your</span>Car<span class="tld">.ca</span></a><span class="now-casting"><span class="live-dot"></span>Now casting</span></div>
       <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span><span></span></button>
       <nav class="nav-links">
-        <a href="plan.html">Plan a Shoot</a>
+        <a href="plan.html" class="active">Plan a Shoot</a>
         <a href="browse.html">Browse</a>
         <a href="/collections/">Collections</a>
         <a href="photographers.html">Photographers</a>
         <a href="list.html">List Your Car</a>
-        <a href="guides.html" class="active">Guides</a>
         <a href="pricing.html">Pricing</a>
         <a href="dashboard.html">Dashboard</a>
         <a href="list.html" class="btn btn-primary btn-sm">List a Car</a>
@@ -26,7 +26,14 @@
     </div>
   </header>
 
-  <main class="container section article-layout" id="article-wrap"></main>
+  <main class="container section plan-page">
+    <div class="plan-intro no-print">
+      <span class="eyebrow">The shoot planner · free</span>
+      <h1>Four taps to a call sheet<span class="blink-dot">.</span></h1>
+      <p class="lead narrow">Occasion, look, city, budget — we build the production plan: golden-hour windows, a real shot list, matched picture cars and a verified photographer.</p>
+    </div>
+    <div id="plan-wrap"></div>
+  </main>
 
   <footer class="site-footer">
     <div class="container footer-bottom"><p class="muted">&copy; <span id="year"></span> listyourcar.ca — All rights reserved.</p></div>
@@ -36,5 +43,6 @@
   <script src="js/store.js?v=7"></script>
   <script src="js/config.js?v=7"></script>
   <script src="js/app.js?v=7"></script>
+  <script src="js/plan.js?v=7"></script>
 </body>
 </html>

@@ -23,6 +23,7 @@ function navHTML() {
     <div class="nav-brand"><a href="/index.html" class="logo">List<span>Your</span>Car<span class="tld">.ca</span></a><span class="now-casting"><span class="live-dot"></span>Now casting</span></div>
     <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span><span></span></button>
     <nav class="nav-links">
+      <a href="/plan.html">Plan a Shoot</a>
       <a href="/browse.html">Browse</a>
       <a href="/collections/" class="active">Collections</a>
       <a href="/photographers.html">Photographers</a>
@@ -36,7 +37,7 @@ function navHTML() {
 }
 function footHTML() {
   return `<footer class="site-footer"><div class="footer-bottom"><p>&copy; <span id="year"></span> listyourcar.ca — All rights reserved.</p></div></footer>
-  <script src="/js/data.js?v=6"></script><script src="/js/store.js?v=6"></script><script src="/js/config.js?v=6"></script><script src="/js/app.js?v=6"></script>`;
+  <script src="/js/data.js?v=7"></script><script src="/js/store.js?v=7"></script><script src="/js/config.js?v=7"></script><script src="/js/app.js?v=7"></script>`;
 }
 function page({ title, desc, canonical, image, body }) {
   return `<!DOCTYPE html><html lang="en"><head>
@@ -47,7 +48,7 @@ function page({ title, desc, canonical, image, body }) {
 <meta property="og:type" content="website" /><meta property="og:title" content="${esc(title)}" />
 <meta property="og:description" content="${esc(desc)}" /><meta property="og:image" content="${image}" />
 <meta property="og:url" content="${canonical}" /><meta name="twitter:card" content="summary_large_image" />
-<link rel="stylesheet" href="/css/styles.css?v=6" />
+<link rel="stylesheet" href="/css/styles.css?v=7" />
 </head><body data-page="collections-static">
 ${navHTML()}
 <main class="container section">${body}</main>
@@ -138,6 +139,8 @@ D.CATEGORIES.forEach((cat) => {
 });
 
 /* ---- Occasion collections (by the moment) ---- */
+/* Natural-language singular for CTA copy ("Plan your wedding shoot") */
+const OCC_SINGULAR = { weddings: "wedding", engagement: "engagement", prom: "prom", events: "event", musicvideo: "music video" };
 (D.OCCASIONS || []).forEach((occ) => {
   const variants = [{ city: null }].concat(D.FILM_CITIES.map((c) => ({ city: c })));
   variants.forEach(({ city }) => {
@@ -152,7 +155,8 @@ D.CATEGORIES.forEach((cat) => {
       <span class="eyebrow">${occ.emoji} ${esc(occ.name)}</span>
       <h1>Cars to rent for ${esc(occ.name.toLowerCase())} photos ${esc(where)}</h1>
       <p class="lead narrow">${esc(occ.tagline)} Perfect for ${esc(occ.use)}. ${cObj ? `Available now in ${esc(cObj.name)} — book by the hour or the day.` : "Stocked in every Canadian film metro."}</p>
-      <div class="hero-actions"><a class="btn btn-primary" href="/list.html">List your car for shoots</a>${cObj ? `<a class="btn btn-ghost" href="/collections/occasion/${occ.id}/">See all cities</a>` : ""}</div>
+      <div class="hero-actions"><a class="btn btn-primary" href="/plan.html?o=${occ.id}${city ? "&c=" + city : ""}">Plan your ${esc(OCC_SINGULAR[occ.id] || occ.name.toLowerCase())} shoot →</a><a class="btn btn-ghost" href="/list.html">List your car for shoots</a>${cObj ? `<a class="btn btn-ghost" href="/collections/occasion/${occ.id}/">See all cities</a>` : ""}</div>
+      <p class="muted small">The free planner builds your call sheet — golden-hour times${cObj ? ` for ${esc(cObj.name)}` : ""}, a shot list, matched cars and a photographer.</p>
       ${cObj ? `<div class="local-note"><strong>${esc(cObj.name)}:</strong> ${esc(cObj.note)}</div>` : ""}
       <div class="section-head" style="margin-top:2.5rem"><h2>${items.length} ${items.length === 1 ? "car" : "cars"} ${esc(where)}</h2></div>
       <div class="card-grid">${items.map(cardHTML).join("")}</div>

@@ -860,6 +860,29 @@ function pageDashboard() {
       ${statCard(fmtPrice(earnings), "Est. booking value")}`;
   }
 
+  // Saved shoot plans
+  const mp = $("#my-plans");
+  if (mp) {
+    const renderPlans = () => {
+      mp.innerHTML = Store.plans().length
+        ? Store.plans().map((p) => `
+          <div class="row-card">
+            <div class="thumb-sm">🎬</div>
+            <div class="grow">
+              <span class="plan-row-title">${p.title}</span>
+              <div class="muted small">${p.cityName} &middot; ${p.d} &middot; est. ${fmtPrice(p.total || 0)}</div>
+            </div>
+            <a class="btn btn-sm btn-primary" href="${p.url}">Open call sheet</a>
+            <button class="btn btn-sm btn-outline" data-del-plan="${p.id}">Delete</button>
+          </div>`).join("")
+        : `<p class="muted">No plans yet. <a href="plan.html">Plan a shoot in 60 seconds →</a></p>`;
+      $$("[data-del-plan]").forEach((b) => b.addEventListener("click", () => {
+        Store.deletePlan(b.dataset.delPlan); renderPlans();
+      }));
+    };
+    renderPlans();
+  }
+
   // My listings
   const ml = $("#my-listings");
   if (ml) {
@@ -1313,5 +1336,6 @@ document.addEventListener("DOMContentLoaded", () => {
     category: pageCategory,
     photographers: pagePhotographers,
     agreement: pageAgreement,
+    plan: () => window.pagePlan && window.pagePlan(),
   }[page] || (() => {}))();
 });

@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>List Your Car — Cars that belong on camera | listyourcar.ca</title>
-  <meta name="description" content="Search Canada's gallery of characterful cars for photo shoots, films and music videos — vintage, luxury, muscle, exotic and military. Filter by city, type and budget." />
-  <link rel="stylesheet" href="css/styles.css?v=6" />
+  <title>Plan a car photoshoot — free shoot planner &amp; car rentals | listyourcar.ca</title>
+  <meta name="description" content="Plan a photo shoot with a characterful car in 60 seconds: golden-hour times, a shot list, matched picture cars and photographers across Canada. Weddings, prom, engagement, events and music videos." />
+  <link rel="stylesheet" href="css/styles.css?v=7" />
 </head>
 <body data-page="home">
   <header class="site-header">
@@ -13,6 +13,7 @@
       <div class="nav-brand"><a href="index.html" class="logo">List<span>Your</span>Car<span class="tld">.ca</span></a><span class="now-casting"><span class="live-dot"></span>Now casting</span></div>
       <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span><span></span></button>
       <nav class="nav-links">
+        <a href="plan.html">Plan a Shoot</a>
         <a href="/collections/">Collections</a>
         <a href="photographers.html">Photographers</a>
         <a href="list.html">List Your Car</a>
@@ -25,13 +26,32 @@
     </div>
   </header>
 
-  <!-- HERO + SMART SEARCH -->
+  <!-- HERO — planner-led -->
   <section class="home-hero">
     <div class="container">
-      <span class="eyebrow">Canada's cars for hire · on camera</span>
-      <h1>Find a car that belongs on camera<span class="blink-dot">.</span></h1>
-      <p class="lead">Vintage, luxury, muscle, exotic and military cars across Canada — for photo shoots, films &amp; music videos. Search the lot.</p>
+      <span class="eyebrow">The shoot planner · Canada</span>
+      <h1>Plan a shoot people will talk about<span class="blink-dot">.</span></h1>
+      <p class="lead">Pick the moment — we build the call sheet: the car, the photographer, the golden-hour timing and the shot list. In about 60 seconds, free.</p>
 
+      <div class="plan-start" role="group" aria-label="Start planning by occasion">
+        <a class="ps-pill" href="plan.html?o=weddings">💍 Wedding</a>
+        <a class="ps-pill" href="plan.html?o=engagement">💕 Engagement</a>
+        <a class="ps-pill" href="plan.html?o=prom">🎓 Prom &amp; Grad</a>
+        <a class="ps-pill" href="plan.html?o=events">🎉 Event</a>
+        <a class="ps-pill" href="plan.html?o=musicvideo">🎬 Music Video</a>
+        <a class="ps-pill go" href="plan.html">Plan my shoot →</a>
+      </div>
+    </div>
+    <div class="contact-sheet" id="contact-sheet" aria-hidden="true"></div>
+  </section>
+
+  <!-- SORTABLE GALLERY + SMART SEARCH -->
+  <section class="gallery-wrap">
+    <div class="container">
+      <div class="gallery-lede">
+        <span class="eyebrow">Or browse the lot</span>
+        <h2>Cars that belong on camera</h2>
+      </div>
       <div class="smartsearch">
         <div class="ss-field">
           <span class="ss-rec" aria-hidden="true"></span>
@@ -41,13 +61,6 @@
         </div>
         <div class="ss-eg" id="ss-eg"><span class="muted">Try:</span></div>
       </div>
-    </div>
-    <div class="contact-sheet" id="contact-sheet" aria-hidden="true"></div>
-  </section>
-
-  <!-- SORTABLE GALLERY -->
-  <section class="gallery-wrap">
-    <div class="container">
       <div class="gallery-toolbar">
         <div class="filter-group" id="filters"></div>
         <div class="toolbar-right">
@@ -62,16 +75,14 @@
     </div>
   </section>
 
-  <!-- BY OCCASION -->
+  <!-- WHAT'S IN A CALL SHEET -->
   <section class="section section-alt">
     <div class="container">
-      <div class="section-head reveal"><div><span class="eyebrow">Shooting a moment?</span><h2>Find a car by occasion</h2></div><a href="/collections/" class="link">All collections →</a></div>
-      <div class="occ-strip reveal">
-        <a href="/collections/occasion/weddings/" class="occ-pill">💍 Weddings</a>
-        <a href="/collections/occasion/engagement/" class="occ-pill">💕 Engagement</a>
-        <a href="/collections/occasion/prom/" class="occ-pill">🎓 Prom &amp; Grad</a>
-        <a href="/collections/occasion/events/" class="occ-pill">🎉 Events &amp; Parties</a>
-        <a href="/collections/occasion/musicvideo/" class="occ-pill">🎬 Music Videos</a>
+      <div class="section-head reveal"><div><span class="eyebrow">What the planner builds</span><h2>A real call sheet, not a mood board.</h2></div><a href="plan.html" class="link">Try it →</a></div>
+      <div class="steps" data-stagger>
+        <div class="step"><div class="step-num">☀</div><h3>The light, computed</h3><p>Golden-hour and blue-hour windows for your exact date and city — down to the minute.</p></div>
+        <div class="step"><div class="step-num">✓</div><h3>A working shot list</h3><p>Ten shots crafted per occasion — the pull-away, the mirror kiss, the headlight silhouette.</p></div>
+        <div class="step"><div class="step-num">$</div><h3>Car + pro, priced</h3><p>Matched picture cars and a verified photographer, bundled with a real budget — save 10%.</p></div>
       </div>
     </div>
   </section>
@@ -94,11 +105,25 @@
   <!-- HOW IT WORKS -->
   <section class="section section-alt">
     <div class="container">
-      <div class="section-head reveal"><div><span class="eyebrow">How it works</span><h2>From scroll to shoot in three steps.</h2></div></div>
+      <div class="section-head reveal"><div><span class="eyebrow">How it works</span><h2>From idea to shoot in three steps.</h2></div></div>
       <div class="steps" data-stagger>
-        <div class="step"><div class="step-num">1</div><h3>Find the car</h3><p>Search or filter the lot by look, city and budget.</p></div>
-        <div class="step"><div class="step-num">2</div><h3>Add a photographer</h3><p>Pair a local, verified pro for a one-click package.</p></div>
-        <div class="step"><div class="step-num">3</div><h3>Book the shoot</h3><p>Request your date — we confirm the car and the crew.</p></div>
+        <div class="step"><div class="step-num">1</div><h3>Plan the shoot</h3><p>60 seconds in the planner — out comes your call sheet, free.</p></div>
+        <div class="step"><div class="step-num">2</div><h3>Book car + pro</h3><p>Your matched picture car and a verified photographer, one package.</p></div>
+        <div class="step"><div class="step-num">3</div><h3>Shoot the light</h3><p>Show up at golden hour, shot list in hand. We confirm the rest.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BY OCCASION (SEO strip) -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head reveal"><div><span class="eyebrow">Browse by moment</span><h2>Cars by occasion &amp; city</h2></div><a href="/collections/" class="link">All collections →</a></div>
+      <div class="occ-strip reveal">
+        <a href="/collections/occasion/weddings/" class="occ-pill">💍 Weddings</a>
+        <a href="/collections/occasion/engagement/" class="occ-pill">💕 Engagement</a>
+        <a href="/collections/occasion/prom/" class="occ-pill">🎓 Prom &amp; Grad</a>
+        <a href="/collections/occasion/events/" class="occ-pill">🎉 Events &amp; Parties</a>
+        <a href="/collections/occasion/musicvideo/" class="occ-pill">🎬 Music Videos</a>
       </div>
     </div>
   </section>
@@ -107,9 +132,9 @@
     <div class="footer-grid">
       <div>
         <a href="index.html" class="logo">List<span>Your</span>Car<span class="tld">.ca</span></a>
-        <p class="muted" style="margin-top:1rem;max-width:32ch">Canada's marketplace for characterful cars — hire them for shoots, or buy them outright.</p>
+        <p class="muted" style="margin-top:1rem;max-width:32ch">Plan the shoot, book the car and the pro — Canada's characterful cars, on camera.</p>
       </div>
-      <div><h4>Browse</h4><a href="/collections/">Collections</a>
+      <div><h4>Browse</h4><a href="plan.html">Plan a Shoot</a><a href="/collections/">Collections</a>
         <a href="photographers.html">Photographers</a><a href="browse.html">All cars</a><a href="list.html">List Your Car</a></div>
       <div><h4>Guides</h4><a href="guides.html">All guides</a><a href="article.html?slug=how-to-rent-out-your-car-canada">Rent out your car</a></div>
       <div><h4>Network</h4><a href="https://listyourspace.ca" target="_blank" rel="noopener">ListYourSpace ↗</a><a href="about.html">About</a><a href="contact.html">Contact</a></div>
@@ -117,9 +142,9 @@
     <div class="footer-bottom"><p>&copy; <span id="year"></span> listyourcar.ca — All rights reserved.</p></div>
   </footer>
 
-  <script src="js/data.js?v=6"></script>
-  <script src="js/store.js?v=6"></script>
-  <script src="js/config.js?v=6"></script>
-  <script src="js/app.js?v=6"></script>
+  <script src="js/data.js?v=7"></script>
+  <script src="js/store.js?v=7"></script>
+  <script src="js/config.js?v=7"></script>
+  <script src="js/app.js?v=7"></script>
 </body>
 </html>

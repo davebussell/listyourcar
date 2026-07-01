@@ -10,6 +10,8 @@ const Store = (() => {
     listings: "lyc_listings",
     inquiries: "lyc_inquiries",
     bookings: "lyc_bookings",
+    account: "lyc_account",
+    plans: "lyc_plans",
   };
 
   const read = (key) => {
@@ -92,6 +94,33 @@ const Store = (() => {
     return b;
   }
 
+  /* ---------- Account (freemium prototype) ----------
+     tier: "free" (1 saved plan) | "plus" (unlimited + extended shots). */
+  function account() {
+    try { return JSON.parse(localStorage.getItem(KEYS.account)) || null; }
+    catch { return null; }
+  }
+  function saveAccount(data) {
+    const acc = { tier: "free", created: new Date().toISOString(), ...(account() || {}), ...data };
+    localStorage.setItem(KEYS.account, JSON.stringify(acc));
+    return acc;
+  }
+  function isPlus() { return (account() || {}).tier === "plus"; }
+
+  /* ---------- Saved shoot plans ---------- */
+  function plans() { return read(KEYS.plans); }
+  function getPlan(id) { return plans().find((p) => p.id === id) || null; }
+  function addPlan(data) {
+    const list = read(KEYS.plans);
+    const p = { id: uid("plan"), created: new Date().toISOString(), ...data };
+    list.unshift(p);
+    write(KEYS.plans, list);
+    return p;
+  }
+  function deletePlan(id) {
+    write(KEYS.plans, read(KEYS.plans).filter((p) => p.id !== id));
+  }
+
   function resetAll() {
     Object.values(KEYS).forEach((k) => localStorage.removeItem(k));
   }
@@ -99,7 +128,10 @@ const Store = (() => {
   return {
     allListings, userListings, getListing, addListing, updateListing,
     inquiries, addInquiry, markInquiryRead,
-    bookings, addBooking, resetAll,
+    bookings, addBooking,
+    account, saveAccount, isPlus,
+    plans, getPlan, addPlan, deletePlan,
+    resetAll,
   };
 })();
 
