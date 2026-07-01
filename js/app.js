@@ -44,6 +44,14 @@ function phAvatar(p) {
   const hue = [...p.id].reduce((a, c) => a + c.charCodeAt(0), 0) % 360;
   return `<span class="ph-avatar" style="--h:${hue}">${phInitials(p.name)}</span>`;
 }
+function occasionChips(l) {
+  if (!l.occasions || !l.occasions.length) return "";
+  const chips = l.occasions.map((oid) => {
+    const o = (D.OCCASIONS || []).find((x) => x.id === oid);
+    return o ? `<a class="gf-chip" href="collections/occasion/${o.id}/">${o.emoji} ${o.name}</a>` : "";
+  }).join("");
+  return `<div class="good-for"><span class="gf-label">Great for</span>${chips}</div>`;
+}
 function photographersIn(citySlug) { return (D.PHOTOGRAPHERS || []).filter((p) => p.city === citySlug); }
 function phPortfolio(p) {
   const pool = (phPortfolio._pool || (phPortfolio._pool =
@@ -495,6 +503,16 @@ function pageHome() {
   }
   $("#gallery-more").addEventListener("click", () => { shown += 24; render(); });
 
+  // Hero contact sheet — a filmstrip of showstoppers for instant visual impact
+  const sheet = $("#contact-sheet");
+  if (sheet) {
+    const picks = featuredIds.map((id) => all.find((l) => l.id === id)).filter(Boolean);
+    while (picks.length < 6) { const l = all[picks.length]; if (!l) break; if (!picks.includes(l)) picks.push(l); }
+    sheet.innerHTML = picks.slice(0, 6).map((l) => carImage(l)
+      ? `<a class="cs-tile" href="listing.html?id=${l.id}" aria-label="${titleOf(l)}"><img src="${carImage(l)}" alt="${titleOf(l)}" loading="lazy" /><span class="cs-cap">${l.make}</span></a>`
+      : "").join("");
+  }
+
   render();
 }
 
@@ -721,6 +739,7 @@ function pageListing() {
         }<div class="badges">${l.shootReady ? '<span class="badge badge-rent">For shoots</span>' + (l.price ? '<span class="badge badge-sale">For sale</span>' : "") : intentBadge(l.intent)}</div></div>
         <h1>${titleOf(l)}</h1>
         <p class="meta-row">${l.mileage ? fmtKm(l.mileage) + " &middot; " : ""}${cityName(l.city)}${l.condition ? " &middot; " + l.condition + " condition" : ""}</p>
+        ${occasionChips(l)}
         <h2>Description</h2>
         <p>${l.description || "No description provided."}</p>
         <h2>Details</h2>
