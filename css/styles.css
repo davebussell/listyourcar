@@ -1,35 +1,37 @@
 /* ============================================================
-   listyourcar.ca — editorial design system (v3)
-   Dark, fashion-editorial aesthetic + motion language adapted
-   from the Campaign Automation build (signal-lime on ink, mono
-   labels, expo-out reveals, parallax, count-ups).
+   listyourcar.ca — design system (v8)
+   Matched to the listyourspace.ca register: modern minimalist,
+   German-studio. Warm paper ground, near-black ink, hairline
+   rules, ONE signal red used sparingly, Helvetica grotesque
+   stack, generous whitespace, numbered indices. No gradients,
+   no shadows, no rounded corners.
+   Courier Prime survives in one place only: the Shoot Planner's
+   call sheet, where it is diegetic (production paperwork).
    ============================================================ */
-
-/* Type: Space Grotesk (clean display) · Inter (body) ·
-   Courier Prime (the screenplay / call-sheet monospace used across
-   motion-picture technical paperwork — slates, camera reports, timecode) */
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Courier+Prime:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
 
 :root{
-  --ink:#fbfaf7;               /* page background — warm white */
-  --ink2:#ffffff;              /* cards / panels */
-  --slate:#f3f1ea;             /* subtle fills / inputs */
-  --bone:#1a1714;              /* primary text — near-black ink */
-  --signal:#e50914;            /* red-carpet / maple red */
-  --signal-bright:#cc0812;     /* accent red for small text on light */
+  --ink:#f4f3f0;               /* page background — warm paper */
+  --ink2:#f4f3f0;              /* cards / panels — same ground, hairline-ruled */
+  --slate:#ecebe6;             /* deeper panel / inputs */
+  --bone:#141412;              /* primary text — near-black ink */
+  --signal:#e10600;            /* the one accent */
+  --signal-bright:#e10600;
   --on-signal:#ffffff;         /* text/icon colour on red fills */
-  --signal-dim:rgba(229,9,20,.07);
-  --signal-glow:rgba(229,9,20,.22);
-  --mist:#9a978f;
-  --mist2:#56534d;
-  --border:#e7e3da;
-  --line:#e7e3da;
-  --radius:14px;
-  --max:1180px;
-  --ease:cubic-bezier(.16,1,.3,1);
-  --f-display:'Space Grotesk',sans-serif;
-  --f-body:'Inter',sans-serif;
-  --f-mono:'Courier Prime','Courier New',monospace;
+  --signal-dim:rgba(225,6,0,.06);
+  --signal-glow:rgba(225,6,0,.14);
+  --mist:#8f8d84;
+  --mist2:#66655f;
+  --border:#d8d6cf;
+  --line:#d8d6cf;
+  --radius:0;
+  --max:1440px;
+  --gutter:clamp(1.25rem,4vw,3.5rem);
+  --ease:cubic-bezier(.22,1,.36,1);
+  --f-display:"Neue Haas Grotesk Display Pro","Helvetica Now Display","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --f-body:"Neue Haas Grotesk Display Pro","Helvetica Now Display","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --f-mono:"Neue Haas Grotesk Display Pro","Helvetica Now Display","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --f-doc:'Courier Prime','Courier New',monospace; /* call-sheet paperwork only */
 }
 
 *,*::before,*::after{box-sizing:border-box;}
@@ -40,17 +42,17 @@ body{
   -webkit-font-smoothing:antialiased;overflow-x:hidden;
 }
 
-h1,h2,h3,h4{font-family:var(--f-display);line-height:1.1;margin:0 0 .5em;font-weight:700;letter-spacing:-.02em;}
-h1{font-size:clamp(2.4rem,6vw,4.5rem);}
-h2{font-size:clamp(1.8rem,3.5vw,2.6rem);}
-h3{font-size:1.25rem;}
+h1,h2,h3,h4{font-family:var(--f-display);line-height:1.06;margin:0 0 .5em;font-weight:500;letter-spacing:-.03em;}
+h1{font-size:clamp(2.6rem,6vw,5rem);}
+h2{font-size:clamp(1.9rem,4vw,3.1rem);}
+h3{font-size:1.2rem;letter-spacing:-.01em;}
 p{margin:0 0 1rem;}
 a{color:var(--signal-bright);text-decoration:none;}
 a:hover{text-decoration:none;}
 img{max-width:100%;display:block;}
 hr{border:none;border-top:1px solid var(--border);margin:1.5rem 0;}
 
-.container{width:100%;max-width:var(--max);margin:0 auto;padding:0 1.5rem;}
+.container{width:100%;max-width:var(--max);margin:0 auto;padding:0 var(--gutter);}
 .center{text-align:center;}
 .muted{color:var(--mist2);}
 .lead{font-size:1.2rem;color:var(--mist2);line-height:1.6;}
@@ -58,26 +60,40 @@ hr{border:none;border-top:1px solid var(--border);margin:1.5rem 0;}
 .small{font-size:.85rem;}
 .grow{flex:1;min-width:0;}
 
-/* Mono eyebrow / kicker */
+/* Uppercase micro-label with the red square marker (Space register) */
 .eyebrow,.kicker{
-  font-family:var(--f-mono);font-size:.72rem;letter-spacing:.18em;
-  text-transform:uppercase;color:var(--signal-bright);margin-bottom:1rem;display:block;
+  font-size:.6875rem;font-weight:500;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--mist2);margin-bottom:1.1rem;display:block;
+}
+.eyebrow::before,.kicker::before{
+  content:"";display:inline-block;width:.5em;height:.5em;
+  background:var(--signal);margin-right:.75em;vertical-align:6%;
 }
 
-/* ── Buttons ─────────────────────────────────────────────── */
+/* ── Buttons — Space register: rectangular, ink fill, red on hover ── */
 .btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
-  padding:.85rem 1.6rem;border-radius:999px;font-weight:600;font-size:.95rem;
-  font-family:var(--f-body);border:1.5px solid transparent;cursor:pointer;
-  transition:transform .2s var(--ease),background .2s,box-shadow .2s,color .2s,border-color .2s;
-  text-align:center;letter-spacing:.01em;
+  display:inline-flex;align-items:center;justify-content:center;gap:.6em;
+  padding:.9em 1.6em;border-radius:0;font-weight:500;font-size:.8125rem;
+  letter-spacing:.08em;text-transform:uppercase;
+  font-family:var(--f-body);border:1px solid var(--bone);cursor:pointer;
+  transition:background .25s var(--ease),color .25s var(--ease),border-color .25s var(--ease);
+  text-align:center;white-space:nowrap;
 }
-.btn-primary{background:var(--signal);color:var(--on-signal);box-shadow:0 0 0 0 var(--signal-glow);}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 28px 2px var(--signal-glow);}
-.btn-outline,.btn-ghost{background:transparent;color:var(--bone);border-color:rgba(26,23,20,.22);}
-.btn-outline:hover,.btn-ghost:hover{border-color:var(--signal);color:var(--signal);transform:translateY(-2px);}
-.btn-sm{padding:.5rem 1rem;font-size:.85rem;}
+.btn-primary{background:var(--bone);color:var(--ink);}
+.btn-primary:hover{background:var(--signal);border-color:var(--signal);color:#fff;}
+.btn-outline,.btn-ghost{background:transparent;color:var(--bone);border-color:var(--bone);}
+.btn-outline:hover,.btn-ghost:hover{background:var(--bone);color:var(--ink);}
+.btn-sm{padding:.6em 1.1em;font-size:.75rem;}
 .btn-block{display:flex;width:100%;margin-top:.5rem;}
+.btn:disabled{opacity:.4;}
+
+/* Text link — uppercase, underlined */
+.link{
+  font-size:.8125rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--bone);border-bottom:1px solid var(--bone);padding-bottom:.2em;
+  transition:color .2s,border-color .2s;
+}
+.link:hover{color:var(--signal);border-color:var(--signal);}
 
 /* ── Reveal / motion classes (from Campaign Automation) ──── */
 .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s var(--ease),transform .7s var(--ease);}
@@ -104,16 +120,10 @@ body{animation:fade-in-page .35s var(--ease);}
   .reveal,.reveal-left,.hero-word{opacity:1!important;transform:none!important;}
 }
 
-/* ── FILM IDENTITY ───────────────────────────────────────── */
-::selection{background:var(--signal);color:#fff;}
+/* ── FILM IDENTITY (kept: the one red, blinking; grain retired) ── */
+::selection{background:var(--bone);color:var(--ink);}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 @keyframes pulse-dot{0%,100%{box-shadow:0 0 0 0 var(--signal-glow)}50%{box-shadow:0 0 0 5px transparent}}
-
-/* 35mm grain over everything */
-body::after{
-  content:"";position:fixed;inset:0;z-index:9000;pointer-events:none;opacity:.035;mix-blend-mode:multiply;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
 
 .logo{display:inline-flex;align-items:center;}
 
@@ -149,21 +159,22 @@ body::after{
 /* ── Header / Nav ────────────────────────────────────────── */
 .site-header{
   position:fixed;top:0;left:0;right:0;z-index:100;
-  background:rgba(251,250,247,.72);backdrop-filter:blur(16px);
-  border-bottom:1px solid transparent;transition:background .3s,border-color .3s,box-shadow .3s;
+  background:rgba(244,243,240,.92);backdrop-filter:blur(8px);
+  border-bottom:1px solid transparent;transition:border-color .3s;
 }
-.site-header.scrolled{background:rgba(251,250,247,.95);border-bottom-color:rgba(229,9,20,.16);box-shadow:0 1px 40px rgba(0,0,0,.10);}
-.nav{display:flex;align-items:center;justify-content:space-between;height:68px;}
-.logo{font-family:var(--f-display);font-weight:700;font-size:1.15rem;color:var(--bone);letter-spacing:-.01em;}
+.site-header.scrolled{border-bottom-color:var(--line);}
+.nav{display:flex;align-items:center;justify-content:space-between;height:4.5rem;}
+.logo{font-family:var(--f-display);font-weight:600;font-size:1rem;color:var(--bone);letter-spacing:-.02em;}
 .logo span{color:var(--signal);}
-.logo .tld{color:var(--mist);font-weight:400;}
+.logo .tld{color:var(--mist2);font-weight:400;}
 .logo:hover{opacity:.85;}
-.nav-links{display:flex;align-items:center;gap:1.4rem;}
-.nav-links a{color:var(--mist2);font-family:var(--f-mono);font-size:.74rem;font-weight:400;letter-spacing:.1em;text-transform:uppercase;transition:color .2s;}
+.nav-links{display:flex;align-items:center;gap:1.6rem;}
+.nav-links a{color:var(--mist2);font-size:.75rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;transition:color .2s;}
 .nav-links a:hover,.nav-links a.active{color:var(--bone);}
-.nav-links a.btn-primary{color:var(--on-signal);}
-.nav-links a.spaces-link{color:var(--bone);border:1px solid var(--border);padding:.35rem .75rem;border-radius:999px;font-size:.82rem;}
-.nav-links a.spaces-link:hover{border-color:var(--signal);color:var(--signal);}
+.nav-links a.btn-primary{color:var(--ink);}
+.nav-links a.btn-primary:hover{color:#fff;}
+.nav-links a.spaces-link{color:var(--bone);border:1px solid var(--line);padding:.4rem .8rem;}
+.nav-links a.spaces-link:hover{background:var(--bone);color:var(--ink);}
 .inbox-link{position:relative;}
 .inbox-badge{display:inline-block;min-width:18px;height:18px;line-height:18px;padding:0 5px;font-size:.7rem;font-weight:700;color:var(--on-signal);background:var(--signal);border-radius:9px;text-align:center;}
 .nav-toggle{display:none;background:none;border:none;cursor:pointer;padding:.5rem;}
@@ -740,4 +751,155 @@ dialog::backdrop{background:rgba(0,0,0,.25);backdrop-filter:blur(3px);}
   .pw{padding:1.25rem;}
   .sheet{padding:1.4rem 1.1rem .75rem;}
   .sun-tick em{font-size:.54rem;}
+}
+
+/* ============================================================
+   SPACE REGISTER RESKIN (v8) — flat geometry override layer
+   Matches listyourspace.ca: hairline rules on the shared paper
+   ground; no rounded corners, no shadows, no gradients. Rules
+   below intentionally override earlier decoration.
+   ============================================================ */
+
+/* Square everything (hardcoded radii from the previous system) */
+.btn,.fchip,.fdrop-btn,.fdrop-menu,.fdrop-menu button,.occ-pill,.ps-pill,.gf-chip,
+.ss-eg button,.smartsearch .ss-field,.pw,.pw-opt,.pw-city,.pw-num,.sheet,.sheet-car,
+.sheet-ph,.light-cell,.shot-locked,.shot-tag,.lyc-modal,.car-card,.cs-tile,.cs-cap,
+.collection-card,.collection-thumb,.ph-card,.ph-shot,.ph-avatar,.ph-verified,.plan,
+.price-card,.pkg-teaser,.pkg-teaser-art,.package-summary,.badge,.chip,.row-card,.stat,
+.form-card,.comp-card,.intent-card,.intent-radio,.step,.pkg-banner,.local-note,
+.search-bar,.search-bar input,.search-bar select,.thumb-sm,.notice,.success-card,
+.sun-track,.sun-seg,.map-embed,.map-embed iframe,.pw-rec,.pw-opt-img,.sheet-stamp,
+.inbox-badge,.filters,fieldset,input,select,textarea,dialog{border-radius:0;}
+
+/* No shadows anywhere */
+.pw,.sheet,.car-card,.car-card:hover,.fdrop-menu,.lyc-modal,.smartsearch .ss-field,
+.smartsearch .ss-field:focus-within,.cs-tile,.cs-tile:hover,.ps-pill:hover,
+.ph-card.selectable.sel,.pw-opt.sel,.site-header.scrolled,.btn-primary,.btn-primary:hover,
+input:focus,select:focus,textarea:focus{box-shadow:none;}
+
+/* Cards & panels: hairline-ruled, hover = deeper paper (no lift) */
+.car-card{background:var(--ink);border:1px solid var(--line);}
+.car-card:hover{transform:none;border-color:var(--bone);background:var(--slate);}
+.car-card .price{color:var(--bone);font-weight:500;}
+.car-card .meta{letter-spacing:.04em;text-transform:uppercase;font-size:.72rem;}
+.car-card .thumb img{filter:saturate(.85);}
+.car-card:hover .thumb img{transform:scale(1.035);filter:saturate(1);}
+.cs-tile:hover{transform:none;}
+.cs-tile img{filter:saturate(.85);}
+.cs-tile:hover img{filter:saturate(1);transform:scale(1.035);}
+.pw-opt:hover,.occ-pill:hover,.ps-pill:hover,.intent-card:hover{transform:none;}
+.intent-card:hover,.ph-card.selectable:hover{transform:none;border-color:var(--bone);background:var(--slate);}
+.pw-opt:hover{border-color:var(--bone);background:var(--slate);}
+.pw-opt-img img,.ph-shot,.collection-thumb img,.pw-opt-img img{filter:saturate(.85);}
+
+/* Pills → rectangular hairline chips, ink-fill hover */
+.ps-pill,.occ-pill{border:1px solid var(--line);background:transparent;font-size:.8125rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;}
+.ps-pill:hover,.occ-pill:hover{background:var(--bone);border-color:var(--bone);color:var(--ink);}
+.ps-pill.go{background:var(--bone);border-color:var(--bone);color:var(--ink);}
+.ps-pill.go:hover{background:var(--signal);border-color:var(--signal);color:#fff;}
+.gf-chip,.fchip,.ss-eg button{background:transparent;border:1px solid var(--line);}
+.gf-chip:hover{border-color:var(--bone);color:var(--bone);}
+
+/* Filter dropdowns */
+.fdrop-btn{background:transparent;border:1px solid var(--line);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;font-weight:500;}
+.fdrop-btn:hover{border-color:var(--bone);}
+.fdrop.active .fdrop-btn{background:var(--bone);border-color:var(--bone);color:var(--ink);}
+.fdrop-menu{background:var(--ink);border:1px solid var(--bone);}
+.fdrop-menu button:hover{background:var(--slate);}
+.fdrop-menu button.sel{color:var(--signal);}
+
+/* Smart search: hairline slab */
+.smartsearch .ss-field{background:var(--ink);border:1px solid var(--line);}
+.smartsearch .ss-field:focus-within{border-color:var(--bone);}
+
+/* Steps: hairline columns with bare indices (Space register) */
+.step{background:transparent;border:0;border-top:1px solid var(--line);padding:1.5rem 1.5rem 0 0;}
+.step-num{width:auto;height:auto;background:none;color:var(--signal);border-radius:0;display:block;
+  font-size:.8125rem;font-weight:500;letter-spacing:.12em;margin-bottom:2rem;font-variant-numeric:tabular-nums;}
+
+/* Badges: square, ink or signal */
+.badge{border-radius:0;letter-spacing:.1em;}
+.badge-sale{background:var(--bone);color:var(--ink);}
+
+/* Forms: flat fills, ink focus */
+input,select,textarea{background:var(--slate);border:1px solid var(--line);}
+input:focus,select:focus,textarea:focus{border-color:var(--bone);}
+.intent-radio:has(input:checked){border-color:var(--bone);background:var(--slate);}
+
+/* Section alt bands: deeper paper, hairline-topped */
+.section-alt{background:var(--slate);}
+
+/* Wizard step indicator: square indices */
+.pw{border:1px solid var(--line);background:var(--ink);}
+.pw-step{letter-spacing:.12em;}
+.pw-step .pw-num{border-radius:0;}
+.pw-step.on .pw-num{background:var(--bone);border-color:var(--bone);color:var(--ink);}
+.pw-step.done .pw-num{border-color:var(--bone);color:var(--bone);}
+.pw-opt.sel{border-color:var(--bone);box-shadow:none;background:var(--slate);}
+.pw-city{background:transparent;border:1px solid var(--line);font-size:.8125rem;letter-spacing:.06em;text-transform:uppercase;font-weight:500;}
+.pw-city:hover{border-color:var(--bone);}
+.pw-city.sel{background:var(--bone);border-color:var(--bone);color:var(--ink);}
+.pw-rec{background:var(--signal);}
+
+/* Modals: hairline + ink frame on paper */
+.lyc-modal{background:var(--ink);border:1px solid var(--bone);}
+.lyc-modal::backdrop{background:rgba(20,20,18,.4);backdrop-filter:none;}
+
+/* Sun arc: flat semantic colour, no gradients */
+.sun-seg.gold{background:#d9a441;}
+.sun-seg.blue{background:#6b7fa8;}
+.light-cell{background:var(--ink);border:1px solid var(--line);}
+.light-cell.gold{background:#efe7d2;border-color:#c9ac62;}
+.t-golden{background:#efe7d2;color:#8a6410;}
+.t-motion{background:#e3e8f2;color:#3d5382;}
+.t-detail{background:var(--slate);color:var(--mist2);}
+.t-portrait{background:var(--signal-dim);color:var(--signal);}
+
+/* The call sheet keeps its Courier voice — production paperwork */
+.sheet{background:var(--ink);border:1px solid var(--bone);}
+.sheet .sheet-stamp,.sheet .sheet-sub,.sheet .sheet-meta dt,.sheet .sheet-h span,
+.sheet .sheet-foot,.sheet .light-cell dt,.sheet .sheet-tag,.sheet .shot-tag,
+.sheet .sun-tick em{font-family:var(--f-doc);}
+.sheet-car{background:var(--ink);}
+.sheet-car:hover{transform:none;border-color:var(--bone);background:var(--slate);}
+.sheet-ph{background:var(--ink);}
+.shot-locked{background:var(--slate);border:1px dashed var(--mist);}
+.sheet-title{font-weight:500;}
+
+/* Avatars: square monogram plates */
+.ph-avatar{border-radius:0;background:var(--slate);color:var(--bone);font-weight:500;}
+
+/* Hero scale on home + planner (Space display sizes) */
+.home-hero h1{font-size:clamp(2.6rem,6vw,5rem);max-width:18ch;font-weight:500;}
+.plan-intro h1{font-size:clamp(2.4rem,5vw,4.2rem);}
+.home-hero .eyebrow{display:inline-block;}
+
+/* Package teaser + editorial: flat, ruled */
+.pkg-teaser{background:transparent;border:1px solid var(--line);}
+.pkg-teaser-art{background:var(--slate);}
+.editorial,.editorial-copy{background:transparent;}
+
+/* Pricing plans, stats, rows: hairline panels */
+.plan,.stat,.row-card,.form-card,.filters,.price-card,.comp-card,.package-summary{background:var(--ink);border:1px solid var(--line);}
+
+/* Collection cards + dashboard rows: flat, ruled, no lift */
+.collection-card{background:var(--ink);border:1px solid var(--line);}
+.collection-card:hover{transform:none;box-shadow:none;border-color:var(--bone);background:var(--slate);}
+.collection-thumb img{filter:saturate(.85);}
+.collection-card:hover .collection-thumb img{filter:saturate(1);}
+.notice{border-radius:0;}
+.notice.ok{border-color:var(--bone);}
+.row-card{border-radius:0;background:var(--ink);}
+
+/* Pricing detail: flat featured card, square tag, medium numerals */
+.plan.featured{border:1px solid var(--bone);box-shadow:none;}
+.plan-tag{border-radius:0;letter-spacing:.1em;}
+.plan-price{font-weight:500;letter-spacing:-.02em;}
+
+/* Footer: ruled, quiet */
+.site-footer{border-top:1px solid var(--line);}
+
+/* Mobile nav panel: flat paper */
+@media(max-width:900px){
+  .nav-links{background:var(--ink);border-bottom:1px solid var(--line);}
 }
