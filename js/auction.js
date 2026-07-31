@@ -1,0 +1,710 @@
+/* ============================================================
+   listyourcar.ca — the auction platform
+   Page logic for: the Smart Estimate tool, the live auction book,
+   the auction detail page (countdown + bidding + reserve), and
+   the seller's listing flow.
+   Depends on data.js, auction-data.js, valuation.js, store.js and
+   the shared helpers in app.js ($, $$, fmtPrice, cityName, qs).
+   ============================================================ */
+
+const V = () => window.LYC_VAL;
+
+/* ---------- Money + time formatting ---------- */
+const money = (n) => "$" + Math.round(Number(n)).toLocaleString("en-CA");
+const kms = (n) => Number(n).toLocaleString("en-CA") + " km";
+
+/* Auction ladder — the minimum a new bid must clear. */
+function bidIncrement(current) {
+  if (current < 5000) return 100;
+  if (current < 20000) return 250;
+  if (current < 50000) return 500;
+  return 1000;
+}
+
+/* Human countdown. Seconds appear inside the final hour, where
+   they actually change behaviour. */
+function countdownParts(closesAt) {
+  const ms = new Date(closesAt).getTime() - Date.now();
+  if (ms <= 0) return { ended: true, text: "Auction ended", urgent: false };
+  const s = Math.floor(ms / 1000);
+  const d = Math.floor(s / 86400);
+  const h = Math.floor((s % 86400) / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  let text;
+  if (d > 0) text = `${d}d ${String(h).padStart(2, "0")}h`;
+  else if (h > 0) text = `${h}h ${String(m).padStart(2, "0")}m`;
+  else text = `${m}m ${String(sec).padStart(2, "0")}s`;
+  return { ended: false, text, urgent: ms < 3600000, critical: ms < 600000, ms };
+}
+
+function relTime(iso) {
+  const ms = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(ms / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.floor(h / 24)}d ago`;
+}
+
+/* Every countdown on the page ticks from one interval. */
+function startCountdowns(root = document) {
+  const tick = () => {
+    $$("[data-closes]", root).forEach((el) => {
+      const c = countdownParts(el.dataset.closes);
+      el.textContent = c.text;
+      el.classList.toggle("is-urgent", !!c.urgent);
+      el.classList.toggle("is-critical", !!c.critical);
+      el.classList.toggle("is-ended", !!c.ended);
+    });
+  };
+  tick();
+  if (startCountdowns._t) clearInterval(startCountdowns._t);
+  startCountdowns._t = setInterval(tick, 1000);
+}
+
+/* ============================================================
+   Auction card — used on the home page and the auction book
+   ============================================================ */
+function auctionCard(a) {
+  const title = `${a.year} ${a.make} ${a.model}`;
+  const c = countdownParts(a.closesAt);
+  const bidCount = (a.bids || []).length;
+  const reserveTag = a.status === "sold"
+    ? '<span class="ac-reserve met">Sold</span>'
+    : a.reserveMet
+    ? '<span class="ac-reserve met">Reserve met</span>'
+    : '<span class="ac-reserve">Reserve not met</span>';
+  return `
+    <a class="ac" href="auction.html?id=${encodeURIComponent(a.id)}">
+      <div class="ac-media">
+        ${a.photo ? `<img src="${a.photo}" alt="${title}" loading="lazy" />` : '<span class="ac-noimg">No photo</span>'}
+        <span class="ac-clock ${c.urgent ? "is-urgent" : ""}" data-closes="${a.closesAt}">${c.text}</span>
+      </div>
+      <div class="ac-body">
+        <div class="ac-head">
+          <h3>${title}</h3>
+          <span class="ac-trim">${a.trim || ""}</span>
+        </div>
+        <dl class="ac-figs">
+          <div><dt>Current bid</dt><dd class="ac-bid">${a.currentBid != null ? money(a.currentBid) : "No bids yet"}</dd></div>
+          <div><dt>Bids</dt><dd>${bidCount}</dd></div>
+        </dl>
+        <div class="ac-foot">
+          <span class="ac-meta">${kms(a.mileage)} · ${cityName(a.city)}</span>
+          ${reserveTag}
+        </div>
+      </div>
+    </a>`;
+}
+
+/* ============================================================
+   PAGE: Smart Estimate — "what will my car actually get?"
+   The tool works with zero inventory, which is exactly why it
+   leads the funnel: value first, listing second.
+   ============================================================ */
+function pageValue() {
+  const wrap = $("#value-wrap");
+  if (!wrap) return;
+
+  const form = $("#value-form");
+  const out = $("#value-out");
+  const params = qs();
+
+  // Deep links from the home page / SEO pages prefill the form.
+  ["make", "model", "year", "mileage", "condition", "city"].forEach((k) => {
+    const v = params.get(k);
+    if (v && form[k]) form[k].value = v;
+  });
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const f = Object.fromEntries(new FormData(form));
+    if (!f.make || !f.model || !f.year) return;
+    renderEstimate(out, f);
+    out.scrollIntoView({ behavior: "smooth", block: "start" });
+    // Keep the URL shareable — the estimate is the thing people send around.
+    const u = new URL(location.href);
+    Object.entries(f).forEach(([k, v]) => v ? u.searchParams.set(k, v) : u.searchParams.delete(k));
+    history.replaceState(null, "", u.toString());
+  });
+
+  // If we arrived with a full vehicle in the URL, show the answer immediately.
+  if (params.get("make") && params.get("model") && params.get("year")) {
+    renderEstimate(out, Object.fromEntries(new FormData(form)));
+  }
+}
+
+/* Title-case only what the user typed in lower case — otherwise
+   "RAV4" comes back as "Rav4" and the estimate looks careless. */
+function keepCase(s) {
+  const v = String(s || "").trim();
+  return /[A-Z]/.test(v) ? v : titleCase(v);
+}
+
+function renderEstimate(out, vehicle) {
+  const est = V().estimateValue(vehicle);
+  const title = `${vehicle.year} ${keepCase(vehicle.make)} ${keepCase(vehicle.model)}`;
+  const upsidePct = est.tradeIn ? Math.round((est.upside / est.tradeIn) * 100) : 0;
+
+  out.innerHTML = `
+    <div class="est reveal is-visible">
+      <div class="est-head">
+        <span class="eyebrow">Smart Estimate</span>
+        <h2>${title}</h2>
+        <p class="muted">${vehicle.mileage ? kms(vehicle.mileage) + " · " : ""}${titleCase(String(vehicle.condition || "good").replace("-", " "))} condition${vehicle.city ? " · " + cityName(vehicle.city) : ""}</p>
+      </div>
+
+      <div class="est-range">
+        <span class="index">01</span>
+        <h3>What competitive bidding should get you</h3>
+        <div class="est-big">${money(est.bidLow)} <span class="dash">–</span> ${money(est.bidHigh)}</div>
+        <div class="est-scale" aria-hidden="true">
+          <span class="es-track"></span>
+          <span class="es-band" style="left:${bandPos(est, est.bidLow)}%;width:${bandPos(est, est.bidHigh) - bandPos(est, est.bidLow)}%"></span>
+          <span class="es-mark trade" style="left:${bandPos(est, est.tradeIn)}%"><i></i><em>Trade-in<br>${money(est.tradeIn)}</em></span>
+          <span class="es-mark priv" style="left:${bandPos(est, est.privateHigh)}%"><i></i><em>Private sale<br>${money(est.privateHigh)}</em></span>
+        </div>
+      </div>
+
+      ${est.upside > 300 ? `
+      <div class="est-upside">
+        <span class="index">02</span>
+        <div>
+          <h3>You'd leave about <em>${money(est.upside)}</em> on the table taking the first trade-in offer.</h3>
+          <p class="muted">A dealer trade-in on this car runs around ${money(est.tradeIn)}. Auctioning it to a room of bidders typically lands near ${money(est.mid)} — roughly ${upsidePct}% more, for the price of setting a reserve and waiting out the clock.</p>
+        </div>
+      </div>` : ""}
+
+      <div class="est-factors">
+        <span class="index">${est.upside > 300 ? "03" : "02"}</span>
+        <h3>How we got there</h3>
+        <table class="ftable">
+          <tbody>
+            ${est.factors.map((f) => `
+              <tr>
+                <th>${f.label}</th>
+                <td>${f.detail}</td>
+                <td class="fw ${f.weight === "base" ? "base" : String(f.weight).startsWith("+") ? "up" : String(f.weight).startsWith("-") ? "down" : ""}">${f.weight === "base" ? "" : f.weight}</td>
+              </tr>`).join("")}
+          </tbody>
+        </table>
+        <p class="est-conf">
+          <span class="conf-bar" aria-hidden="true"><span style="width:${est.confidence}%"></span></span>
+          <span class="muted small">${est.confidence}% confidence — ${est.matched === "model" ? "based on a direct comparable" : est.matched === "make" ? "no direct comparable, priced off the make's segment" : "no direct comparable, priced off the market segment"}${est.isClassic ? ". Older vehicles vary widely with condition and originality." : ""}</span>
+        </p>
+      </div>
+
+      <div class="est-cta">
+        <div>
+          <h3>Put it in front of the bidders</h3>
+          <p class="muted">We'd suggest a reserve around <strong>${money(est.suggestedReserve)}</strong> and an opening bid of <strong>${money(est.suggestedStart)}</strong>. You set both — nothing sells below your reserve.</p>
+        </div>
+        <a class="btn btn-primary" href="sell.html?${new URLSearchParams({
+          make: vehicle.make || "", model: vehicle.model || "", year: vehicle.year || "",
+          mileage: vehicle.mileage || "", condition: vehicle.condition || "good",
+          city: vehicle.city || "", reserve: est.suggestedReserve, start: est.suggestedStart,
+        }).toString()}">List it for auction</a>
+      </div>
+
+      <p class="est-disclaimer muted small">An estimate, not an appraisal or an offer. Real bids depend on service history, accident record, tires, and what the bidder pool needs that week.</p>
+    </div>`;
+}
+
+// Position a dollar figure on the estimate scale (trade-in → private).
+function bandPos(est, v) {
+  const lo = est.tradeIn * 0.94, hi = est.privateHigh * 1.03;
+  return Math.max(0, Math.min(100, ((v - lo) / (hi - lo)) * 100));
+}
+
+/* ============================================================
+   PAGE: The auction book (live auctions)
+   ============================================================ */
+function pageAuctions() {
+  const grid = $("#auction-grid");
+  if (!grid) return;
+
+  const state = { city: "", sort: "ending", status: "live" };
+  ["city", "sort", "status"].forEach((k) => { const v = qs().get(k); if (v) state[k] = v; });
+
+  const cityBar = $("#auction-cities");
+  if (cityBar) {
+    const cities = ["", ...(D.AUCTION_CITIES || [])];
+    cities.forEach((cs) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "fchip" + (state.city === cs ? " active" : "");
+      b.textContent = cs ? cityName(cs) : "All cities";
+      b.addEventListener("click", () => {
+        state.city = cs;
+        $$(".fchip", cityBar).forEach((x) => x.classList.toggle("active", x === b));
+        render();
+      });
+      cityBar.appendChild(b);
+    });
+  }
+
+  const sortSel = $("#auction-sort");
+  sortSel?.addEventListener("change", () => { state.sort = sortSel.value; render(); });
+  const statusSel = $("#auction-status");
+  statusSel?.addEventListener("change", () => { state.status = statusSel.value; render(); });
+
+  function render() {
+    let items = Store.allAuctions();
+    if (state.city) items = items.filter((a) => a.city === state.city);
+    if (state.status === "live") items = items.filter((a) => a.status === "live");
+    else if (state.status === "closed") items = items.filter((a) => a.status !== "live");
+
+    items.sort((a, b) => {
+      switch (state.sort) {
+        case "ending": return new Date(a.closesAt) - new Date(b.closesAt);
+        case "newest": return new Date(b.openedAt) - new Date(a.openedAt);
+        case "bid-high": return (b.currentBid || 0) - (a.currentBid || 0);
+        case "bid-low": return (a.currentBid || 0) - (b.currentBid || 0);
+        case "bids": return (b.bids || []).length - (a.bids || []).length;
+        default: return 0;
+      }
+    });
+
+    grid.innerHTML = items.length
+      ? items.map(auctionCard).join("")
+      : `<p class="muted empty-note">No auctions match. <button type="button" class="link-btn" id="clear-auc">Clear filters</button></p>`;
+    $("#clear-auc")?.addEventListener("click", () => {
+      state.city = ""; state.status = "live";
+      $$(".fchip", cityBar).forEach((x, i) => x.classList.toggle("active", i === 0));
+      if (statusSel) statusSel.value = "live";
+      render();
+    });
+
+    const count = $("#auction-count");
+    if (count) count.innerHTML = `<b>${items.length}</b> ${items.length === 1 ? "auction" : "auctions"}${state.status === "live" ? " live now" : ""}`;
+    startCountdowns(grid);
+  }
+  render();
+}
+
+/* ============================================================
+   PAGE: Auction detail — countdown, bid history, place a bid
+   ============================================================ */
+function pageAuction() {
+  const wrap = $("#auction-wrap");
+  if (!wrap) return;
+  const id = qs().get("id");
+  const a = id && Store.getAuction(id);
+  if (!a) {
+    wrap.innerHTML = `<p class="muted">Auction not found. <a href="auctions.html" class="link">See live auctions →</a></p>`;
+    return;
+  }
+  render(a);
+
+  function render(a) {
+    const title = `${a.year} ${a.make} ${a.model}`;
+    const c = countdownParts(a.closesAt);
+    const bids = [...(a.bids || [])].sort((x, y) => y.amount - x.amount);
+    const top = bids[0] || null;
+    const nextMin = top ? top.amount + bidIncrement(top.amount) : a.startingBid;
+    const toReserve = a.currentBid != null ? Math.max(0, a.reserve - a.currentBid) : a.reserve;
+    const est = V().estimateValue(a);
+    const closed = a.status !== "live";
+    const dealerCount = new Set(bids.filter((b) => b.type === "dealer").map((b) => b.bidder)).size;
+
+    document.title = `${title} — ${closed ? (a.status === "sold" ? "sold at auction" : "auction closed") : "live auction"} | listyourcar.ca`;
+
+    wrap.innerHTML = `
+      <a href="auctions.html" class="link back">← All auctions</a>
+
+      <div class="ad-grid">
+        <div class="ad-main">
+          <div class="ad-media">
+            ${a.photo ? `<img src="${a.photo}" alt="${title}" />` : '<span class="ac-noimg">No photo</span>'}
+          </div>
+
+          <h1 class="ad-title">${title}</h1>
+          <p class="ad-trim">${a.trim || ""}</p>
+
+          <dl class="ad-specs">
+            <div><dt>Year</dt><dd>${a.year}</dd></div>
+            <div><dt>Distance</dt><dd>${kms(a.mileage)}</dd></div>
+            <div><dt>Condition</dt><dd>${titleCase(String(a.condition).replace("-", " "))}</dd></div>
+            <div><dt>Location</dt><dd>${cityName(a.city)}</dd></div>
+            <div><dt>Seller</dt><dd>${a.seller}</dd></div>
+            <div><dt>Watchers</dt><dd>${a.watchers}</dd></div>
+          </dl>
+
+          <section class="ad-section">
+            <span class="index">01</span>
+            <h2>About this vehicle</h2>
+            <p>${a.description || ""}</p>
+          </section>
+
+          <section class="ad-section">
+            <span class="index">02</span>
+            <h2>Bid history <span class="muted small">${bids.length} ${bids.length === 1 ? "bid" : "bids"}${dealerCount ? ` · ${dealerCount} dealers competing` : ""}</span></h2>
+            ${bids.length ? `
+              <table class="bidtable">
+                <thead><tr><th>Amount</th><th>Bidder</th><th>Type</th><th>When</th></tr></thead>
+                <tbody>
+                  ${bids.map((b, i) => `
+                    <tr class="${i === 0 ? "top-bid" : ""}${b.mine ? " my-bid" : ""}">
+                      <td class="bt-amt">${money(b.amount)}</td>
+                      <td>${b.bidder}${b.mine && b.bidder !== "You" ? ' <span class="you-tag">you</span>' : ""}</td>
+                      <td><span class="btype ${b.type}">${b.type === "dealer" ? "Dealer" : "Public"}</span>${b.rating ? ` <span class="muted small">★ ${b.rating}</span>` : ""}</td>
+                      <td class="muted small">${relTime(b.created)}</td>
+                    </tr>`).join("")}
+                </tbody>
+              </table>` : '<p class="muted">No bids yet — the opening bid is ' + money(a.startingBid) + ".</p>"}
+          </section>
+
+          <section class="ad-section">
+            <span class="index">03</span>
+            <h2>What this car is worth</h2>
+            <p class="muted">Our Smart Estimate puts competitive bidding for this vehicle between <strong>${money(est.bidLow)}</strong> and <strong>${money(est.bidHigh)}</strong>, against a typical dealer trade-in of ${money(est.tradeIn)}.</p>
+            <a class="link" href="value.html?make=${encodeURIComponent(a.make)}&model=${encodeURIComponent(a.model)}&year=${a.year}&mileage=${a.mileage}&condition=${a.condition}&city=${a.city}">See the full breakdown →</a>
+          </section>
+        </div>
+
+        <aside class="ad-side">
+          <div class="bidbox ${closed ? "is-closed" : ""}">
+            <div class="bb-clock">
+              <span class="bb-label">${closed ? "Auction closed" : "Closes in"}</span>
+              <span class="bb-count ${c.urgent ? "is-urgent" : ""}" data-closes="${a.closesAt}">${c.text}</span>
+              <span class="muted small">${new Date(a.closesAt).toLocaleString("en-CA", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</span>
+            </div>
+
+            <div class="bb-current">
+              <span class="bb-label">${closed ? "Final bid" : "Current bid"}</span>
+              <span class="bb-amt">${a.currentBid != null ? money(a.currentBid) : "No bids"}</span>
+              <span class="bb-reserve ${a.reserveMet ? "met" : ""}">
+                ${a.reserveMet
+                  ? "✓ Reserve met — this car sells"
+                  : `${money(toReserve)} below the seller's reserve`}
+              </span>
+            </div>
+
+            ${closed ? `
+              <div class="bb-closed-note">
+                ${a.status === "sold"
+                  ? `<strong>Sold</strong> at ${money(a.currentBid)} to ${top ? top.bidder : "the high bidder"}.`
+                  : "<strong>Reserve not met.</strong> The seller may still accept the high bid."}
+              </div>`
+            : `
+              <form id="bid-form" class="bb-form">
+                <label>Your bid
+                  <div class="bb-input">
+                    <span class="bb-cur">$</span>
+                    <input type="number" name="amount" min="${nextMin}" step="50" value="${nextMin}" required inputmode="numeric" />
+                  </div>
+                </label>
+                <p class="muted small">Minimum bid ${money(nextMin)} · increments of ${money(bidIncrement(top ? top.amount : a.startingBid))}</p>
+                <fieldset class="bb-who">
+                  <legend class="bb-label">Bidding as</legend>
+                  <label class="radio"><input type="radio" name="type" value="public" checked /> Private buyer</label>
+                  <label class="radio"><input type="radio" name="type" value="dealer" /> Registered dealer</label>
+                </fieldset>
+                <button type="submit" class="btn btn-primary btn-block">Place bid</button>
+                <p class="form-note muted small">Bids are binding on the seller once the reserve is met. Prototype — bids are stored in your browser.</p>
+              </form>`}
+
+            <button type="button" class="btn btn-ghost btn-block" id="watch-btn">
+              ${Store.isWatching(a.id) ? "★ Watching" : "☆ Watch this auction"}
+            </button>
+          </div>
+
+          <div class="side-note">
+            <span class="index">—</span>
+            <p class="muted small">Selling something similar? <a href="value.html?make=${encodeURIComponent(a.make)}&model=${encodeURIComponent(a.model)}&year=${a.year}" class="link">Check what yours would get →</a></p>
+          </div>
+        </aside>
+      </div>`;
+
+    startCountdowns(wrap);
+
+    $("#watch-btn")?.addEventListener("click", (e) => {
+      const on = Store.toggleWatch(a.id);
+      e.target.textContent = on ? "★ Watching" : "☆ Watch this auction";
+    });
+
+    $("#bid-form")?.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const f = Object.fromEntries(new FormData(e.target));
+      const amount = Number(f.amount);
+      if (!(amount >= nextMin)) {
+        alert(`Your bid must be at least ${money(nextMin)}.`);
+        return;
+      }
+      Store.addBid({ auctionId: a.id, amount, bidder: "You", type: f.type });
+      window.submitForm({
+        _subject: `Bid placed: ${title}`, kind: "bid", auction: a.id,
+        vehicle: title, amount, bidderType: f.type,
+      });
+      render(Store.getAuction(a.id)); // re-read so reserve/status recompute
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+}
+
+/* ============================================================
+   PAGE: Sell — create an auction (reserve + closing time)
+   ============================================================ */
+function pageSell() {
+  const form = $("#sell-form");
+  if (!form) return;
+
+  const params = qs();
+  ["make", "model", "year", "mileage", "condition", "city"].forEach((k) => {
+    const v = params.get(k);
+    if (v && form[k]) form[k].value = v;
+  });
+  if (params.get("reserve") && form.reserve) form.reserve.value = params.get("reserve");
+  if (params.get("start") && form.startingBid) form.startingBid.value = params.get("start");
+
+  // Default the close to a week out at 8pm — auctions end when people are home.
+  if (form.closesAt && !form.closesAt.value) {
+    const d = new Date(Date.now() + 7 * 86400000);
+    d.setHours(20, 0, 0, 0);
+    form.closesAt.value = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  }
+
+  /* Live estimate rail — updates as they type, so the reserve they
+     pick is informed rather than a guess. */
+  const rail = $("#sell-estimate");
+  function refreshEstimate() {
+    const f = Object.fromEntries(new FormData(form));
+    if (!f.make || !f.model || !f.year) {
+      rail.innerHTML = `<p class="muted small">Fill in the year, make and model and we'll estimate what the bidders should pay.</p>`;
+      return;
+    }
+    const est = V().estimateValue(f);
+    rail.innerHTML = `
+      <span class="eyebrow">Smart Estimate</span>
+      <div class="sr-range">${money(est.bidLow)} – ${money(est.bidHigh)}</div>
+      <p class="muted small">What competitive bidding should get you. A dealer trade-in on this car runs about ${money(est.tradeIn)}.</p>
+      <dl class="sr-sugg">
+        <div><dt>Suggested reserve</dt><dd>${money(est.suggestedReserve)}</dd></div>
+        <div><dt>Suggested opening bid</dt><dd>${money(est.suggestedStart)}</dd></div>
+      </dl>
+      <button type="button" class="link-btn" id="use-sugg">Use these figures</button>
+      <p class="muted small" style="margin-top:1rem">${est.confidence}% confidence. Nothing sells below the reserve you set.</p>`;
+    $("#use-sugg")?.addEventListener("click", () => {
+      form.reserve.value = est.suggestedReserve;
+      form.startingBid.value = est.suggestedStart;
+    });
+  }
+  ["make", "model", "year", "mileage", "condition"].forEach((k) => {
+    form[k]?.addEventListener("input", refreshEstimate);
+    form[k]?.addEventListener("change", refreshEstimate);
+  });
+  refreshEstimate();
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const f = Object.fromEntries(new FormData(form));
+    const reserve = Number(f.reserve) || 0;
+    const startingBid = Number(f.startingBid) || 0;
+    if (startingBid > reserve && reserve > 0) {
+      alert("Your opening bid is above your reserve. Lower the opening bid, or raise the reserve.");
+      return;
+    }
+    const closesAt = new Date(f.closesAt);
+    if (!(closesAt.getTime() > Date.now())) {
+      alert("Pick a closing time in the future.");
+      return;
+    }
+
+    const est = V().estimateValue(f);
+    const auction = Store.addAuction({
+      make: f.make, model: f.model, trim: f.trim || "", year: Number(f.year),
+      mileage: Number(f.mileage) || 0, condition: f.condition, city: f.city,
+      reserve, startingBid, closesAt: closesAt.toISOString(),
+      description: f.description || `${f.year} ${f.make} ${f.model}. ${titleCase(String(f.condition).replace("-", " "))} condition, ${kms(f.mileage || 0)}.`,
+      photo: null,
+      estimate: { low: est.bidLow, high: est.bidHigh, tradeIn: est.tradeIn },
+      name: f.name, email: f.email, phone: f.phone,
+      seller: f.name || "Private seller",
+    });
+
+    window.submitForm({
+      _subject: `New auction: ${f.year} ${f.make} ${f.model}`, kind: "auction",
+      vehicle: `${f.year} ${f.make} ${f.model}`, reserve, startingBid,
+      closesAt: closesAt.toISOString(), name: f.name, email: f.email, phone: f.phone,
+    });
+
+    $("#sell-wrap").innerHTML = `
+      <div class="success-card">
+        <span class="eyebrow">Auction created</span>
+        <h1>${f.year} ${keepCase(f.make)} ${keepCase(f.model)} is live.</h1>
+        <p class="lead">Bidding opens at ${money(startingBid)} and closes ${closesAt.toLocaleString("en-CA", { weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" }).replace(/\.$/, "")}. Nothing sells below your ${money(reserve)} reserve.</p>
+        <dl class="succ-figs">
+          <div><dt>Estimated to fetch</dt><dd>${money(est.bidLow)} – ${money(est.bidHigh)}</dd></div>
+          <div><dt>Your reserve</dt><dd>${money(reserve)}</dd></div>
+          <div><dt>Opening bid</dt><dd>${money(startingBid)}</dd></div>
+        </dl>
+        <p class="muted">Dealers in ${cityName(f.city)} are notified when an auction opens in their area. You'll see every bid as it lands.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="auction.html?id=${auction.id}">View your auction</a>
+          <a class="btn btn-ghost" href="dashboard.html">Go to dashboard</a>
+        </div>
+      </div>`;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+}
+
+/* ============================================================
+   Home page: live auction strip + quick estimate
+   ============================================================ */
+function homeAuctions() {
+  /* Hero: the single closest-to-closing lot, as live proof. */
+  const hero = $("#hero-auction");
+  if (hero) {
+    const soon = Store.allAuctions()
+      .filter((a) => a.status === "live" && a.currentBid != null)
+      .sort((a, b) => new Date(a.closesAt) - new Date(b.closesAt))[0];
+    if (soon) {
+      const c = countdownParts(soon.closesAt);
+      hero.innerHTML = `
+        <a class="ha" href="auction.html?id=${soon.id}">
+          ${soon.photo ? `<img src="${soon.photo}" alt="${soon.year} ${soon.make} ${soon.model}" />` : ""}
+          <span class="ha-tag"><span class="live-dot"></span>Closing next</span>
+          <span class="ha-panel">
+            <span class="ha-car">${soon.year} ${soon.make} ${soon.model}</span>
+            <span class="ha-row">
+              <span><em>Current bid</em><b>${money(soon.currentBid)}</b></span>
+              <span><em>Closes in</em><b class="${c.urgent ? "is-urgent" : ""}" data-closes="${soon.closesAt}">${c.text}</b></span>
+            </span>
+            <span class="ha-meta">${(soon.bids || []).length} bids · ${cityName(soon.city)} · ${soon.reserveMet ? "reserve met" : "reserve not met"}</span>
+          </span>
+        </a>`;
+      startCountdowns(hero);
+    }
+  }
+
+  const strip = $("#home-auctions");
+  if (strip) {
+    const live = Store.allAuctions()
+      .filter((a) => a.status === "live")
+      .sort((a, b) => new Date(a.closesAt) - new Date(b.closesAt))
+      .slice(0, 6);
+    strip.innerHTML = live.map(auctionCard).join("");
+    startCountdowns(strip);
+  }
+
+  // Hero quick-estimate — three fields, straight to the answer.
+  const qf = $("#quick-value");
+  qf?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const f = Object.fromEntries(new FormData(qf));
+    const u = new URLSearchParams();
+    Object.entries(f).forEach(([k, v]) => { if (v) u.set(k, v); });
+    location.href = "value.html?" + u.toString();
+  });
+
+  // Live ticker of recent bidding activity — proof the room is full.
+  const tick = $("#home-ticker");
+  if (tick) {
+    const recent = Store.allAuctions()
+      .flatMap((a) => (a.bids || []).map((b) => ({ ...b, car: `${a.year} ${a.make} ${a.model}`, city: a.city })))
+      .sort((x, y) => new Date(y.created) - new Date(x.created))
+      .slice(0, 8);
+    tick.innerHTML = recent.map((b) => `
+      <span class="tk-item"><b>${money(b.amount)}</b> ${b.car} <span class="muted">· ${b.type === "dealer" ? "dealer" : "private"} bid · ${cityName(b.city)}</span></span>`).join("");
+  }
+}
+
+/* ============================================================
+   PAGE: Dashboard — your auctions, your bids, your watchlist
+   ============================================================ */
+function pageAuctionDashboard() {
+  const all = Store.allAuctions();
+  const mine = Store.userAuctions().map((a) => Store.getAuction(a.id)).filter(Boolean);
+  const bids = Store.myBids();
+
+  const stats = $("#stats");
+  if (stats) {
+    const bidsOnMine = mine.reduce((s, a) => s + (a.bids || []).length, 0);
+    const topValue = mine.reduce((s, a) => s + (a.currentBid || 0), 0);
+    stats.innerHTML = [
+      statCard(mine.length, "Your auctions"),
+      statCard(bidsOnMine, "Bids received"),
+      statCard(bids.length, "Bids placed"),
+      statCard(topValue ? money(topValue) : "—", "Current bid value"),
+    ].join("");
+  }
+
+  /* — Your auctions — */
+  const ma = $("#my-auctions");
+  if (ma) {
+    ma.innerHTML = mine.length ? mine.map((a) => {
+      const c = countdownParts(a.closesAt);
+      const top = [...(a.bids || [])].sort((x, y) => y.amount - x.amount)[0];
+      return `
+        <div class="row-card">
+          <div class="grow">
+            <strong>${a.year} ${a.make} ${a.model}</strong>
+            <span class="rc-state ${a.status}">${a.status === "live" ? "Live" : a.status === "sold" ? "Sold" : "Reserve not met"}</span>
+            <div class="muted small">
+              ${a.currentBid != null ? `High bid ${money(a.currentBid)}` : "No bids yet"}
+              · reserve ${money(a.reserve)}
+              ${a.reserveMet ? '<span class="ok-tag">reserve met</span>' : ""}
+              · ${a.status === "live" ? `closes in <span data-closes="${a.closesAt}">${c.text}</span>` : "closed"}
+              · ${(a.bids || []).length} bids
+            </div>
+            ${top && a.status !== "live" && a.reserveMet ? `<div class="rc-win muted small">Winning bidder: <strong>${top.bidder}</strong> — contact details released.</div>` : ""}
+          </div>
+          <a class="btn btn-sm btn-ghost" href="auction.html?id=${a.id}">View</a>
+        </div>`;
+    }).join("") : `<p class="muted">No auctions yet. <a href="value.html" class="link">See what your car is worth →</a></p>`;
+  }
+
+  /* — Bids you've placed — */
+  const mb = $("#my-bids");
+  if (mb) {
+    mb.innerHTML = bids.length ? bids.map((b) => {
+      const a = all.find((x) => x.id === b.auctionId);
+      if (!a) return "";
+      const winning = a.currentBid === b.amount;
+      return `
+        <div class="row-card">
+          <div class="grow">
+            <strong>${a.year} ${a.make} ${a.model}</strong>
+            <span class="rc-state ${winning ? "live" : ""}">${winning ? (a.status === "live" ? "High bid" : "Won") : "Outbid"}</span>
+            <div class="muted small">Your bid ${money(b.amount)} · current ${money(a.currentBid)} · ${a.status === "live" ? `closes in <span data-closes="${a.closesAt}">—</span>` : "closed"}</div>
+          </div>
+          <a class="btn btn-sm btn-ghost" href="auction.html?id=${a.id}">View</a>
+        </div>`;
+    }).join("") : `<p class="muted">No bids yet. <a href="auctions.html" class="link">Browse live auctions →</a></p>`;
+  }
+
+  /* — Watchlist — */
+  const mw = $("#my-watchlist");
+  if (mw) {
+    const watched = Store.watchlist().map((id) => all.find((a) => a.id === id)).filter(Boolean);
+    mw.innerHTML = watched.length ? watched.map((a) => `
+      <div class="row-card">
+        <div class="grow">
+          <strong>${a.year} ${a.make} ${a.model}</strong>
+          <div class="muted small">${a.currentBid != null ? money(a.currentBid) : "No bids"} · ${a.status === "live" ? `closes in <span data-closes="${a.closesAt}">—</span>` : "closed"}</div>
+        </div>
+        <a class="btn btn-sm btn-ghost" href="auction.html?id=${a.id}">View</a>
+      </div>`).join("") : `<p class="muted">Nothing on your watchlist yet.</p>`;
+  }
+
+  startCountdowns(document);
+
+  $("#reset-demo")?.addEventListener("click", () => {
+    if (confirm("Clear your demo auctions, bids and watchlist?")) {
+      Store.resetAll(); location.reload();
+    }
+  });
+}
+
+window.pageAuctionDashboard = pageAuctionDashboard;
+window.pageValue = pageValue;
+window.pageAuctions = pageAuctions;
+window.pageAuction = pageAuction;
+window.pageSell = pageSell;
+window.homeAuctions = homeAuctions;
+window.auctionCard = auctionCard;
+window.startCountdowns = startCountdowns;
+window.auctionMoney = money;
+window.countdownParts = countdownParts;

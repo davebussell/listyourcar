@@ -25,19 +25,29 @@ function navHTML() {
     <nav class="nav-links">
       <a href="/plan.html">Plan a Shoot</a>
       <a href="/browse.html">Browse</a>
-      <a href="/collections/" class="active">Collections</a>
       <a href="/photographers.html">Photographers</a>
-      <a href="/list.html">List Your Car</a>
-      <a href="/guides.html">Guides</a>
-      <a href="/pricing.html">Pricing</a>
-      <a href="/dashboard.html">Dashboard</a>
-      <a href="https://listyourspace.ca" class="spaces-link" target="_blank" rel="noopener">Spaces ↗</a>
+      <div class="nav-more">
+        <button type="button" class="nav-more-btn active" aria-expanded="false" aria-haspopup="true">More <span class="caret">▾</span></button>
+        <div class="nav-more-menu">
+          <div class="nm-group"><span class="nm-label">Explore</span>
+            <a href="/collections/" class="active">Collections</a>
+            <a href="/guides.html">Guides</a>
+          </div>
+          <div class="nm-group"><span class="nm-label">Your account</span>
+            <a href="/pricing.html">Pricing</a>
+            <a href="/dashboard.html">Dashboard</a>
+          </div>
+          <div class="nm-group"><span class="nm-label">Network</span>
+            <a href="https://listyourspace.ca" target="_blank" rel="noopener">ListYourSpace ↗</a>
+          </div>
+        </div>
+      </div>
       <a href="/list.html" class="btn btn-primary btn-sm">List a Car</a>
     </nav></div></header>`;
 }
 function footHTML() {
   return `<footer class="site-footer"><div class="footer-bottom"><p>&copy; <span id="year"></span> listyourcar.ca — All rights reserved.</p></div></footer>
-  <script src="/js/data.js?v=8"></script><script src="/js/store.js?v=8"></script><script src="/js/config.js?v=8"></script><script src="/js/app.js?v=8"></script>`;
+  <script src="/js/data.js?v=9"></script><script src="/js/store.js?v=9"></script><script src="/js/config.js?v=9"></script><script src="/js/app.js?v=9"></script>`;
 }
 function page({ title, desc, canonical, image, body }) {
   return `<!DOCTYPE html><html lang="en"><head>
@@ -48,7 +58,7 @@ function page({ title, desc, canonical, image, body }) {
 <meta property="og:type" content="website" /><meta property="og:title" content="${esc(title)}" />
 <meta property="og:description" content="${esc(desc)}" /><meta property="og:image" content="${image}" />
 <meta property="og:url" content="${canonical}" /><meta name="twitter:card" content="summary_large_image" />
-<link rel="stylesheet" href="/css/styles.css?v=8" />
+<link rel="stylesheet" href="/css/styles.css?v=9" />
 </head><body data-page="collections-static">
 ${navHTML()}
 <main class="container section">${body}</main>

@@ -3,127 +3,167 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Plan a car photoshoot — free shoot planner &amp; car rentals | listyourcar.ca</title>
-  <meta name="description" content="Plan a photo shoot with a characterful car in 60 seconds: golden-hour times, a shot list, matched picture cars and photographers across Canada. Weddings, prom, engagement, events and music videos." />
-  <link rel="stylesheet" href="css/styles.css?v=8" />
+  <title>Sell your car to the highest bidder | listyourcar.ca</title>
+  <meta name="description" content="List your car, set your reserve and closing time, and let dealers and private buyers bid against each other. Free Smart Estimate tells you what your car should fetch before you list." />
+  <link rel="canonical" href="https://listyourcar.ca/" />
+  <link rel="stylesheet" href="css/styles.css?v=10" />
 </head>
 <body data-page="home">
   <header class="site-header">
     <div class="container nav">
-      <div class="nav-brand"><a href="index.html" class="logo">List<span>Your</span>Car<span class="tld">.ca</span></a><span class="now-casting"><span class="live-dot"></span>Now casting</span></div>
+      <div class="nav-brand"><a href="index.html" class="logo">List<span>Your</span>Car<span class="tld">.ca</span></a><span class="now-casting"><span class="live-dot"></span>Live bidding</span></div>
       <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span><span></span></button>
       <nav class="nav-links">
-        <a href="plan.html">Plan a Shoot</a>
-        <a href="/collections/">Collections</a>
-        <a href="photographers.html">Photographers</a>
-        <a href="list.html">List Your Car</a>
-        <a href="guides.html">Guides</a>
-        <a href="pricing.html">Pricing</a>
-        <a href="dashboard.html">Dashboard</a>
-        <a href="https://listyourspace.ca" class="spaces-link" target="_blank" rel="noopener">Spaces ↗</a>
-        <a href="list.html" class="btn btn-primary btn-sm">List a Car</a>
+        <a href="auctions.html">Live Auctions</a>
+        <a href="value.html">What's It Worth</a>
+        <div class="nav-more">
+          <button type="button" class="nav-more-btn" aria-expanded="false" aria-haspopup="true">More <span class="caret">▾</span></button>
+          <div class="nav-more-menu">
+            <div class="nm-group"><span class="nm-label">Selling</span>
+              <a href="how-it-works.html">How it works</a>
+              <a href="value.html">Smart Estimate</a>
+            </div>
+            <div class="nm-group"><span class="nm-label">Buying</span>
+              <a href="auctions.html">Live auctions</a>
+              <a href="dealers.html">For dealers</a>
+            </div>
+            <div class="nm-group"><span class="nm-label">Your account</span>
+              <a href="dashboard.html">Dashboard</a>
+              <a href="about.html">About</a>
+            </div>
+          </div>
+        </div>
+        <a href="sell.html" class="btn btn-primary btn-sm">Sell My Car</a>
       </nav>
     </div>
   </header>
 
-  <!-- HERO — planner-led -->
-  <section class="home-hero">
-    <div class="container">
-      <span class="eyebrow">The shoot planner · Canada</span>
-      <h1>Plan a shoot people will talk about<span class="blink-dot">.</span></h1>
-      <p class="lead">Pick the moment — we build the call sheet: the car, the photographer, the golden-hour timing and the shot list. In about 60 seconds, free.</p>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow">Canada's car auction</span>
+        <h1>Don't take the first offer. Make them bid.</h1>
+        <p class="lead">List your car once. Dealers and private buyers bid against each other until your closing time. You set the reserve — nothing sells below it.</p>
 
-      <div class="plan-start" role="group" aria-label="Start planning by occasion">
-        <a class="ps-pill" href="plan.html?o=weddings">💍 Wedding</a>
-        <a class="ps-pill" href="plan.html?o=engagement">💕 Engagement</a>
-        <a class="ps-pill" href="plan.html?o=prom">🎓 Prom &amp; Grad</a>
-        <a class="ps-pill" href="plan.html?o=events">🎉 Event</a>
-        <a class="ps-pill" href="plan.html?o=musicvideo">🎬 Music Video</a>
-        <a class="ps-pill go" href="plan.html">Plan my shoot →</a>
-      </div>
-    </div>
-    <div class="contact-sheet" id="contact-sheet" aria-hidden="true"></div>
-  </section>
+        <form class="quick-value" id="quick-value">
+          <span class="qv-label">What's my car worth?</span>
+          <div class="qv-row">
+            <label class="qv-f"><span>Year</span><input type="number" name="year" placeholder="2020" min="1950" max="2027" required /></label>
+            <label class="qv-f"><span>Make</span><input type="text" name="make" placeholder="Toyota" required /></label>
+            <label class="qv-f"><span>Model</span><input type="text" name="model" placeholder="RAV4" required /></label>
+            <button type="submit" class="btn btn-primary">Estimate</button>
+          </div>
+          <span class="qv-note muted small">Free, instant, no account. See the range before you commit to anything.</span>
+        </form>
 
-  <!-- SORTABLE GALLERY + SMART SEARCH -->
-  <section class="gallery-wrap">
-    <div class="container">
-      <div class="gallery-lede">
-        <span class="eyebrow">Or browse the lot</span>
-        <h2>Cars that belong on camera</h2>
-      </div>
-      <div class="smartsearch">
-        <div class="ss-field">
-          <span class="ss-rec" aria-hidden="true"></span>
-          <input id="ss-input" type="text" autocomplete="off" spellcheck="false" aria-label="Search cars by make, type, city or budget" />
-          <span class="ss-ghost" id="ss-ghost" aria-hidden="true"></span>
-          <button class="btn btn-primary btn-sm ss-go" id="ss-go">Search</button>
-        </div>
-        <div class="ss-eg" id="ss-eg"><span class="muted">Try:</span></div>
-      </div>
-      <div class="gallery-toolbar">
-        <div class="filter-group" id="filters"></div>
-        <div class="toolbar-right">
-          <button class="toolbar-clear" id="clear-all" hidden>Clear all</button>
-          <span class="gallery-count" id="gallery-count"></span>
-          <div id="sort-mount"></div>
+        <div class="hero-facts">
+          <div class="fact"><span class="fact-n">12</span><span class="fact-l">Auctions live now</span></div>
+          <div class="fact"><span class="fact-n">$3,100</span><span class="fact-l">Avg. over trade-in</span></div>
+          <div class="fact"><span class="fact-n">7 days</span><span class="fact-l">Typical time to sell</span></div>
         </div>
       </div>
 
-      <div class="card-grid" id="gallery"></div>
-      <div class="gallery-more"><button class="btn btn-outline" id="gallery-more" hidden>Show more cars</button></div>
-    </div>
-  </section>
-
-  <!-- WHAT'S IN A CALL SHEET -->
-  <section class="section section-alt">
-    <div class="container">
-      <div class="section-head reveal"><div><span class="eyebrow">What the planner builds</span><h2>A real call sheet, not a mood board.</h2></div><a href="plan.html" class="link">Try it →</a></div>
-      <div class="steps" data-stagger>
-        <div class="step"><div class="step-num">☀</div><h3>The light, computed</h3><p>Golden-hour and blue-hour windows for your exact date and city — down to the minute.</p></div>
-        <div class="step"><div class="step-num">✓</div><h3>A working shot list</h3><p>Ten shots crafted per occasion — the pull-away, the mirror kiss, the headlight silhouette.</p></div>
-        <div class="step"><div class="step-num">$</div><h3>Car + pro, priced</h3><p>Matched picture cars and a verified photographer, bundled with a real budget — save 10%.</p></div>
+      <div class="hero-media">
+        <div class="hero-auction" id="hero-auction"></div>
       </div>
     </div>
   </section>
 
-  <!-- CAR + PHOTOGRAPHER PACKAGES -->
-  <section class="section">
+  <!-- LIVE TICKER -->
+  <div class="ticker" aria-label="Recent bids">
+    <div class="ticker-track" id="home-ticker"></div>
+  </div>
+
+  <!-- ENDING SOON -->
+  <section class="section section-line">
     <div class="container">
-      <div class="pkg-teaser reveal">
-        <div class="pkg-teaser-copy">
-          <span class="eyebrow">Car + photographer</span>
-          <h2>Book the car and the pro, together.</h2>
-          <p class="lead">Pair any car with a local, verified photographer as a single package — and save 10% on the shoot.</p>
-          <a class="btn btn-primary" href="photographers.html">Meet the photographers</a>
-        </div>
-        <div class="pkg-teaser-art" aria-hidden="true"><span>🚗</span><span class="plus">+</span><span>📸</span></div>
+      <div class="section-head reveal">
+        <div><span class="eyebrow">The book</span><h2>Ending soon</h2></div>
+        <a href="auctions.html" class="link">All live auctions</a>
       </div>
+      <div class="ac-grid" id="home-auctions"></div>
     </div>
   </section>
 
   <!-- HOW IT WORKS -->
-  <section class="section section-alt">
+  <section class="section section-line">
     <div class="container">
-      <div class="section-head reveal"><div><span class="eyebrow">How it works</span><h2>From idea to shoot in three steps.</h2></div></div>
+      <div class="section-head reveal">
+        <div><span class="eyebrow">How it works</span><h2>Four steps, one week, no haggling.</h2></div>
+        <a href="how-it-works.html" class="link">In detail</a>
+      </div>
       <div class="steps" data-stagger>
-        <div class="step"><div class="step-num">1</div><h3>Plan the shoot</h3><p>60 seconds in the planner — out comes your call sheet, free.</p></div>
-        <div class="step"><div class="step-num">2</div><h3>Book car + pro</h3><p>Your matched picture car and a verified photographer, one package.</p></div>
-        <div class="step"><div class="step-num">3</div><h3>Shoot the light</h3><p>Show up at golden hour, shot list in hand. We confirm the rest.</p></div>
+        <div class="step">
+          <span class="index">01</span>
+          <h3>Check the number</h3>
+          <p>Our Smart Estimate shows what competitive bidding should get you — and what a trade-in would cost you instead.</p>
+        </div>
+        <div class="step">
+          <span class="index">02</span>
+          <h3>Set your terms</h3>
+          <p>Pick a closing time and a reserve. Your reserve is the floor: below it, the car simply doesn't sell.</p>
+        </div>
+        <div class="step">
+          <span class="index">03</span>
+          <h3>Let them compete</h3>
+          <p>Verified dealers and private buyers bid in the open. Every bid is visible, and each one pushes the last.</p>
+        </div>
+        <div class="step">
+          <span class="index">04</span>
+          <h3>Close and hand over</h3>
+          <p>At your closing time the high bid wins. Clear the reserve and it's a sale — you deal directly with the buyer.</p>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- BY OCCASION (SEO strip) -->
-  <section class="section">
-    <div class="container">
-      <div class="section-head reveal"><div><span class="eyebrow">Browse by moment</span><h2>Cars by occasion &amp; city</h2></div><a href="/collections/" class="link">All collections →</a></div>
-      <div class="occ-strip reveal">
-        <a href="/collections/occasion/weddings/" class="occ-pill">💍 Weddings</a>
-        <a href="/collections/occasion/engagement/" class="occ-pill">💕 Engagement</a>
-        <a href="/collections/occasion/prom/" class="occ-pill">🎓 Prom &amp; Grad</a>
-        <a href="/collections/occasion/events/" class="occ-pill">🎉 Events &amp; Parties</a>
-        <a href="/collections/occasion/musicvideo/" class="occ-pill">🎬 Music Videos</a>
+  <!-- THE ESTIMATE PITCH -->
+  <section class="section section-line">
+    <div class="container editorial">
+      <div class="editorial-copy reveal">
+        <span class="eyebrow">Smart Estimate</span>
+        <h2>Know the number before anyone offers you one.</h2>
+        <p class="lead">Every trade-in conversation starts with the dealer knowing more than you do. This flips it.</p>
+        <p class="muted">Feed in the year, make, model, distance and condition. You get three figures: what a dealer would hand you on trade, what competitive bidding should land, and the private-sale ceiling. Plus every factor we used to get there — depreciation curve, distance against the Canadian average, body-type demand, and the season you're selling in.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="value.html">Estimate my car</a>
+          <a class="btn btn-ghost" href="how-it-works.html">How the estimate works</a>
+        </div>
+      </div>
+      <div class="editorial-media reveal reveal-delay-1">
+        <div class="est-preview" aria-hidden="true">
+          <span class="epv-label">2020 Toyota RAV4 · 68,000 km</span>
+          <div class="epv-row"><span>Dealer trade-in</span><b class="down">$21,400</b></div>
+          <div class="epv-row hi"><span>Competitive bidding</span><b>$24,600 – $27,450</b></div>
+          <div class="epv-row"><span>Private sale ceiling</span><b>$29,750</b></div>
+          <div class="epv-gain">+$4,650 <span>vs. trade-in</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOR DEALERS -->
+  <section class="section section-line">
+    <div class="container statement reveal">
+      <span class="eyebrow">For dealers</span>
+      <h2>Fresh Canadian inventory, <em>direct from owners</em>.</h2>
+      <p class="lead">No auction-house buy fees on the seller's side, no wholesale middleman. Bid on private cars in your market, see the full history, and win at your number.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="dealers.html">Register as a dealer</a>
+        <a class="btn btn-ghost" href="auctions.html">Browse the book</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section section-line">
+    <div class="container cta reveal">
+      <h2>Your car is worth more than the first offer.</h2>
+      <p class="lead">Find out what, in about thirty seconds.</p>
+      <div class="hero-actions" style="justify-content:center">
+        <a class="btn btn-primary" href="value.html">What's my car worth?</a>
+        <a class="btn btn-ghost" href="sell.html">List it for auction</a>
       </div>
     </div>
   </section>
@@ -132,19 +172,21 @@
     <div class="footer-grid">
       <div>
         <a href="index.html" class="logo">List<span>Your</span>Car<span class="tld">.ca</span></a>
-        <p class="muted" style="margin-top:1rem;max-width:32ch">Plan the shoot, book the car and the pro — Canada's characterful cars, on camera.</p>
+        <p class="muted" style="margin-top:1rem;max-width:32ch">List your car, set your reserve, and let dealers and private buyers bid it up. Canada-wide.</p>
       </div>
-      <div><h4>Browse</h4><a href="plan.html">Plan a Shoot</a><a href="/collections/">Collections</a>
-        <a href="photographers.html">Photographers</a><a href="browse.html">All cars</a><a href="list.html">List Your Car</a></div>
-      <div><h4>Guides</h4><a href="guides.html">All guides</a><a href="article.html?slug=how-to-rent-out-your-car-canada">Rent out your car</a></div>
+      <div><h4>Sell</h4><a href="value.html">What's my car worth</a><a href="sell.html">List for auction</a><a href="how-it-works.html">How it works</a><a href="dashboard.html">Dashboard</a></div>
+      <div><h4>Buy</h4><a href="auctions.html">Live auctions</a><a href="dealers.html">For dealers</a></div>
       <div><h4>Network</h4><a href="https://listyourspace.ca" target="_blank" rel="noopener">ListYourSpace ↗</a><a href="about.html">About</a><a href="contact.html">Contact</a></div>
     </div>
     <div class="footer-bottom"><p>&copy; <span id="year"></span> listyourcar.ca — All rights reserved.</p></div>
   </footer>
 
-  <script src="js/data.js?v=8"></script>
-  <script src="js/store.js?v=8"></script>
-  <script src="js/config.js?v=8"></script>
-  <script src="js/app.js?v=8"></script>
+  <script src="js/data.js?v=10"></script>
+  <script src="js/auction-data.js?v=10"></script>
+  <script src="js/valuation.js?v=10"></script>
+  <script src="js/store.js?v=10"></script>
+  <script src="js/config.js?v=10"></script>
+  <script src="js/app.js?v=10"></script>
+  <script src="js/auction.js?v=10"></script>
 </body>
 </html>

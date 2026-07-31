@@ -192,6 +192,21 @@ function initChrome() {
       toggle.setAttribute("aria-expanded", String(open));
     });
   }
+  // "More" disclosure in the nav (click, outside-click + Esc to close)
+  const more = $(".nav-more");
+  if (more) {
+    const btn = $(".nav-more-btn", more);
+    const close = () => { more.removeAttribute("aria-expanded"); btn.setAttribute("aria-expanded", "false"); };
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const open = more.getAttribute("aria-expanded") === "true";
+      if (open) close();
+      else { more.setAttribute("aria-expanded", "true"); btn.setAttribute("aria-expanded", "true"); }
+    });
+    document.addEventListener("click", (e) => { if (!more.contains(e.target)) close(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+  }
+
   // Inbox badge in nav
   const badge = $("#inbox-count");
   if (badge) {
@@ -842,102 +857,8 @@ function pageListing() {
 }
 
 /* ============================================================
-   PAGE: Dashboard (unified inbox + listings + rental history)
+   PAGE: Dashboard — moved to auction.js (pageAuctionDashboard)
    ============================================================ */
-function pageDashboard() {
-  const listings = Store.userListings();
-  const inquiries = Store.inquiries();
-  const bookings = Store.bookings();
-
-  // Stats
-  const stats = $("#stats");
-  if (stats) {
-    const earnings = bookings.reduce((s, b) => s + (b.total || 0), 0);
-    stats.innerHTML = `
-      ${statCard(listings.length, "Active listings")}
-      ${statCard(inquiries.filter((i) => !i.read).length, "Unread inquiries")}
-      ${statCard(bookings.length, "Booking requests")}
-      ${statCard(fmtPrice(earnings), "Est. booking value")}`;
-  }
-
-  // Saved shoot plans
-  const mp = $("#my-plans");
-  if (mp) {
-    const renderPlans = () => {
-      mp.innerHTML = Store.plans().length
-        ? Store.plans().map((p) => `
-          <div class="row-card">
-            <div class="thumb-sm">🎬</div>
-            <div class="grow">
-              <span class="plan-row-title">${p.title}</span>
-              <div class="muted small">${p.cityName} &middot; ${p.d} &middot; est. ${fmtPrice(p.total || 0)}</div>
-            </div>
-            <a class="btn btn-sm btn-primary" href="${p.url}">Open call sheet</a>
-            <button class="btn btn-sm btn-outline" data-del-plan="${p.id}">Delete</button>
-          </div>`).join("")
-        : `<p class="muted">No plans yet. <a href="plan.html">Plan a shoot in 60 seconds →</a></p>`;
-      $$("[data-del-plan]").forEach((b) => b.addEventListener("click", () => {
-        Store.deletePlan(b.dataset.delPlan); renderPlans();
-      }));
-    };
-    renderPlans();
-  }
-
-  // My listings
-  const ml = $("#my-listings");
-  if (ml) {
-    ml.innerHTML = listings.length
-      ? listings.map((l) => `
-        <div class="row-card">
-          <div class="thumb-sm">${l.emoji}</div>
-          <div class="grow">
-            <strong>${titleOf(l)}</strong> ${intentBadge(l.intent)}
-            <div class="muted small">${cityName(l.city)} &middot; listed ${l.created}</div>
-          </div>
-          <a class="btn btn-sm btn-outline" href="listing.html?id=${l.id}">View</a>
-        </div>`).join("")
-      : `<p class="muted">No listings yet. <a href="list.html">List your car →</a></p>`;
-  }
-
-  // Unified inbox
-  const inbox = $("#inbox");
-  if (inbox) {
-    inbox.innerHTML = inquiries.length
-      ? inquiries.map((i) => `
-        <div class="row-card ${i.read ? "" : "unread"}">
-          <div class="grow">
-            <strong>${i.name}</strong>
-            <span class="chip chip-${i.kind}">${i.kind}</span>
-            <span class="chip">${i.channel}</span>
-            <div class="muted small">re: ${i.listingTitle} &middot; ${new Date(i.created).toLocaleDateString("en-CA")}</div>
-            <p class="msg">${i.message}</p>
-          </div>
-        </div>`).join("")
-      : `<p class="muted">No inquiries yet. Inquiries from every channel land here.</p>`;
-    inquiries.forEach((i) => Store.markInquiryRead(i.id));
-  }
-
-  // Rental bookings / agreements
-  const bk = $("#bookings");
-  if (bk) {
-    bk.innerHTML = bookings.length
-      ? bookings.map((b) => `
-        <div class="row-card">
-          <div class="grow">
-            <strong>${b.listingTitle}</strong> <span class="chip chip-renter">${b.status}</span>
-            <div class="muted small">${b.start} → ${b.end} &middot; ${b.days} day(s) &middot; est. ${fmtPrice(b.total)}</div>
-          </div>
-          <a class="btn btn-sm btn-outline" href="agreement.html?booking=${b.id}">Generate agreement</a>
-        </div>`).join("")
-      : `<p class="muted">No booking requests yet.</p>`;
-  }
-
-  $("#reset-demo")?.addEventListener("click", () => {
-    if (confirm("Clear all demo listings, inquiries, and bookings?")) {
-      Store.resetAll(); location.reload();
-    }
-  });
-}
 function statCard(n, label) {
   return `<div class="stat"><div class="stat-num">${n}</div><div class="stat-label">${label}</div></div>`;
 }
@@ -1325,11 +1246,17 @@ document.addEventListener("DOMContentLoaded", () => {
   initDemoForms();
   const page = document.body.dataset.page;
   ({
-    home: pageHome,
+    // ── The auction platform ──
+    home: () => window.homeAuctions && window.homeAuctions(),
+    value: () => window.pageValue && window.pageValue(),
+    auctions: () => window.pageAuctions && window.pageAuctions(),
+    auction: () => window.pageAuction && window.pageAuction(),
+    sell: () => window.pageSell && window.pageSell(),
+    dashboard: () => window.pageAuctionDashboard && window.pageAuctionDashboard(),
+    // ── Legacy shoot-rental pages (not in nav) ──
     browse: pageBrowse,
     list: pageList,
     listing: pageListing,
-    dashboard: pageDashboard,
     guides: pageGuides,
     article: pageArticle,
     local: pageLocal,

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>What's my car worth? Free Smart Estimate | listyourcar.ca</title>
+  <meta name="description" content="Find out what your car is actually worth in Canada — dealer trade-in value, what competitive bidding should get you, and the private-sale ceiling. Free, instant, no account." />
+  <link rel="canonical" href="https://listyourcar.ca/value.html" />
+  <link rel="stylesheet" href="css/styles.css?v=10" />
+</head>
+<body data-page="value">
+  <header class="site-header">
+    <div class="container nav">
+      <div class="nav-brand"><a href="index.html" class="logo">List<span>Your</span>Car<span class="tld">.ca</span></a><span class="now-casting"><span class="live-dot"></span>Live bidding</span></div>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span><span></span></button>
+      <nav class="nav-links">
+        <a href="auctions.html">Live Auctions</a>
+        <a href="value.html" class="active">What's It Worth</a>
+        <div class="nav-more">
+          <button type="button" class="nav-more-btn" aria-expanded="false" aria-haspopup="true">More <span class="caret">▾</span></button>
+          <div class="nav-more-menu">
+            <div class="nm-group"><span class="nm-label">Selling</span>
+              <a href="how-it-works.html">How it works</a>
+              <a href="value.html">Smart Estimate</a>
+            </div>
+            <div class="nm-group"><span class="nm-label">Buying</span>
+              <a href="auctions.html">Live auctions</a>
+              <a href="dealers.html">For dealers</a>
+            </div>
+            <div class="nm-group"><span class="nm-label">Your account</span>
+              <a href="dashboard.html">Dashboard</a>
+              <a href="about.html">About</a>
+            </div>
+          </div>
+        </div>
+        <a href="sell.html" class="btn btn-primary btn-sm">Sell My Car</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container section" id="value-wrap">
+    <div class="page-head">
+      <span class="eyebrow">Smart Estimate</span>
+      <h1>What's your car actually worth?</h1>
+      <p class="lead narrow">Three numbers, not one: what a dealer would hand you on trade, what competitive bidding should get you, and the private-sale ceiling. Free and instant — no account, no phone call.</p>
+    </div>
+
+    <form class="vform" id="value-form">
+      <div class="vf-grid">
+        <label>Year *<input type="number" name="year" required min="1950" max="2027" placeholder="2020" inputmode="numeric" /></label>
+        <label>Make *<input type="text" name="make" required placeholder="Toyota" autocomplete="off" list="make-list" /></label>
+        <label>Model *<input type="text" name="model" required placeholder="RAV4" autocomplete="off" /></label>
+        <label>Distance (km)<input type="number" name="mileage" min="0" placeholder="68000" inputmode="numeric" /></label>
+        <label>Condition
+          <select name="condition">
+            <option value="excellent">Excellent — no needs</option>
+            <option value="good" selected>Good — normal wear</option>
+            <option value="fair">Fair — cosmetic or minor mechanical</option>
+            <option value="needs-work">Needs work</option>
+          </select>
+        </label>
+        <label>City
+          <select name="city">
+            <option value="">Anywhere in Canada</option>
+            <option value="toronto">Toronto</option>
+            <option value="vancouver">Vancouver</option>
+            <option value="montreal">Montreal</option>
+            <option value="calgary">Calgary</option>
+            <option value="ottawa">Ottawa</option>
+            <option value="edmonton">Edmonton</option>
+            <option value="winnipeg">Winnipeg</option>
+            <option value="halifax">Halifax</option>
+          </select>
+        </label>
+      </div>
+      <datalist id="make-list">
+        <option>Toyota</option><option>Honda</option><option>Ford</option><option>Chevrolet</option>
+        <option>Mazda</option><option>Nissan</option><option>Hyundai</option><option>Kia</option>
+        <option>Subaru</option><option>Volkswagen</option><option>Jeep</option><option>Ram</option>
+        <option>GMC</option><option>Dodge</option><option>BMW</option><option>Mercedes-Benz</option>
+        <option>Audi</option><option>Lexus</option><option>Acura</option><option>Tesla</option>
+        <option>Volvo</option><option>Porsche</option><option>Infiniti</option><option>Genesis</option>
+      </datalist>
+      <button type="submit" class="btn btn-primary">Get my estimate</button>
+    </form>
+
+    <div id="value-out"></div>
+
+    <section class="section-line" style="margin-top:4rem;padding-top:3rem">
+      <div class="section-head"><div><span class="eyebrow">What goes in</span><h2>No black box.</h2></div></div>
+      <div class="steps">
+        <div class="step"><span class="index">01</span><h3>Depreciation curve</h3><p>A steep first year, then compounding decline that flattens with age — with a floor, because an old car is never worth nothing.</p></div>
+        <div class="step"><span class="index">02</span><h3>Distance vs. average</h3><p>Measured against 18,000 km a year, the Canadian norm. Low distance adds; high distance subtracts, within limits.</p></div>
+        <div class="step"><span class="index">03</span><h3>Body-type demand</h3><p>Trucks and SUVs hold value here. Sedans and hatchbacks soften. Used EV values have been falling.</p></div>
+        <div class="step"><span class="index">04</span><h3>Season</h3><p>Convertibles peak in summer; trucks and SUVs firm up when the snow starts. We price for the month you're in.</p></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div>
+        <a href="index.html" class="logo">List<span>Your</span>Car<span class="tld">.ca</span></a>
+        <p class="muted" style="margin-top:1rem;max-width:32ch">List your car, set your reserve, and let dealers and private buyers bid it up. Canada-wide.</p>
+      </div>
+      <div><h4>Sell</h4><a href="value.html">What's my car worth</a><a href="sell.html">List for auction</a><a href="how-it-works.html">How it works</a><a href="dashboard.html">Dashboard</a></div>
+      <div><h4>Buy</h4><a href="auctions.html">Live auctions</a><a href="dealers.html">For dealers</a></div>
+      <div><h4>Network</h4><a href="https://listyourspace.ca" target="_blank" rel="noopener">ListYourSpace ↗</a><a href="about.html">About</a><a href="contact.html">Contact</a></div>
+    </div>
+    <div class="footer-bottom"><p>&copy; <span id="year"></span> listyourcar.ca — All rights reserved.</p></div>
+  </footer>
+
+  <script src="js/data.js?v=10"></script>
+  <script src="js/auction-data.js?v=10"></script>
+  <script src="js/valuation.js?v=10"></script>
+  <script src="js/store.js?v=10"></script>
+  <script src="js/config.js?v=10"></script>
+  <script src="js/app.js?v=10"></script>
+  <script src="js/auction.js?v=10"></script>
+</body>
+</html>

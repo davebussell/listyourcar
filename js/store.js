@@ -12,6 +12,9 @@ const Store = (() => {
     bookings: "lyc_bookings",
     account: "lyc_account",
     plans: "lyc_plans",
+    auctions: "lyc_auctions",
+    bids: "lyc_bids",
+    watch: "lyc_watch",
   };
 
   const read = (key) => {
@@ -121,6 +124,86 @@ const Store = (() => {
     write(KEYS.plans, read(KEYS.plans).filter((p) => p.id !== id));
   }
 
+  /* ---------- Auctions ----------
+     Seed auctions are read-only reference stock; user-created ones
+     live in localStorage. Bids placed against either are stored
+     separately and merged on read, so a seeded auction can still
+     take live bids in the prototype. */
+  function userAuctions() { return read(KEYS.auctions); }
+  function allAuctions() {
+    const seed = (window.LYC_DATA?.AUCTIONS || []);
+    const merged = [...read(KEYS.auctions), ...seed].map(withLiveBids);
+    return merged.map(withStatus);
+  }
+  function getAuction(id) { return allAuctions().find((a) => a.id === id) || null; }
+
+  function addAuction(data) {
+    const list = read(KEYS.auctions);
+    const a = {
+      id: uid("auc"),
+      created: new Date().toISOString(),
+      openedAt: new Date().toISOString(),
+      status: "live",
+      bids: [],
+      currentBid: null,
+      watchers: 0,
+      seller: data.name || "Private seller",
+      ...data,
+    };
+    list.unshift(a);
+    write(KEYS.auctions, list);
+    return a;
+  }
+
+  /* Bids the visitor has placed, keyed by auction. */
+  function bidsFor(auctionId) {
+    return read(KEYS.bids).filter((b) => b.auctionId === auctionId);
+  }
+  function addBid({ auctionId, amount, bidder, type }) {
+    const list = read(KEYS.bids);
+    const b = {
+      id: uid("bid"), auctionId, amount: Number(amount),
+      bidder: bidder || "You", type: type || "public",
+      created: new Date().toISOString(), mine: true,
+    };
+    list.unshift(b);
+    write(KEYS.bids, list);
+    return b;
+  }
+  function myBids() { return read(KEYS.bids); }
+
+  // Fold locally-placed bids into an auction and recompute the top.
+  function withLiveBids(a) {
+    const extra = read(KEYS.bids).filter((b) => b.auctionId === a.id);
+    if (!extra.length) return { ...a };
+    const bids = [...(a.bids || []), ...extra]
+      .sort((x, y) => x.amount - y.amount);
+    const top = bids[bids.length - 1];
+    return { ...a, bids, currentBid: top ? top.amount : a.currentBid };
+  }
+  // Derive live/closed state from the clock every time we read.
+  function withStatus(a) {
+    if (a.status === "sold") return a;
+    const ended = new Date(a.closesAt).getTime() <= Date.now();
+    const met = a.currentBid != null && a.currentBid >= a.reserve;
+    return {
+      ...a,
+      reserveMet: met,
+      status: ended ? (met ? "sold" : "reserve-not-met") : "live",
+    };
+  }
+
+  /* ---------- Watchlist ---------- */
+  function watchlist() { return read(KEYS.watch); }
+  function isWatching(id) { return read(KEYS.watch).includes(id); }
+  function toggleWatch(id) {
+    const list = read(KEYS.watch);
+    const i = list.indexOf(id);
+    if (i === -1) list.push(id); else list.splice(i, 1);
+    write(KEYS.watch, list);
+    return i === -1;
+  }
+
   function resetAll() {
     Object.values(KEYS).forEach((k) => localStorage.removeItem(k));
   }
@@ -131,6 +214,9 @@ const Store = (() => {
     bookings, addBooking,
     account, saveAccount, isPlus,
     plans, getPlan, addPlan, deletePlan,
+    allAuctions, userAuctions, getAuction, addAuction,
+    addBid, bidsFor, myBids,
+    watchlist, isWatching, toggleWatch,
     resetAll,
   };
 })();
