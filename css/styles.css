@@ -1235,3 +1235,48 @@ input:focus,select:focus,textarea:focus{border-color:var(--bone);}
 .row-card [data-closes]{font-variant-numeric:tabular-nums;}
 @media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr);}}
 @media(max-width:560px){.row-card{flex-wrap:wrap;gap:.75rem;}}
+
+/* ============================================================
+   SEO LANDING PAGES — city and model
+   ============================================================ */
+.crumbs{font-size:.75rem;letter-spacing:.06em;color:var(--mist2);margin-bottom:2rem;}
+.crumbs a{color:var(--mist2);border-bottom:1px solid transparent;}
+.crumbs a:hover{color:var(--bone);border-bottom-color:var(--bone);}
+
+.seo-block{display:grid;grid-template-columns:4rem 1fr;gap:1.5rem;padding:2.5rem 0;border-top:1px solid var(--line);}
+.seo-block .index{padding-top:.5rem;}
+.seo-block h2{font-size:clamp(1.35rem,2.6vw,1.9rem);margin-bottom:1rem;}
+.seo-block > div > p{margin-bottom:1.25rem;}
+.seo-block .steps{border-top:0;margin-top:1.5rem;}
+@media(max-width:760px){.seo-block{grid-template-columns:1fr;gap:.5rem;}}
+
+.table-scroll{overflow-x:auto;margin:1.5rem 0 1rem;}
+.valtable{width:100%;border-collapse:collapse;font-size:.9375rem;min-width:34rem;}
+.valtable thead th{text-align:left;font-size:.625rem;letter-spacing:.12em;text-transform:uppercase;color:var(--mist2);font-weight:500;padding:.5rem 1rem .5rem 0;border-bottom:1px solid var(--bone);white-space:nowrap;}
+.valtable tbody th{text-align:left;font-weight:500;padding:.75rem 1rem .75rem 0;border-bottom:1px solid var(--line);white-space:nowrap;}
+.valtable td{padding:.75rem 1rem .75rem 0;border-bottom:1px solid var(--line);}
+.valtable .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;padding-right:0;}
+.valtable thead .num{text-align:right;}
+.valtable .strong{font-weight:500;}
+.valtable .up{color:var(--signal);}
+.valtable tbody tr:hover{background:var(--slate);}
+
+.tipbox{border-left:2px solid var(--signal);padding:.85rem 0 .85rem 1.25rem;margin:1.5rem 0;background:var(--slate);padding-right:1.25rem;}
+.link-inline{border-bottom:1px solid var(--bone);}
+.link-inline:hover{color:var(--signal);border-color:var(--signal);}
+
+.linkfarm{padding:2.5rem 0;border-top:1px solid var(--line);}
+.linkfarm h2{font-size:1.25rem;text-transform:uppercase;letter-spacing:.04em;margin-bottom:1.25rem;}
+.lf-links{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.4rem 2rem;}
+.lf-links a{display:block;font-size:.875rem;padding:.4rem 0;color:var(--mist2);border-bottom:1px solid var(--line);}
+.lf-links a:hover{color:var(--signal);}
+
+.idx-grid{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-left:1px solid var(--line);}
+.idx-card{display:flex;flex-direction:column;gap:.3rem;padding:1.5rem 1.25rem;border-right:1px solid var(--line);border-bottom:1px solid var(--line);color:inherit;transition:background .25s var(--ease);}
+.idx-card:hover{background:var(--slate);}
+.idx-name{font-size:1.0625rem;font-weight:500;letter-spacing:-.01em;}
+.idx-meta{font-size:.75rem;color:var(--mist2);}
+.idx-cta{margin-top:.75rem;font-size:.6875rem;letter-spacing:.1em;text-transform:uppercase;color:var(--mist2);}
+.idx-card:hover .idx-cta{color:var(--signal);}
+@media(max-width:1024px){.idx-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:560px){.idx-grid{grid-template-columns:1fr;}}

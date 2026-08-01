@@ -698,6 +698,34 @@ function pageAuctionDashboard() {
   });
 }
 
+/* ============================================================
+   PAGE: City landing pages — live lots for that market
+   ============================================================ */
+function pageCity() {
+  const grid = $("#city-auctions");
+  if (!grid) return;
+  const city = document.body.dataset.city;
+  const note = $("#city-auctions-note");
+
+  const live = Store.allAuctions()
+    .filter((a) => a.status === "live" && (!city || a.city === city))
+    .sort((a, b) => new Date(a.closesAt) - new Date(b.closesAt))
+    .slice(0, 3);
+
+  if (live.length) {
+    grid.innerHTML = live.map(auctionCard).join("");
+    if (note) note.innerHTML = `<a class="link-inline" href="auctions.html?city=${city || ""}">See every live lot in ${cityName(city)} →</a>`;
+    startCountdowns(grid);
+  } else {
+    // An empty market is a listing opportunity, not a dead end.
+    grid.innerHTML = `<p class="muted empty-note">No lots open in ${cityName(city)} right now —
+      <a class="link-inline" href="sell.html?city=${city || ""}">yours could be the next one</a>.</p>`;
+    if (note) note.innerHTML = `<a class="link-inline" href="auctions.html">Browse auctions across Canada →</a>`;
+  }
+}
+
+window.pageCity = pageCity;
+window.pageModel = () => {}; // model pages are fully static
 window.pageAuctionDashboard = pageAuctionDashboard;
 window.pageValue = pageValue;
 window.pageAuctions = pageAuctions;

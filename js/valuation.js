@@ -234,7 +234,9 @@ function estimateValue(input) {
   if (km != null && km >= 0) {
     const expected = Math.max(KM_PER_YEAR, age * KM_PER_YEAR);
     const delta = (km - expected) / expected;
-    kmAdj = clamp(1 - delta * 0.15, 0.72, 1.15);
+    // Buyers punish high distance harder than they reward low, and a
+    // 0.15 coefficient under-priced genuinely worn-out examples.
+    kmAdj = clamp(1 - delta * 0.22, 0.62, 1.15);
     const pctOff = Math.round(Math.abs(delta) * 100);
     kmNote = delta < -0.08
       ? `${valKm(km)} — about ${pctOff}% below average for the age`
