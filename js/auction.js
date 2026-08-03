@@ -146,6 +146,18 @@ function keepCase(s) {
 function renderEstimate(out, vehicle) {
   const est = V().estimateValue(vehicle);
   const title = `${vehicle.year} ${keepCase(vehicle.make)} ${keepCase(vehicle.model)}`;
+
+  // The hook firing is the single most important signal on the site.
+  window.Analytics?.track("estimate_completed", {
+    make: String(vehicle.make || "").toLowerCase(),
+    body: est.body,
+    age: est.age,
+    value_band: window.Analytics.band(est.mid),
+    upside_band: window.Analytics.band(est.upside),
+    confidence: est.confidence,
+    matched: est.matched,
+    from: window.Analytics.pageKind(),
+  });
   const upsidePct = est.tradeIn ? Math.round((est.upside / est.tradeIn) * 100) : 0;
 
   out.innerHTML = `
@@ -424,6 +436,7 @@ function pageAuction() {
     $("#watch-btn")?.addEventListener("click", (e) => {
       const on = Store.toggleWatch(a.id);
       e.target.textContent = on ? "★ Watching" : "☆ Watch this auction";
+      window.Analytics?.track("watch_toggled", { on, city: a.city });
     });
 
     $("#bid-form")?.addEventListener("submit", (e) => {
@@ -438,6 +451,16 @@ function pageAuction() {
       window.submitForm({
         _subject: `Bid placed: ${title}`, kind: "bid", auction: a.id,
         vehicle: title, amount, bidderType: f.type,
+      });
+
+      // Demand side, plus how close to the wire bids actually land.
+      const left = new Date(a.closesAt).getTime() - Date.now();
+      window.Analytics?.track("bid_placed", {
+        bidder_type: f.type,
+        city: a.city,
+        amount_band: window.Analytics.band(amount),
+        cleared_reserve: amount >= a.reserve,
+        hours_left: Math.max(0, Math.round(left / 3600000)),
       });
       render(Store.getAuction(a.id)); // re-read so reserve/status recompute
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -569,6 +592,17 @@ function pageSell() {
       closesAt: closesAt.toISOString(), name: f.name, email: f.email, phone: f.phone,
     });
 
+    // Supply side: a listing created is the conversion that matters.
+    const runDays = Math.round((closesAt.getTime() - Date.now()) / 86400000);
+    window.Analytics?.track("auction_created", {
+      city: f.city,
+      make: String(f.make || "").toLowerCase(),
+      reserve_band: window.Analytics.band(reserve),
+      run_days: runDays,
+      reserve_vs_estimate: reserve > est.bidHigh ? "above-range"
+        : reserve < est.bidLow ? "below-range" : "in-range",
+    });
+
     $("#sell-wrap").innerHTML = `
       <div class="success-card">
         <span class="eyebrow">Auction created</span>
@@ -663,6 +697,7 @@ function homeAuctions() {
   qf?.addEventListener("submit", (e) => {
     e.preventDefault();
     const f = Object.fromEntries(new FormData(qf));
+    window.Analytics?.track("estimate_started", { from: "hero", make: String(f.make || "").toLowerCase() });
     const u = new URLSearchParams();
     Object.entries(f).forEach(([k, v]) => { if (v) u.set(k, v); });
     location.href = "value.html?" + u.toString();

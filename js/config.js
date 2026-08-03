@@ -14,6 +14,29 @@
    ============================================================ */
 window.LYC_CONFIG = {
   FORM_ENDPOINT: "", // e.g. "https://formspree.io/f/xxxxxxxx"
+
+  /* ---------- Analytics ----------
+     OFF by default: with no provider set, nothing is loaded and no
+     request leaves the browser. The funnel events are instrumented
+     either way, so turning this on starts collecting immediately.
+
+     Plausible (recommended — cookieless, no consent banner needed):
+       1. Add the site at https://plausible.io (uses your own account)
+       2. provider: "plausible", domain: "listyourcar.ca"
+
+     GA4:
+       provider: "ga4", measurementId: "G-XXXXXXXXXX"
+       Note: GA4 sets cookies — you'll need a consent banner in the
+       EU/UK, and PIPEDA transparency obligations still apply here.
+
+     debug: true logs events to the console instead of sending them,
+     which is how to verify the funnel without any provider at all. */
+  ANALYTICS: {
+    provider: "",       // "" | "plausible" | "ga4"
+    domain: "",         // plausible
+    measurementId: "",  // ga4
+    debug: false,
+  },
 };
 
 /* Generic submit helper. Returns { ok, demo }.
