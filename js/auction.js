@@ -419,6 +419,7 @@ function pageAuction() {
       </div>`;
 
     startCountdowns(wrap);
+    auctionJsonLd(a, title, top);
 
     $("#watch-btn")?.addEventListener("click", (e) => {
       const on = Store.toggleWatch(a.id);
@@ -442,6 +443,44 @@ function pageAuction() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     });
   }
+}
+
+/* Structured data for an auction lot. Describes only what is
+   genuinely on the page — the vehicle, the current bid, and when
+   bidding ends — so the markup and the rendered page agree. */
+function auctionJsonLd(a, title, top) {
+  document.getElementById("auction-jsonld")?.remove();
+  const city = (D.CITIES || []).find((c) => c.slug === a.city);
+  const data = {
+    "@context": "https://schema.org",
+    "@type": "Vehicle",
+    name: title,
+    vehicleModelDate: String(a.year),
+    manufacturer: { "@type": "Organization", name: a.make },
+    model: a.model,
+    ...(a.trim ? { vehicleConfiguration: a.trim } : {}),
+    mileageFromOdometer: { "@type": "QuantitativeValue", value: a.mileage, unitCode: "KMT" },
+    itemCondition: "https://schema.org/UsedCondition",
+    ...(a.photo ? { image: a.photo } : {}),
+    description: a.description || title,
+    offers: {
+      "@type": "Offer",
+      url: location.href.split("#")[0],
+      priceCurrency: "CAD",
+      price: a.currentBid != null ? a.currentBid : a.startingBid,
+      availability: a.status === "live"
+        ? "https://schema.org/InStock"
+        : "https://schema.org/SoldOut",
+      availabilityEnds: a.closesAt,
+      ...(city ? { areaServed: { "@type": "City", name: city.name } } : {}),
+      seller: { "@type": "Person", name: a.seller || "Private seller" },
+    },
+  };
+  const s = document.createElement("script");
+  s.type = "application/ld+json";
+  s.id = "auction-jsonld";
+  s.textContent = JSON.stringify(data);
+  document.head.appendChild(s);
 }
 
 /* ============================================================
@@ -554,6 +593,36 @@ function pageSell() {
    Home page: live auction strip + quick estimate
    ============================================================ */
 function homeAuctions() {
+  /* Hero facts and the estimate preview are computed from the real
+     book and the real engine — never hardcoded. A number on the
+     home page that the tool then contradicts costs more trust than
+     the number ever bought. */
+  const live = Store.allAuctions().filter((a) => a.status === "live");
+
+  const facts = $("#hero-facts");
+  if (facts) {
+    // Average gap between trade-in and mid-auction across the book.
+    const gaps = live.map((a) => V().estimateValue(a).upside).filter((n) => n > 0);
+    const avgGap = gaps.length ? Math.round(gaps.reduce((s, n) => s + n, 0) / gaps.length / 50) * 50 : null;
+    const cities = new Set(live.map((a) => a.city)).size;
+    facts.innerHTML = `
+      <div class="fact"><span class="fact-n">${live.length}</span><span class="fact-l">Lots open now</span></div>
+      ${avgGap ? `<div class="fact"><span class="fact-n">${money(avgGap)}</span><span class="fact-l">Avg. estimated gain vs trade-in</span></div>` : ""}
+      <div class="fact"><span class="fact-n">${cities || D.CITIES.length}</span><span class="fact-l">Cities bidding</span></div>`;
+  }
+
+  const preview = $("#est-preview");
+  if (preview) {
+    const car = { year: 2020, make: "Toyota", model: "RAV4", mileage: 68000, condition: "good" };
+    const e = V().estimateValue(car);
+    preview.innerHTML = `
+      <span class="epv-label">${car.year} ${car.make} ${car.model} · ${kms(car.mileage)}</span>
+      <div class="epv-row"><span>Dealer trade-in</span><b class="down">${money(e.tradeIn)}</b></div>
+      <div class="epv-row hi"><span>Competitive bidding</span><b>${money(e.bidLow)} – ${money(e.bidHigh)}</b></div>
+      <div class="epv-row"><span>Private sale ceiling</span><b>${money(e.privateHigh)}</b></div>
+      <div class="epv-gain">+${money(e.upside)} <span>vs. trade-in</span></div>`;
+  }
+
   /* Hero: the single closest-to-closing lot, as live proof. */
   const hero = $("#hero-auction");
   if (hero) {
@@ -649,7 +718,8 @@ function pageAuctionDashboard() {
               · ${a.status === "live" ? `closes in <span data-closes="${a.closesAt}">${c.text}</span>` : "closed"}
               · ${(a.bids || []).length} bids
             </div>
-            ${top && a.status !== "live" && a.reserveMet ? `<div class="rc-win muted small">Winning bidder: <strong>${top.bidder}</strong> — contact details released.</div>` : ""}
+            ${top && a.status !== "live" && a.reserveMet ? `<div class="rc-win muted small">Won by <strong>${top.bidder}</strong> at ${money(top.amount)}. Contact details are exchanged at this point — wired to your inbox in the live product.</div>` : ""}
+            ${a.status === "reserve-not-met" && top ? `<div class="rc-win muted small">High bid was ${money(top.amount)}, ${money(a.reserve - top.amount)} short of your reserve. You can still accept it, or relist with different terms.</div>` : ""}
           </div>
           <a class="btn btn-sm btn-ghost" href="auction.html?id=${a.id}">View</a>
         </div>`;
@@ -724,6 +794,29 @@ function pageCity() {
   }
 }
 
+/* ============================================================
+   PAGE: For dealers — figures computed from the live book
+   ============================================================ */
+function pageDealers() {
+  const box = $("#dealer-stats");
+  if (!box) return;
+  const all = Store.allAuctions();
+  const live = all.filter((a) => a.status === "live");
+  const bidCounts = all.map((a) => (a.bids || []).length).filter((n) => n > 0);
+  const avgBids = bidCounts.length
+    ? (bidCounts.reduce((s, n) => s + n, 0) / bidCounts.length).toFixed(1)
+    : "—";
+  const cities = new Set(all.map((a) => a.city)).size;
+
+  box.innerHTML = `
+    <span class="epv-label">The book right now</span>
+    <div class="epv-row"><span>Lots open</span><b>${live.length}</b></div>
+    <div class="epv-row"><span>Cities covered</span><b>${cities || D.CITIES.length}</b></div>
+    <div class="epv-row hi"><span>Avg. bids per lot</span><b>${avgBids}</b></div>
+    <div class="epv-gain">$0 <span>to register</span></div>`;
+}
+
+window.pageDealers = pageDealers;
 window.pageCity = pageCity;
 window.pageModel = () => {}; // model pages are fully static
 window.pageAuctionDashboard = pageAuctionDashboard;

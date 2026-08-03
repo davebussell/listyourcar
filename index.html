@@ -7,6 +7,8 @@
   <meta name="description" content="List your car, set your reserve and closing time, and let dealers and private buyers bid against each other. Free Smart Estimate tells you what your car should fetch before you list." />
   <link rel="canonical" href="https://listyourcar.ca/" />
   <link rel="stylesheet" href="css/styles.css?v=11" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"listyourcar.ca","url":"https://listyourcar.ca/","description":"Canadian car auction platform. List your car, set a reserve and closing time, and let dealers and private buyers bid against each other.","areaServed":{"@type":"Country","name":"Canada"}}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"listyourcar.ca","url":"https://listyourcar.ca/"}</script>
 </head>
 <body data-page="home">
   <header class="site-header">
@@ -58,11 +60,7 @@
           <span class="qv-note muted small">Free, instant, no account. See the range before you commit to anything.</span>
         </form>
 
-        <div class="hero-facts">
-          <div class="fact"><span class="fact-n">12</span><span class="fact-l">Auctions live now</span></div>
-          <div class="fact"><span class="fact-n">$3,100</span><span class="fact-l">Avg. over trade-in</span></div>
-          <div class="fact"><span class="fact-n">7 days</span><span class="fact-l">Typical time to sell</span></div>
-        </div>
+        <div class="hero-facts" id="hero-facts"></div>
       </div>
 
       <div class="hero-media">
@@ -133,13 +131,7 @@
         </div>
       </div>
       <div class="editorial-media reveal reveal-delay-1">
-        <div class="est-preview" aria-hidden="true">
-          <span class="epv-label">2020 Toyota RAV4 · 68,000 km</span>
-          <div class="epv-row"><span>Dealer trade-in</span><b class="down">$21,400</b></div>
-          <div class="epv-row hi"><span>Competitive bidding</span><b>$24,600 – $27,450</b></div>
-          <div class="epv-row"><span>Private sale ceiling</span><b>$29,750</b></div>
-          <div class="epv-gain">+$4,650 <span>vs. trade-in</span></div>
-        </div>
+        <div class="est-preview" id="est-preview" aria-hidden="true"></div>
       </div>
     </div>
   </section>

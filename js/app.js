@@ -177,6 +177,7 @@ document.addEventListener("DOMContentLoaded", () => {
     auction:   () => window.pageAuction && window.pageAuction(),
     sell:      () => window.pageSell && window.pageSell(),
     dashboard: () => window.pageAuctionDashboard && window.pageAuctionDashboard(),
+    dealers:   () => window.pageDealers && window.pageDealers(),
     city:      () => window.pageCity && window.pageCity(),
     model:     () => window.pageModel && window.pageModel(),
   }[page] || (() => {}))();

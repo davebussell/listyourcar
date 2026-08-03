@@ -30,8 +30,20 @@ const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 const money = (n) => "$" + Math.round(n).toLocaleString("en-CA");
 const slugify = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
+/* Breadcrumb markup mirroring the visible crumbs on the page. */
+function breadcrumbLd(trail) {
+  return JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: trail.map(([name, url], i) => ({
+      "@type": "ListItem", position: i + 1, name,
+      ...(url ? { item: ORIGIN + url } : {}),
+    })),
+  });
+}
+
 /* ---------- Shared shell ---------- */
-function shell({ file, title, desc, canonical, dataPage, body, dataAttrs = "" }) {
+function shell({ file, title, desc, canonical, dataPage, body, dataAttrs = "", jsonld = [] }) {
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -45,6 +57,7 @@ function shell({ file, title, desc, canonical, dataPage, body, dataAttrs = "" })
 <meta property="og:description" content="${esc(desc)}" />
 <meta property="og:url" content="${canonical}" />
 <link rel="stylesheet" href="/css/styles.css?v=${V}" />
+${jsonld.map((j) => `<script type="application/ld+json">${j}</script>`).join("\n")}
 </head>
 <body data-page="${dataPage}"${dataAttrs}>
 <header class="site-header">
@@ -160,9 +173,9 @@ CITIES_LOOP: for (const c of D.CITIES) {
   <nav class="crumbs"><a href="/index.html">Home</a> / <a href="/sell-my-car/">Sell my car</a> / ${esc(c.name)}</nav>
 
   <div class="page-head">
-    <span class="eyebrow">${esc(c.province)} · ${c.dealers} registered dealers</span>
+    <span class="eyebrow">${esc(c.province)} · ${esc(c.region)}</span>
     <h1>Sell your car in ${esc(c.name)}</h1>
-    <p class="lead narrow">Skip the lowball trade-in. List your car, set a reserve and a closing time, and let ${c.dealers} verified ${esc(c.name)} dealers bid against private buyers until the clock runs out.</p>
+    <p class="lead narrow">Skip the lowball trade-in. List your car, set a reserve and a closing time, and let verified ${esc(c.name)} dealers and private buyers bid against each other until the clock runs out.</p>
     <div class="hero-actions">
       <a class="btn btn-primary" href="/value.html?city=${c.slug}">What's my car worth?</a>
       <a class="btn btn-ghost" href="/sell.html?city=${c.slug}">List it for auction</a>
@@ -232,11 +245,12 @@ CITIES_LOOP: for (const c of D.CITIES) {
   shell({
     file: `sell-my-car/${c.slug}/index.html`,
     title: `Sell your car in ${c.name} — dealers bid, you set the reserve | listyourcar.ca`,
-    desc: `Sell your car in ${c.name} by auction. ${c.dealers} verified dealers and private buyers bid against each other, you set the reserve and closing time. Free estimate first — see what it should fetch.`,
+    desc: `Sell your car in ${c.name} by auction. Verified dealers and private buyers bid against each other; you set the reserve and the closing time. Free estimate first — see what it should fetch.`,
     canonical: `${ORIGIN}/sell-my-car/${c.slug}/`,
     dataPage: "city",
     dataAttrs: ` data-city="${c.slug}"`,
     body,
+    jsonld: [breadcrumbLd([['Home','/'],['Sell my car','/sell-my-car/'],[c.name,null]])],
   });
   track(`${ORIGIN}/sell-my-car/${c.slug}/`, "0.8");
 }
@@ -252,7 +266,7 @@ for (const c of D.CITIES) {
   <nav class="crumbs"><a href="/index.html">Home</a> / <a href="/car-auctions/">Car auctions</a> / ${esc(c.name)}</nav>
 
   <div class="page-head">
-    <span class="eyebrow">${esc(c.province)} · ${c.dealers} registered dealers</span>
+    <span class="eyebrow">${esc(c.province)} · ${esc(c.region)}</span>
     <h1>Car auctions in ${esc(c.name)}</h1>
     <p class="lead narrow">Private cars listed by the people who own them, with a disclosed reserve and a hard closing time. No wholesale middleman, and no buyer's premium guesswork — you see every competing bid.</p>
     <div class="hero-actions">
@@ -309,11 +323,12 @@ for (const c of D.CITIES) {
   shell({
     file: `car-auctions/${c.slug}/index.html`,
     title: `Car auctions in ${c.name} — bid on private inventory | listyourcar.ca`,
-    desc: `Live car auctions in ${c.name}. Private-seller vehicles with disclosed reserves and a fixed closing time. Every bid public, ${c.dealers} registered dealers competing.`,
+    desc: `Live car auctions in ${c.name}. Private-seller vehicles with disclosed reserves and a fixed closing time. Every bid public, dealers and private buyers competing.`,
     canonical: `${ORIGIN}/car-auctions/${c.slug}/`,
     dataPage: "city",
     dataAttrs: ` data-city="${c.slug}"`,
     body,
+    jsonld: [breadcrumbLd([['Home','/'],['Car auctions','/car-auctions/'],[c.name,null]])],
   });
   track(`${ORIGIN}/car-auctions/${c.slug}/`, "0.7");
 }
@@ -454,6 +469,7 @@ for (const [make, model] of MODELS) {
     canonical: `${ORIGIN}/what-is-my-car-worth/${slug}/`,
     dataPage: "model",
     body,
+    jsonld: [breadcrumbLd([['Home','/'],['Car values','/what-is-my-car-worth/'],[make + ' ' + model, null]])],
   });
   track(`${ORIGIN}/what-is-my-car-worth/${slug}/`, "0.7");
 }
@@ -491,7 +507,7 @@ indexPage({
   lead: "Pick your city for local market conditions, the provincial paperwork you'll need, and the dealers bidding there.",
   items: D.CITIES.map((c) => `<a class="idx-card" href="/sell-my-car/${c.slug}/">
     <span class="idx-name">${esc(c.name)}</span>
-    <span class="idx-meta">${esc(c.province)} · ${c.dealers} dealers</span>
+    <span class="idx-meta">${esc(c.province)} · ${esc(c.region)}</span>
     <span class="idx-cta">Sell in ${esc(c.name)} →</span></a>`).join(""),
 });
 
@@ -504,7 +520,7 @@ indexPage({
   lead: "Private cars, disclosed reserves, a hard closing time, and every bid in the open. Choose your market.",
   items: D.CITIES.map((c) => `<a class="idx-card" href="/car-auctions/${c.slug}/">
     <span class="idx-name">${esc(c.name)}</span>
-    <span class="idx-meta">${esc(c.province)} · ${c.dealers} dealers</span>
+    <span class="idx-meta">${esc(c.province)} · ${esc(c.region)}</span>
     <span class="idx-cta">Browse ${esc(c.name)} →</span></a>`).join(""),
 });
 
