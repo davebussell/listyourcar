@@ -73,7 +73,22 @@ function initChrome() {
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
   }
 
+  initImageFallback();
   initMotion();
+}
+
+/* A photo that fails to load should degrade to a labelled placeholder,
+   not an empty box. Networks, ad blockers and corporate proxies all
+   drop images unpredictably, and an empty frame reads as "the site is
+   broken". Capture phase, because error events don't bubble. */
+function initImageFallback() {
+  document.addEventListener("error", (e) => {
+    const img = e.target;
+    if (!img || img.tagName !== "IMG" || img.dataset.failed) return;
+    img.dataset.failed = "1";
+    if (img.parentElement) img.parentElement.classList.add("img-failed");
+    img.remove();
+  }, true);
 }
 
 /* ============================================================

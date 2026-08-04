@@ -541,6 +541,50 @@ indexPage({
 });
 
 /* ============================================================
+   4b. Photo credits
+   The seed vehicle photos are CC BY-SA / public domain from
+   Wikimedia Commons. BY-SA requires naming the author and licence,
+   so this page is a licensing obligation, not a nicety. It is
+   generated from assets/cars/credits.json, which the download
+   script writes — so credits can never drift from the files.
+   ============================================================ */
+try {
+  const credits = JSON.parse(fs.readFileSync(path.join(ROOT, "assets/cars/credits.json"), "utf8"));
+  const rows = credits.map((c) => `<tr>
+      <th><img class="credit-thumb" src="/assets/cars/${esc(c.file)}" alt="" loading="lazy" /></th>
+      <td><a href="${esc(c.source)}" target="_blank" rel="noopener">${esc(c.title)}</a></td>
+      <td>${esc(c.author)}</td>
+      <td>${esc(c.licence)}</td>
+    </tr>`).join("");
+
+  shell({
+    file: "credits.html",
+    title: "Photo credits | listyourcar.ca",
+    desc: "Attribution for the vehicle photography used on listyourcar.ca, sourced from Wikimedia Commons under free licences.",
+    canonical: `${ORIGIN}/credits.html`,
+    dataPage: "static",
+    body: `<main class="container section">
+  <div class="page-head">
+    <span class="eyebrow">Attribution</span>
+    <h1>Photo credits</h1>
+    <p class="lead narrow">Vehicle photography on our demonstration listings comes from Wikimedia Commons under free licences. Where a licence requires attribution, the author and licence are named below. Photos on real member listings are supplied by the seller.</p>
+  </div>
+  <div class="table-scroll">
+    <table class="valtable credits-table">
+      <thead><tr><th>Photo</th><th>File</th><th>Author</th><th>Licence</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>
+  <p class="muted small" style="margin-top:2rem">CC BY-SA licences require that derivative works be shared under the same terms. If you reuse these images, follow the licence linked on each file's Commons page.</p>
+</main>`,
+  });
+  track(`${ORIGIN}/credits.html`, "0.2");
+  console.log(`  credits.html       ${credits.length} photos attributed`);
+} catch (e) {
+  console.log("  credits.html SKIPPED —", e.message);
+}
+
+/* ============================================================
    5. Sitemap
    ============================================================ */
 const core = [

@@ -6,7 +6,12 @@
    is always live no matter when the page is opened.
    ============================================================ */
 
-const WMA = (file) => "https://commons.wikimedia.org/wiki/Special:FilePath/" + encodeURIComponent(file) + "?width=900";
+/* Photos are served from our own origin, not hotlinked.
+   Wikimedia rate-limits Special:FilePath (HTTP 429), which failed
+   intermittently and differently depending on the visitor's network —
+   images would appear for one person and not another. Self-hosting
+   removes that entire class of bug. Credits: /credits.html */
+const CAR_IMG = (key) => "/assets/cars/" + key + ".jpg";
 
 /* ---------- The bidder pool ----------
    Verified dealers bid under their business name; the public bids
@@ -35,18 +40,18 @@ const PUBLIC_BIDDERS = [
 
 /* ---------- Vehicle photos (Wikimedia Commons, freely licensed) ---------- */
 const AUCTION_PHOTOS = {
-  corolla:  WMA("Toyota_Corolla_Hybrid_(E210)_IMG_4338.jpg"),
-  civic:    WMA("Honda_Civic_e-HEV_Sport_(XI)_–_f_30062024.jpg"),
-  f150:     WMA("2018_Ford_F-150_XLT_Crew_Cab,_front_11.10.19.jpg"),
-  model3:   WMA("Tesla_Model_3_(2023)_Autofrühling_Ulm_IMG_9282.jpg"),
-  cx5:      WMA("2024_Mazda_CX-5_2.5_S_Select_in_Platinum_Quartz_Metallic,_front_right.jpg"),
-  outback:  WMA("2026_Subaru_Outback_Wilderness,_front_left,_05-24-2026.jpg"),
-  wrangler: WMA("2018_Jeep_Wrangler_Sahara_Unlimited_Multijet_2.1_Front.jpg"),
-  tucson:   WMA("2022_Hyundai_Tucson_Preferred,_Front_Right,_05-24-2021.jpg"),
-  rav4:     WMA("2019_Toyota_RAV4_XLE_AWD_in_Magnetic_Grey_Metallic,_front_left.jpg"),
-  silverado:WMA("2019_Chevrolet_Silverado_1500_LT_Z71_Crew_Cab,_front_6.1.19.jpg"),
-  golf:     WMA("VW_Golf_VIII_1X7A0269.jpg"),
-  x3:       WMA("BMW_X3_xDrive20d_(G01)_–_f_10012019.jpg"),
+  corolla:  CAR_IMG("corolla"),
+  civic:    CAR_IMG("civic"),
+  f150:     CAR_IMG("f150"),
+  model3:   CAR_IMG("model3"),
+  cx5:      CAR_IMG("cx5"),
+  outback:  CAR_IMG("outback"),
+  wrangler: CAR_IMG("wrangler"),
+  tucson:   CAR_IMG("tucson"),
+  rav4:     CAR_IMG("rav4"),
+  silverado:CAR_IMG("silverado"),
+  golf:     CAR_IMG("golf"),
+  x3:       CAR_IMG("x3"),
 };
 
 /* ---------- Live auction book ----------

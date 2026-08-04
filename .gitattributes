@@ -18,3 +18,5 @@
 *.svg   text
 *.ico   binary
 *.pdf   binary
+*.jpg binary
+*.png binary
