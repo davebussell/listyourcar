@@ -29,29 +29,38 @@
    ============================================================ */
 
 :root{
-  /* Surfaces — cool and neutral so red is the only temperature */
-  --paper:#ffffff;
-  --paper-2:#f5f6f7;        /* recessed panel */
-  --paper-3:#eceef0;        /* image placeholder ground */
-  --stage:#08090a;          /* full-bleed dark section */
-  --stage-2:#141619;
+  /* Surfaces — warm off-whites. Paper stock, not printer paper.
+     Three grounds give sections something to alternate against so
+     the page has depth instead of one flat field of white. */
+  --paper:#fdfcfa;          /* page ground */
+  --paper-2:#f6f3ed;        /* alternating section / recessed panel */
+  --paper-3:#ece6da;        /* deepest ground, image placeholders */
+  --stage:#14110c;          /* warm near-black for full-bleed sections */
+  --stage-2:#1f1b15;
 
-  /* Ink */
-  --ink:#08090a;
-  --ink-2:#474c53;          /* secondary text — 8.65:1 on white */
-  --ink-3:#53585f;          /* tertiary / labels — 7.17:1 on white */
-  --on-dark:#f2f3f4;
-  --on-dark-2:#b4bac1;
+  /* Ink — warmed to match the paper rather than fighting it */
+  --ink:#14110c;            /* 18.36:1 on paper */
+  --ink-2:#4a463e;          /* secondary — 9.16:1 */
+  --ink-3:#57534a;          /* labels — 7.47:1 */
+  --on-dark:#f4f1ea;
+  --on-dark-2:#bdb5a6;
 
-  /* Rules */
-  --line:#e4e6e9;
-  --line-2:#c9cdd2;
-  --line-dark:rgba(255,255,255,.14);
+  /* Rules, warmed to sit in the same family */
+  --line:#e6e1d6;
+  --line-2:#cdc6b8;
+  --line-dark:rgba(244,241,234,.16);
 
-  /* The one accent */
-  --signal:#e10600;
-  --signal-ink:#c20500;     /* small text on white, for contrast */
-  --signal-dim:rgba(225,6,0,.06);
+  /* TWO accents with a strict division of labour, so the page never
+     looks like it is using colour for decoration:
+       maple red  = time. live state, urgency, the closing clock.
+       brass gold = money. reserve met, top bid, what you gained. */
+  --signal:#d1191f;         /* maple red, fills and marks */
+  --signal-ink:#b31217;     /* red at text weight — 6.79:1 */
+  --signal-dim:rgba(209,25,31,.07);
+
+  --gold:#7d5f18;           /* brass at text weight on paper — 5.82:1 */
+  --gold-bright:#c9a227;    /* fills, rules, and text on the dark stage */
+  --gold-dim:rgba(201,162,39,.10);
 
   /* Metrics */
   --max:90rem;
@@ -206,6 +215,10 @@ p{margin:0 0 1rem;max-width:66ch;}
 /* ── Sections ─────────────────────────────────────────────── */
 .section{padding-block:clamp(4.5rem,11vh,9rem);}
 .section-line{border-top:1px solid var(--line);}
+/* Alternating ground. Sections sit on paper or paper-2 in turn so
+   the page reads as layered stock rather than one flat field. */
+.section-alt{background:var(--paper-2);}
+.section-alt + .section-alt{border-top:1px solid var(--line);}
 .section-head{
   display:flex;align-items:flex-end;justify-content:space-between;gap:2rem;flex-wrap:wrap;
   margin-bottom:clamp(2.5rem,6vh,4rem);
@@ -344,9 +357,9 @@ p{margin:0 0 1rem;max-width:66ch;}
 }
 .epv-row b{font-size:1.125rem;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;letter-spacing:-.02em;}
 .epv-row b.down{color:var(--ink-3);}
-.epv-row.hi b{color:var(--signal);}
+.epv-row.hi b{color:var(--gold);}
 .epv-gain{
-  margin-top:1.5rem;font-size:1.5rem;font-weight:600;
+  margin-top:1.5rem;font-size:1.5rem;font-weight:600;color:var(--gold);
   letter-spacing:-.035em;font-variant-numeric:tabular-nums;
 }
 .epv-gain span{
@@ -405,7 +418,7 @@ p{margin:0 0 1rem;max-width:66ch;}
 .ac-foot{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding-top:1rem;border-top:1px solid var(--line);}
 .ac-meta{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);}
 .ac-reserve{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);white-space:nowrap;}
-.ac-reserve.met{color:var(--signal-ink);}
+.ac-reserve.met{color:var(--gold);font-weight:600;}
 
 /* Toolbar */
 .auc-toolbar{display:flex;align-items:flex-end;justify-content:space-between;gap:2rem;flex-wrap:wrap;padding-bottom:1.5rem;}
@@ -462,8 +475,8 @@ p{margin:0 0 1rem;max-width:66ch;}
 }
 .bidtable td{padding:.9rem 1rem .9rem 0;border-bottom:1px solid var(--line);vertical-align:middle;}
 .bidtable .bt-amt{font-size:1.0625rem;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.025em;}
-.bidtable .top-bid td{background:var(--signal-dim);}
-.bidtable .top-bid .bt-amt{color:var(--signal-ink);}
+.bidtable .top-bid td{background:var(--gold-dim);}
+.bidtable .top-bid .bt-amt{color:var(--gold);}
 .btype{
   display:inline-block;font-family:var(--f-mono);font-size:.75rem;letter-spacing:.09em;
   text-transform:uppercase;padding:.25rem .5rem;border:1px solid var(--line-2);color:var(--ink-2);
@@ -497,7 +510,7 @@ p{margin:0 0 1rem;max-width:66ch;}
   font-variant-numeric:tabular-nums;margin-bottom:.65rem;
 }
 .bb-reserve{display:block;font-family:var(--f-mono);font-size:.8125rem;letter-spacing:.08em;color:var(--ink-3);text-transform:uppercase;}
-.bb-reserve.met{color:var(--signal-ink);}
+.bb-reserve.met{color:var(--gold);font-weight:600;}
 .bb-form{padding-top:1.75rem;}
 .bb-form label{display:block;font-family:var(--f-mono);font-size:.75rem;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3);}
 .bb-input{display:flex;align-items:baseline;gap:.4rem;border-bottom:1px solid var(--ink);margin-top:.6rem;}
@@ -549,7 +562,7 @@ p{margin:0 0 1rem;max-width:66ch;}
 /* Trade-in → private scale */
 .est-scale{position:relative;height:1px;margin:4.5rem 0 5rem;}
 .es-track{position:absolute;inset:0;background:var(--line);}
-.es-band{position:absolute;top:-3px;height:7px;background:var(--signal);}
+.es-band{position:absolute;top:-3px;height:7px;background:var(--gold-bright);}
 .es-mark{position:absolute;top:0;transform:translateX(-50%);}
 .es-mark i{display:block;width:1px;height:16px;background:var(--line-2);margin:0 auto;}
 .es-mark em{
@@ -564,7 +577,7 @@ p{margin:0 0 1rem;max-width:66ch;}
   font-size:clamp(1.1rem,1.02rem + .35vw,1.375rem);letter-spacing:-.03em;
   color:var(--on-dark);line-height:1.2;margin-bottom:.85rem;font-weight:600;text-transform:none;
 }
-.est-upside em{font-style:normal;color:#ff5f57;}
+.est-upside em{font-style:normal;color:var(--gold-bright);}
 .est-upside p{color:var(--on-dark-2);margin:0;}
 
 .ftable{width:100%;border-collapse:collapse;font-size:.875rem;}
@@ -577,7 +590,7 @@ p{margin:0 0 1rem;max-width:66ch;}
   text-align:right;width:5rem;padding-right:0;
   font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:.8125rem;
 }
-.ftable .fw.up{color:var(--signal-ink);}
+.ftable .fw.up{color:var(--gold);}
 .ftable .fw.base{color:var(--ink);}
 .est-conf{display:flex;align-items:center;gap:1.25rem;margin-top:1.75rem;flex-wrap:wrap;}
 .conf-bar{display:block;width:7.5rem;height:2px;background:var(--line);flex-shrink:0;}
@@ -595,7 +608,7 @@ p{margin:0 0 1rem;max-width:66ch;}
   padding:0;font-family:var(--f-mono);font-size:.8125rem;font-weight:500;
   letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);
 }
-.sell-form legend .index{margin-right:.75rem;color:var(--signal-ink);}
+.sell-form legend .index{margin-right:.75rem;color:var(--gold);}
 .sell-form label{
   display:block;margin-bottom:1.75rem;font-family:var(--f-mono);font-size:.75rem;
   letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);
@@ -637,7 +650,7 @@ p{margin:0 0 1rem;max-width:66ch;}
 .stat-label{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-top:.55rem;}
 .dash-section{margin-bottom:4rem;}
 .dash-section .section-head{margin-bottom:0;padding-bottom:1.25rem;}
-.dash-section .section-head .index{margin-right:.85rem;color:var(--signal-ink);}
+.dash-section .section-head .index{margin-right:.85rem;color:var(--gold);}
 .dash-section .section-head h2{display:inline;font-size:1.125rem;letter-spacing:.02em;text-transform:uppercase;}
 .row-list{border-top:1px solid var(--ink);}
 .row-card{display:flex;align-items:center;gap:1.5rem;padding:1.25rem 0;border-bottom:1px solid var(--line);}
@@ -648,8 +661,8 @@ p{margin:0 0 1rem;max-width:66ch;}
   margin-left:.6rem;color:var(--ink-3);
 }
 .rc-state.live{border-color:var(--signal);color:var(--signal-ink);}
-.rc-state.sold{background:var(--ink);border-color:var(--ink);color:var(--paper);}
-.ok-tag{color:var(--signal-ink);}
+.rc-state.sold{background:var(--gold);border-color:var(--gold);color:#fff;}
+.ok-tag{color:var(--gold);font-weight:600;}
 .rc-win{margin-top:.45rem;}
 .row-card [data-closes]{font-variant-numeric:tabular-nums;}
 .plan-row-title{font-weight:600;}
@@ -677,7 +690,7 @@ p{margin:0 0 1rem;max-width:66ch;}
 .valtable td{padding:.95rem 1.25rem .95rem 0;border-bottom:1px solid var(--line);color:var(--ink-2);}
 .valtable .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;padding-right:0;}
 .valtable .strong{font-weight:600;color:var(--ink);letter-spacing:-.02em;}
-.valtable .up{color:var(--signal-ink);}
+.valtable .up{color:var(--gold);font-weight:600;}
 .valtable tbody tr:hover{background:var(--paper-2);}
 
 .tipbox{border-left:2px solid var(--signal);background:var(--paper-2);padding:1.25rem 1.5rem;margin:2rem 0;}
