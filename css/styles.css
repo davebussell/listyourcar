@@ -38,10 +38,10 @@
 
   /* Ink */
   --ink:#08090a;
-  --ink-2:#5f646b;          /* secondary text */
-  --ink-3:#6f757d;          /* tertiary / labels */
+  --ink-2:#474c53;          /* secondary text — 8.65:1 on white */
+  --ink-3:#53585f;          /* tertiary / labels — 7.17:1 on white */
   --on-dark:#f2f3f4;
-  --on-dark-2:#9aa0a8;
+  --on-dark-2:#b4bac1;
 
   /* Rules */
   --line:#e4e6e9;
@@ -313,11 +313,11 @@ p{margin:0 0 1rem;max-width:66ch;}
 .ha-row{display:flex;gap:3rem;margin-bottom:.75rem;}
 .ha-row em{
   display:block;font-style:normal;font-family:var(--f-mono);font-size:.75rem;
-  letter-spacing:.1em;text-transform:uppercase;opacity:.6;margin-bottom:.3rem;
+  letter-spacing:.1em;text-transform:uppercase;opacity:.78;margin-bottom:.3rem;
 }
 .ha-row b{font-size:1.1875rem;font-weight:600;letter-spacing:-.025em;font-variant-numeric:tabular-nums;}
 .ha-row b.is-urgent{color:#ff5f57;}
-.ha-meta{display:block;font-family:var(--f-mono);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;opacity:.55;}
+.ha-meta{display:block;font-family:var(--f-mono);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;opacity:.75;}
 
 /* Bid ticker */
 .ticker{border-block:1px solid var(--line);overflow:hidden;white-space:nowrap;}
