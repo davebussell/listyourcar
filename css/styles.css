@@ -842,3 +842,17 @@ p{margin:0 0 1rem;max-width:66ch;}
   .ad-grid{grid-template-columns:1fr;}
   a{text-decoration:none;color:#000;}
 }
+
+/* ── Honest labelling of sample inventory ─────────────────────
+   A prototype marketplace should never be mistaken for a stocked
+   one. These say so without shouting. */
+.demo-tag{
+  position:absolute;top:0;left:0;background:var(--stage);color:var(--on-dark);
+  font-family:var(--f-mono);font-size:.75rem;letter-spacing:.09em;text-transform:uppercase;
+  padding:.5rem .8rem;
+}
+.demo-note{
+  border-left:2px solid var(--gold-bright);background:var(--paper-2);
+  padding:1rem 1.25rem;margin-bottom:2rem;font-size:.875rem;color:var(--ink-2);
+}
+.demo-note strong{color:var(--ink);font-weight:600;}

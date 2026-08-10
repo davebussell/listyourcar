@@ -23,7 +23,7 @@ const { estimateValue } = window.LYC_VAL;
 
 const ROOT = __dirname;
 const ORIGIN = "https://listyourcar.ca";
-const V = 16;
+const V = 17;
 const THIS_YEAR = new Date().getFullYear();
 
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -56,6 +56,14 @@ function shell({ file, title, desc, canonical, dataPage, body, dataAttrs = "", j
 <meta property="og:title" content="${esc(title)}" />
 <meta property="og:description" content="${esc(desc)}" />
 <meta property="og:url" content="${canonical}" />
+<meta property="og:site_name" content="listyourcar.ca" />
+<meta property="og:image" content="${ORIGIN}/assets/cars/model3.jpg" />
+<meta property="og:image:width" content="960" />
+<meta property="og:image:height" content="498" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="${esc(title)}" />
+<meta name="twitter:description" content="${esc(desc)}" />
+<meta name="twitter:image" content="${ORIGIN}/assets/cars/model3.jpg" />
 <link rel="stylesheet" href="/css/styles.css?v=${V}" />
 ${jsonld.map((j) => `<script type="application/ld+json">${j}</script>`).join("\n")}
 </head>

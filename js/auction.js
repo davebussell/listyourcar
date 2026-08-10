@@ -81,6 +81,7 @@ function auctionCard(a) {
       <div class="ac-media">
         ${a.photo ? `<img src="${a.photo}" alt="${title}" loading="lazy" />` : '<span class="ac-noimg">No photo</span>'}
         <span class="ac-clock ${c.urgent ? "is-urgent" : ""}" data-closes="${a.closesAt}">${c.text}</span>
+        ${a.demo ? '<span class="demo-tag">Sample lot</span>' : ""}
       </div>
       <div class="ac-body">
         <div class="ac-head">
@@ -291,6 +292,15 @@ function pageAuctions() {
 
     const count = $("#auction-count");
     if (count) count.innerHTML = `<b>${items.length}</b> ${items.length === 1 ? "auction" : "auctions"}${state.status === "live" ? " live now" : ""}`;
+
+    // Say plainly how much of the book is sample stock.
+    const note = $("#auction-demo-note");
+    if (note) {
+      const demo = items.filter((a) => a.demo).length;
+      note.innerHTML = demo
+        ? `<div class="demo-note"><strong>${demo === items.length ? "These are sample lots." : `${demo} of these are sample lots.`}</strong> listyourcar.ca is a working prototype — sample bidding is simulated so you can see how the book behaves. Real listings appear here the moment sellers create them. <a href="sell.html" class="link-inline">List a real car →</a></div>`
+        : "";
+    }
     startCountdowns(grid);
   }
   render();
@@ -321,10 +331,19 @@ function pageAuction() {
     const closed = a.status !== "live";
     const dealerCount = new Set(bids.filter((b) => b.type === "dealer").map((b) => b.bidder)).size;
 
-    document.title = `${title} — ${closed ? (a.status === "sold" ? "sold at auction" : "auction closed") : "live auction"} | listyourcar.ca`;
+    const state = closed ? (a.status === "sold" ? "sold at auction" : "auction closed") : "live auction";
+    const closeDay = new Date(a.closesAt).toLocaleDateString("en-CA", { month: "long", day: "numeric" });
+    // A shared lot should preview with its own car, not the house image.
+    setSeo({
+      title: `${title} — ${state} | listyourcar.ca`,
+      desc: `${a.currentBid != null ? "Current bid " + money(a.currentBid) + ". " : ""}${kms(a.mileage)}, ${cityName(a.city)}. ${a.reserveMet ? "Reserve met." : "Reserve not yet met."} Closes ${closeDay}.`,
+      canonical: `${location.origin}${location.pathname}?id=${encodeURIComponent(a.id)}`,
+      image: a.photo ? new URL(a.photo, location.origin).href : undefined,
+    });
 
     wrap.innerHTML = `
       <a href="auctions.html" class="link back">← All auctions</a>
+      ${a.demo ? `<div class="demo-note"><strong>Sample lot.</strong> This is a demonstration listing on a working prototype — the bidding is simulated and the car is not for sale. Everything else on the page behaves exactly as it would on a real auction. <a href="sell.html" class="link-inline">List a real car →</a></div>` : ""}
 
       <div class="ad-grid">
         <div class="ad-main">

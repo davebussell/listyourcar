@@ -162,6 +162,11 @@ const AUCTIONS = (() => {
       watchers: 6 + ((i * 7) % 34),
       seller: "Private seller",
       status: "live",
+      /* These are sample lots, not consignments. Flagged explicitly
+         rather than inferred from the id, so every surface can say so
+         plainly — an empty marketplace is a fine thing to be, a
+         marketplace pretending to have inventory is not. */
+      demo: true,
       description: `${s.year} ${s.make} ${s.model} ${s.trim}. ${titleCaseA(s.condition)} condition, ${Number(s.mileage).toLocaleString("en-CA")} km. Clean history, service records available. Selling to the highest bid at close — reserve set by the owner.`,
     };
   });
