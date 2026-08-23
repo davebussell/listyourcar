@@ -1,27 +1,27 @@
 /* ============================================================
    listyourcar.ca — dealer proximity network
 
-   Matches a listed car to the dealerships closest to it, so the
-   seller can see exactly who is being invited to bid and the
-   platform has a concrete outreach list per lot.
+   Finds the dealerships closest to a car and lets the seller shape
+   the invitation list: narrow it to the marques that actually retail
+   their vehicle, or pick rooftops by hand.
 
-   Source: a Canadian dealer dataset (4,441 rooftops) compiled at
-   build time by build-dealers.js. City coordinates are geocoded
-   once, offline, so matching at runtime is pure arithmetic — no
-   API, no key, no per-listing cost.
+   Positions come from postal areas (FSA), geocoded once at build
+   time, so a Toronto seller gets rooftops ranked across the GTA
+   rather than a coin-toss between 122 dealers sharing one centroid.
+   Runtime matching is pure arithmetic — no API, no key, no cost.
 
-   The dataset is ~300KB, so it is fetched lazily and only on the
-   surfaces that actually need it, never on the general page load.
+   The dataset is ~400KB, so it loads lazily and only where needed.
 
    NOTE ON SENDING: matching a dealer is not the same as lawfully
-   messaging one. See notifyDealers() before wiring real delivery.
+   messaging one. Invitations are recorded as "matched"; delivery is
+   a separate, deliberate step.
    ============================================================ */
 
 const DealerNet = (() => {
-  let _data = null;      // { cities:[[name,prov,lat,lon]], dealers:[[name,cityIdx,postal,phone,web,staff]] }
+  let _data = null;          // { positions:[[city,prov,lat,lon]], dealers:[[name,posIdx,postal,phone,web,staff,brands]], brands:[] }
   let _loading = null;
+  const _postalCache = {};   // FSA -> [lat,lon], so a retyped code costs nothing
 
-  /* Lazy load, once, shared across callers. */
   function load() {
     if (_data) return Promise.resolve(_data);
     if (_loading) return _loading;
@@ -32,7 +32,6 @@ const DealerNet = (() => {
     return _loading;
   }
 
-  /* Great-circle distance in km. */
   function haversine(lat1, lon1, lat2, lon2) {
     const R = 6371, rad = Math.PI / 180;
     const dLat = (lat2 - lat1) * rad, dLon = (lon2 - lon1) * rad;
@@ -41,56 +40,111 @@ const DealerNet = (() => {
     return 2 * R * Math.asin(Math.sqrt(a));
   }
 
-  /* Resolve a seller location to coordinates. Accepts an auction
-     city slug, or an explicit {lat,lon}. */
-  function originFor(where) {
-    if (where && typeof where === "object" && where.lat != null) return where;
-    const c = (window.LYC_DATA?.CITIES || []).find((x) => x.slug === where);
-    return c ? { lat: c.lat, lon: c.lon, name: c.name } : null;
+  /* ---------- Locating the seller ---------- */
+
+  const FSA_RE = /^[A-Za-z]\d[A-Za-z]/;
+  const normPostal = (s) => String(s || "").replace(/\s+/g, "").toUpperCase();
+
+  /* Canadian postal codes resolve to a neighbourhood, not a city —
+     which is the whole point of asking for one. */
+  async function fromPostal(code) {
+    const clean = normPostal(code);
+    if (!FSA_RE.test(clean)) throw new Error("That doesn't look like a Canadian postal code.");
+    const fsa = clean.slice(0, 3);
+    if (_postalCache[fsa]) return { ..._postalCache[fsa], source: "postal", label: fsa };
+
+    const res = await fetch("https://api.zippopotam.us/ca/" + fsa);
+    if (!res.ok) throw new Error("We couldn't find that postal code.");
+    const j = await res.json();
+    const p = j.places && j.places[0];
+    if (!p) throw new Error("We couldn't find that postal code.");
+    const loc = {
+      lat: +p.latitude, lon: +p.longitude,
+      place: p["place name"], province: p["state abbreviation"] || p.state,
+    };
+    _postalCache[fsa] = loc;
+    return { ...loc, source: "postal", label: fsa };
   }
 
-  /* The n dealerships closest to a listing, nearest first. */
-  async function nearest(where, n = 10) {
-    const origin = originFor(where);
-    if (!origin) return [];
+  /* Device location, when the visitor would rather not type. */
+  function fromDevice() {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) return reject(new Error("This browser can't share a location."));
+      navigator.geolocation.getCurrentPosition(
+        (pos) => resolve({
+          lat: pos.coords.latitude, lon: pos.coords.longitude,
+          place: "your location", source: "device",
+        }),
+        (err) => reject(new Error(
+          err.code === 1 ? "Location permission was declined — enter a postal code instead."
+                         : "Couldn't read your location. Try a postal code."
+        )),
+        { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 }
+      );
+    });
+  }
+
+  /* An auction city slug, for callers that already know the market. */
+  function fromCity(slug) {
+    const c = (window.LYC_DATA?.CITIES || []).find((x) => x.slug === slug);
+    return c ? { lat: c.lat, lon: c.lon, place: c.name, province: c.province, source: "city" } : null;
+  }
+
+  /* ---------- Ranking ---------- */
+
+  /* Every dealer, scored against an origin. Callers slice what they
+     need after filtering, so a brand filter still returns the ten
+     nearest of that marque rather than ten from an already-cut list. */
+  async function ranked(origin, opts = {}) {
     const d = await load();
+    const dist = d.positions.map((p) => haversine(origin.lat, origin.lon, p[2], p[3]));
+    const { brands = [], type = "all", maxKm = null } = opts;
 
-    // Distance is per city, not per dealer — so compute it once per
-    // city and reuse it across every rooftop in that city.
-    const cityDist = d.cities.map((c) => haversine(origin.lat, origin.lon, c[2], c[3]));
+    let list = d.dealers.map((row, i) => ({
+      id: "d" + i,
+      name: row[0],
+      city: d.positions[row[1]][0],
+      province: d.positions[row[1]][1],
+      postal: row[2] || "",
+      phone: row[3] || "",
+      website: row[4] || "",
+      staff: row[5] || 0,
+      brands: row[6] || [],
+      km: dist[row[1]],
+    }));
 
-    return d.dealers
-      .map((row, i) => ({
-        id: "d" + i,
-        name: row[0],
-        city: d.cities[row[1]][0],
-        province: d.cities[row[1]][1],
-        postal: row[2] || "",
-        phone: row[3] || "",
-        website: row[4] || "",
-        staff: row[5] || 0,
-        km: cityDist[row[1]],
-      }))
-      /* Distance is resolved to city level, so every rooftop in the
-         seller's own city ties at the same figure. Breaking those ties
-         on headcount surfaces the dealerships with the volume to
-         actually bid, instead of whichever row happened to come first
-         in the source file. */
-      .sort((a, b) => a.km - b.km || b.staff - a.staff || a.name.localeCompare(b.name))
-      .slice(0, n);
+    if (brands.length) list = list.filter((x) => x.brands.some((b) => brands.includes(b)));
+    if (type === "franchise") list = list.filter((x) => x.brands.length);
+    else if (type === "independent") list = list.filter((x) => !x.brands.length);
+    if (maxKm != null) list = list.filter((x) => x.km <= maxKm);
+
+    return list.sort((a, b) => a.km - b.km || b.staff - a.staff || a.name.localeCompare(b.name));
   }
 
-  /* How many rooftops sit within a given radius — used to tell a
-     seller how deep the bidding pool around them actually is. */
-  async function countWithin(where, km = 100) {
-    const origin = originFor(where);
-    if (!origin) return 0;
+  async function nearest(origin, n = 10, opts = {}) {
+    return (await ranked(origin, opts)).slice(0, n);
+  }
+
+  async function countWithin(origin, km = 100) {
     const d = await load();
-    const cityDist = d.cities.map((c) => haversine(origin.lat, origin.lon, c[2], c[3]));
-    return d.dealers.reduce((n, row) => n + (cityDist[row[1]] <= km ? 1 : 0), 0);
+    const dist = d.positions.map((p) => haversine(origin.lat, origin.lon, p[2], p[3]));
+    return d.dealers.reduce((n, row) => n + (dist[row[1]] <= km ? 1 : 0), 0);
   }
 
-  return { load, nearest, countWithin, haversine };
+  /* Marques actually present near an origin, so the filter never
+     offers a brand with nothing behind it. */
+  async function brandsNear(origin, km = 150) {
+    const d = await load();
+    const dist = d.positions.map((p) => haversine(origin.lat, origin.lon, p[2], p[3]));
+    const tally = {};
+    d.dealers.forEach((row) => {
+      if (dist[row[1]] > km) return;
+      (row[6] || []).forEach((b) => { tally[b] = (tally[b] || 0) + 1; });
+    });
+    return Object.entries(tally).sort((a, b) => b[1] - a[1]);
+  }
+
+  return { load, nearest, ranked, countWithin, brandsNear, fromPostal, fromDevice, fromCity, haversine };
 })();
 
 window.DealerNet = DealerNet;

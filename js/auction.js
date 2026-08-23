@@ -578,35 +578,24 @@ function pageSell() {
   });
   refreshEstimate();
 
-  /* Bidding pool preview — how many rooftops sit near this car. */
-  const pool = $("#dealer-pool");
-  async function refreshPool() {
-    const city = form.city?.value;
-    if (!pool) return;
-    if (!city) { pool.innerHTML = `<p class="muted small">Choose your city and we'll show how many dealerships are close enough to bid.</p>`; return; }
-    pool.innerHTML = `<p class="muted small">Counting dealerships near ${cityName(city)}…</p>`;
-    try {
-      const [near, within100] = await Promise.all([
-        DealerNet.nearest(city, 10),
-        DealerNet.countWithin(city, 100),
-      ]);
-      if (!near.length) { pool.innerHTML = ""; return; }
-      const furthest = Math.round(near[near.length - 1].km);
-      pool.innerHTML = `
-        <span class="eyebrow">Your bidding pool</span>
-        <div class="sr-range">${within100}</div>
-        <p class="muted small">registered dealerships within 100 km of ${cityName(city)}.
-        The ten nearest are invited the moment your auction opens.</p>
-        <dl class="sr-sugg">
-          ${near.slice(0, 3).map((d) => `<div><dt>${d.name.slice(0, 26)}</dt><dd>${Math.round(d.km)} km</dd></div>`).join("")}
-        </dl>
-        <p class="muted small">…and ${near.length - 3} more.</p>`;
-    } catch {
-      pool.innerHTML = "";   // never let this block the form
-    }
+  /* Dealer picker — postal lookup, marque filters, hand-selection.
+     Seeded from the chosen city so it is useful before the seller
+     types anything, then overridden by whatever they search. */
+  let picker = null;
+  let picked = [];
+  const pickHost = document.getElementById("dealer-picker");
+  if (pickHost && window.createDealerPicker) {
+    picker = createDealerPicker(pickHost, {
+      count: 10,
+      onChange: (sel) => { picked = sel; },
+    });
+    const seed = () => {
+      const o = DealerNet.fromCity(form.city ? form.city.value : "");
+      if (o) picker.setOrigin(o);
+    };
+    form.city?.addEventListener("change", () => { if (!picker.origin()) seed(); });
+    if (form.city && form.city.value) seed();
   }
-  form.city?.addEventListener("change", refreshPool);
-  refreshPool();
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -641,7 +630,9 @@ function pageSell() {
     let matched = [];
     let invite = null;
     try {
-      matched = await DealerNet.nearest(f.city, 10);
+      matched = picked.length
+        ? picked
+        : await DealerNet.nearest(DealerNet.fromCity(f.city), 10);
       invite = Store.addInvite({
         auctionId: auction.id,
         vehicle: `${f.year} ${f.make} ${f.model}`,
@@ -714,7 +705,7 @@ function renderDealerPanel(host, dealers, invite, citySlug) {
       <div class="dealers-head">
         <div>
           <span class="eyebrow">Invited to bid</span>
-          <h2>${dealers.length} dealerships closest to your car</h2>
+          <h2>${dealers.length} ${dealers.length === 1 ? "dealership" : "dealerships"} invited to bid</h2>
           <p class="muted">${local === dealers.length
             ? `All ten are in ${sellerCity} itself, ordered by size — the rooftops with the volume to bid seriously on a car like yours.`
             : local
