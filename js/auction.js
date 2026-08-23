@@ -119,7 +119,7 @@ function pageValue() {
     if (v && form[k]) form[k].value = v;
   });
 
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const f = Object.fromEntries(new FormData(form));
     if (!f.make || !f.model || !f.year) return;
@@ -578,7 +578,37 @@ function pageSell() {
   });
   refreshEstimate();
 
-  form.addEventListener("submit", (e) => {
+  /* Bidding pool preview — how many rooftops sit near this car. */
+  const pool = $("#dealer-pool");
+  async function refreshPool() {
+    const city = form.city?.value;
+    if (!pool) return;
+    if (!city) { pool.innerHTML = `<p class="muted small">Choose your city and we'll show how many dealerships are close enough to bid.</p>`; return; }
+    pool.innerHTML = `<p class="muted small">Counting dealerships near ${cityName(city)}…</p>`;
+    try {
+      const [near, within100] = await Promise.all([
+        DealerNet.nearest(city, 10),
+        DealerNet.countWithin(city, 100),
+      ]);
+      if (!near.length) { pool.innerHTML = ""; return; }
+      const furthest = Math.round(near[near.length - 1].km);
+      pool.innerHTML = `
+        <span class="eyebrow">Your bidding pool</span>
+        <div class="sr-range">${within100}</div>
+        <p class="muted small">registered dealerships within 100 km of ${cityName(city)}.
+        The ten nearest are invited the moment your auction opens.</p>
+        <dl class="sr-sugg">
+          ${near.slice(0, 3).map((d) => `<div><dt>${d.name.slice(0, 26)}</dt><dd>${Math.round(d.km)} km</dd></div>`).join("")}
+        </dl>
+        <p class="muted small">…and ${near.length - 3} more.</p>`;
+    } catch {
+      pool.innerHTML = "";   // never let this block the form
+    }
+  }
+  form.city?.addEventListener("change", refreshPool);
+  refreshPool();
+
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const f = Object.fromEntries(new FormData(form));
     const reserve = Number(f.reserve) || 0;
@@ -604,6 +634,24 @@ function pageSell() {
       name: f.name, email: f.email, phone: f.phone,
       seller: f.name || "Private seller",
     });
+
+    /* Match the rooftops closest to this car and record who should
+       be invited to bid. Matching is local and instant; delivery is
+       a separate, deliberate step (see the invitation panel). */
+    let matched = [];
+    let invite = null;
+    try {
+      matched = await DealerNet.nearest(f.city, 10);
+      invite = Store.addInvite({
+        auctionId: auction.id,
+        vehicle: `${f.year} ${f.make} ${f.model}`,
+        city: f.city,
+        dealers: matched,
+      });
+    } catch (err) {
+      // A dealer-data failure must never block the listing itself.
+      console.warn("dealer matching unavailable:", err.message);
+    }
 
     window.submitForm({
       _subject: `New auction: ${f.year} ${f.make} ${f.model}`, kind: "auction",
@@ -632,14 +680,82 @@ function pageSell() {
           <div><dt>Your reserve</dt><dd>${money(reserve)}</dd></div>
           <div><dt>Opening bid</dt><dd>${money(startingBid)}</dd></div>
         </dl>
-        <p class="muted">Dealers in ${cityName(f.city)} are notified when an auction opens in their area. You'll see every bid as it lands.</p>
+        <div id="matched-dealers"></div>
         <div class="hero-actions">
           <a class="btn btn-primary" href="auction.html?id=${auction.id}">View your auction</a>
           <a class="btn btn-ghost" href="dashboard.html">Go to dashboard</a>
         </div>
       </div>`;
+
+    renderDealerPanel($("#matched-dealers"), matched, invite, f.city);
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
+}
+
+/* ============================================================
+   Matched dealerships — who gets invited to bid on this car
+   ============================================================ */
+function renderDealerPanel(host, dealers, invite, citySlug) {
+  if (!host) return;
+
+  if (!dealers || !dealers.length) {
+    host.innerHTML = `<div class="demo-note"><strong>Dealer matching unavailable.</strong>
+      Your auction is live and accepting bids — we could not load the dealer network just now,
+      so the invitation list will be built when it recovers.</div>`;
+    return;
+  }
+
+  const furthest = Math.round(dealers[dealers.length - 1].km);
+  const sellerCity = cityName(citySlug);
+  const isLocal = (d) => d.city.toLowerCase() === sellerCity.toLowerCase();
+  const local = dealers.filter(isLocal).length;
+  host.innerHTML = `
+    <section class="dealers-panel">
+      <div class="dealers-head">
+        <div>
+          <span class="eyebrow">Invited to bid</span>
+          <h2>${dealers.length} dealerships closest to your car</h2>
+          <p class="muted">${local === dealers.length
+            ? `All ten are in ${sellerCity} itself, ordered by size — the rooftops with the volume to bid seriously on a car like yours.`
+            : local
+            ? `${local} in ${sellerCity} itself, the rest within ${furthest} km.`
+            : `Nearest first, out to ${furthest} km from ${sellerCity}.`}</p>
+        </div>
+        <span class="dealers-count"><b>${dealers.length}</b><em>matched</em></span>
+      </div>
+
+      <ol class="dealer-list">
+        ${dealers.map((d, i) => `
+          <li class="dealer">
+            <span class="dealer-rank">${String(i + 1).padStart(2, "0")}</span>
+            <span class="dealer-body">
+              <strong>${d.name}</strong>
+              <span class="dealer-meta">${d.city}, ${d.province}${d.postal ? " · " + d.postal : ""}</span>
+            </span>
+            <span class="dealer-contact">
+              ${d.phone ? `<a href="tel:${d.phone.replace(/[^0-9+]/g, "")}" class="link-inline">${d.phone}</a>` : `<span class="muted small">no phone on file</span>`}
+              ${d.website ? `<a href="https://${d.website}" target="_blank" rel="noopener" class="dealer-web">${d.website}</a>` : ""}
+            </span>
+            <span class="dealer-km">${isLocal(d) ? `<span class="dealer-here">in city</span>` : `${Math.round(d.km)}<em>km</em>`}</span>
+          </li>`).join("")}
+      </ol>
+
+      <div class="dealers-foot">
+        <p class="muted small">
+          <strong>Status: matched, not yet sent.</strong>
+          The list is built and saved${invite ? ` as <code>${invite.id}</code>` : ""}, but no invitation has
+          been delivered yet. The dealer records carry phone numbers and websites, not email addresses,
+          so automated dispatch needs a contact channel first — and commercial messages to Canadian
+          businesses require consent under CASL. Until then this is a call list: these are the rooftops
+          most likely to want your car.
+        </p>
+        <p class="muted small">
+          Distances are measured to each dealership's city, not its street address — Canadian postal
+          geography is proprietary and not in the open geocoder. Rooftops in your own city therefore
+          tie, and are ordered by size. Street-level ranking needs a commercial geocoding pass.
+        </p>
+      </div>
+    </section>`;
 }
 
 /* ============================================================
@@ -797,6 +913,31 @@ function pageAuctionDashboard() {
           <a class="btn btn-sm btn-ghost" href="auction.html?id=${a.id}">View</a>
         </div>`;
     }).join("") : `<p class="muted">No bids yet. <a href="auctions.html" class="link">Browse live auctions →</a></p>`;
+  }
+
+  /* — Dealer invitations raised by your listings — */
+  const mi = $("#my-invites");
+  if (mi) {
+    const invites = Store.invites();
+    mi.innerHTML = invites.length ? invites.map((v) => `
+      <div class="row-card invite-row">
+        <div class="grow">
+          <strong>${v.vehicle}</strong>
+          <span class="rc-state ${v.status === "sent" ? "sold" : ""}">${v.status === "sent" ? "Sent" : "Matched"}</span>
+          <div class="muted small">
+            ${v.dealers.length} dealerships near ${cityName(v.city)}
+            · built ${relTime(v.created)}
+          </div>
+          <details class="invite-detail">
+            <summary>See the list</summary>
+            <ol class="invite-dealers">
+              ${v.dealers.map((d) => `<li><span>${d.name}</span><span class="muted small">${d.city}, ${d.province} · ${d.km} km</span></li>`).join("")}
+            </ol>
+          </details>
+        </div>
+        <a class="btn btn-sm btn-ghost" href="auction.html?id=${v.auctionId}">View lot</a>
+      </div>`).join("")
+      : `<p class="muted">No invitations yet. <a href="sell.html" class="link-inline">List a car →</a> and we'll match the ten closest dealerships to it.</p>`;
   }
 
   /* — Watchlist — */

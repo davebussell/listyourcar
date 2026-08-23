@@ -1,19 +1,7 @@
-# OS / editor cruft
-.DS_Store
-Thumbs.db
-desktop.ini
-*.swp
-.vscode/
-.idea/
-
-# Dependencies / build (if a toolchain is added later)
-node_modules/
-dist/
-.cache/
-
-# Local env / secrets
-.env
-.env.local
-
-# Local Netlify folder
-.netlify
+# Licensed ZoomInfo export and anything derived that carries contact
+# details. The repo is public; the compiled contact set must not be.
+data/dealers-private.json
+data/dealers-raw.json
+data/cities-todo.json
+*.csv
+.netlify/

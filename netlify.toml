@@ -5,16 +5,32 @@
   publish = "."
   command = ""
 
-# Friendly redirect: /rent → browse rentals (matches strategy's /rent channel)
-[[redirects]]
-  from = "/rent"
-  to = "/browse.html?intent=rental"
-  status = 302
-
-# Legacy path from the original sell-only build
+# Short paths for the two things people are actually here to do.
 [[redirects]]
   from = "/sell"
-  to = "/list.html"
+  to = "/sell.html"
+  status = 301
+
+[[redirects]]
+  from = "/value"
+  to = "/value.html"
+  status = 301
+
+# Retired products. These pointed at pages that no longer exist —
+# browse.html and list.html were the shoot-rental build.
+[[redirects]]
+  from = "/rent"
+  to = "/sell.html"
+  status = 301
+
+[[redirects]]
+  from = "/browse.html"
+  to = "/auctions.html"
+  status = 301
+
+[[redirects]]
+  from = "/list.html"
+  to = "/sell.html"
   status = 301
 
 # Security & caching headers
@@ -36,3 +52,16 @@
   for = "/js/*"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
+
+# The dealer network is large and changes only when rebuilt. Cache it
+# hard; the version query on the fetch busts it when it does change.
+[[headers]]
+  for = "/data/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+# Vehicle photos are content-addressed by filename and never mutate.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"

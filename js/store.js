@@ -10,6 +10,7 @@ const Store = (() => {
     auctions: "lyc_auctions",
     bids: "lyc_bids",
     watch: "lyc_watch",
+    invites: "lyc_invites",
   };
 
   const read = (key) => {
@@ -98,6 +99,42 @@ const Store = (() => {
     return i === -1;
   }
 
+  /* ---------- Dealer invitations ----------
+     One record per listing: which rooftops were matched, when, and
+     whether the invitation has actually been delivered. Matching is
+     instant; delivery depends on having a contact channel and lawful
+     consent, so the two are tracked separately and never conflated. */
+  function invites() { return read(KEYS.invites); }
+  function invitesFor(auctionId) {
+    return read(KEYS.invites).filter((i) => i.auctionId === auctionId);
+  }
+  function addInvite({ auctionId, vehicle, city, dealers }) {
+    const list = read(KEYS.invites);
+    const rec = {
+      id: uid("inv"),
+      auctionId, vehicle, city,
+      created: new Date().toISOString(),
+      // "matched" = we know who should bid. "sent" only once a real
+      // channel delivers it. Never claim delivery we cannot evidence.
+      status: "matched",
+      dealers: (dealers || []).map((d) => ({
+        name: d.name, city: d.city, province: d.province,
+        phone: d.phone, website: d.website, km: Math.round(d.km),
+      })),
+    };
+    list.unshift(rec);
+    write(KEYS.invites, list);
+    return rec;
+  }
+  function markInviteSent(id, channel) {
+    const list = read(KEYS.invites);
+    const i = list.findIndex((x) => x.id === id);
+    if (i === -1) return null;
+    list[i] = { ...list[i], status: "sent", sentAt: new Date().toISOString(), channel };
+    write(KEYS.invites, list);
+    return list[i];
+  }
+
   function resetAll() {
     Object.values(KEYS).forEach((k) => localStorage.removeItem(k));
   }
@@ -106,6 +143,7 @@ const Store = (() => {
     allAuctions, userAuctions, getAuction, addAuction,
     addBid, bidsFor, myBids,
     watchlist, isWatching, toggleWatch,
+    invites, invitesFor, addInvite, markInviteSent,
     resetAll,
   };
 })();
