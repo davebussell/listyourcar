@@ -802,6 +802,12 @@ p{margin:0 0 1rem;max-width:66ch;}
   .faq{grid-template-columns:1fr;}
   .footer-grid{grid-template-columns:1fr 1fr;}
 
+}
+
+/* The nav needs 990px to sit on one line; below that it wrapped onto
+   two rows and collided with the brand. Given its own breakpoint so
+   the page layout is not forced to collapse at the same width. */
+@media(max-width:1024px){
   .nav-toggle{display:flex;}
   .nav-links{
     position:absolute;top:100%;left:0;right:0;display:none;flex-direction:column;
@@ -957,3 +963,22 @@ p{margin:0 0 1rem;max-width:66ch;}
 .field-note.is-error{color:var(--signal-ink);}
 .dp-find-slim{padding-bottom:.85rem;}
 .dp-await{padding:1.5rem 0;margin:0;}
+
+/* ============================================================
+   MARKED TEXT — the knocked-out phrase
+   Borrowed from the selection treatment: ink ground, paper text.
+   box-decoration-break clones the box onto every wrapped line, so
+   a two-line phrase reads as two solid blocks rather than one
+   ragged rectangle behind the whole thing.
+   ============================================================ */
+.mark{
+  background:var(--ink);color:var(--paper);
+  padding:.04em .16em .1em;
+  -webkit-box-decoration-break:clone;box-decoration-break:clone;
+}
+/* The display line-height is 1.02, which would make stacked marks
+   collide. Open it up only where a mark is actually used. */
+.has-mark{line-height:1.16;}
+/* Selection inside a mark has to invert back, or it disappears. */
+.mark::selection{background:var(--paper);color:var(--ink);}
+.mark::-moz-selection{background:var(--paper);color:var(--ink);}

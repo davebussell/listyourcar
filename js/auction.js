@@ -816,7 +816,7 @@ function homeAuctions() {
     const cities = new Set(live.map((a) => a.city)).size;
     facts.innerHTML = `
       <div class="fact"><span class="fact-n">${live.length}</span><span class="fact-l">Lots open now</span></div>
-      ${avgGap ? `<div class="fact"><span class="fact-n">${money(avgGap)}</span><span class="fact-l">Avg. estimated gain vs trade-in</span></div>` : ""}
+      ${avgGap ? `<div class="fact"><span class="fact-n">${money(avgGap)}</span><span class="fact-l">Avg. gain vs trade-in</span></div>` : ""}
       <div class="fact"><span class="fact-n">${cities || D.CITIES.length}</span><span class="fact-l">Cities bidding</span></div>`;
   }
 
