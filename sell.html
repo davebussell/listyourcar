@@ -18,7 +18,7 @@
   <meta name="twitter:title" content="Sell your car at auction" />
   <meta name="twitter:description" content="Set your own reserve and closing time. Nothing sells below your number." />
   <meta name="twitter:image" content="https://listyourcar.ca/assets/cars/model3.jpg" />
-  <link rel="stylesheet" href="css/styles.css?v=19" />
+  <link rel="stylesheet" href="css/styles.css?v=20" />
 </head>
 <body data-page="sell">
   <header class="site-header">
@@ -81,18 +81,27 @@
               </select>
             </label>
           </div>
-          <label>City *
-            <select name="city" required>
-              <option value="">Select your city</option>
-              <option value="toronto">Toronto</option>
-              <option value="vancouver">Vancouver</option>
-              <option value="montreal">Montreal</option>
-              <option value="calgary">Calgary</option>
-              <option value="ottawa">Ottawa</option>
-              <option value="edmonton">Edmonton</option>
-              <option value="winnipeg">Winnipeg</option>
-              <option value="halifax">Halifax</option>
-            </select>
+          <div class="form-row">
+            <label>Postal code *
+              <input type="text" name="postal" required maxlength="7" placeholder="M4M 2B4"
+                     autocomplete="postal-code" inputmode="text" />
+              <span class="field-note muted small" id="postal-note">Where the car is. This is how we find the dealerships closest to it.</span>
+            </label>
+            <label>Nearest market
+              <select name="city">
+                <option value="">Set from postal code</option>
+                <option value="toronto">Toronto</option>
+                <option value="vancouver">Vancouver</option>
+                <option value="montreal">Montreal</option>
+                <option value="calgary">Calgary</option>
+                <option value="ottawa">Ottawa</option>
+                <option value="edmonton">Edmonton</option>
+                <option value="winnipeg">Winnipeg</option>
+                <option value="halifax">Halifax</option>
+              </select>
+              <span class="field-note muted small">Used to file your lot in the auction book.</span>
+            </label>
+          </div>
           </label>
           <label>Description<textarea name="description" rows="4" placeholder="Service history, recent work, any flaws worth disclosing. Honest listings attract stronger bids."></textarea></label>
           <label>Photos<input type="file" name="photos" accept="image/*" multiple /></label>
@@ -158,15 +167,15 @@
     <div class="footer-bottom"><p>&copy; <span id="year"></span> listyourcar.ca — All rights reserved.</p></div>
   </footer>
 
-  <script src="js/data.js?v=19"></script>
-  <script src="js/auction-data.js?v=19"></script>
-  <script src="js/valuation.js?v=19"></script>
-  <script src="js/store.js?v=19"></script>
-  <script src="js/config.js?v=19"></script>
-  <script src="js/analytics.js?v=19"></script>
-  <script src="js/app.js?v=19"></script>
-  <script src="js/dealers.js?v=19"></script>
-  <script src="js/dealer-picker.js?v=19"></script>
-  <script src="js/auction.js?v=19"></script>
+  <script src="js/data.js?v=20"></script>
+  <script src="js/auction-data.js?v=20"></script>
+  <script src="js/valuation.js?v=20"></script>
+  <script src="js/store.js?v=20"></script>
+  <script src="js/config.js?v=20"></script>
+  <script src="js/analytics.js?v=20"></script>
+  <script src="js/app.js?v=20"></script>
+  <script src="js/dealers.js?v=20"></script>
+  <script src="js/dealer-picker.js?v=20"></script>
+  <script src="js/auction.js?v=20"></script>
 </body>
 </html>

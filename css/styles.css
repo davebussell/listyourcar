@@ -954,3 +954,6 @@ p{margin:0 0 1rem;max-width:66ch;}
   .dp-label{flex-basis:100%;}
   .dp-postal{flex:1 1 100%;}
 }
+.field-note.is-error{color:var(--signal-ink);}
+.dp-find-slim{padding-bottom:.85rem;}
+.dp-await{padding:1.5rem 0;margin:0;}

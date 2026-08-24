@@ -583,19 +583,68 @@ function pageSell() {
      types anything, then overridden by whatever they search. */
   let picker = null;
   let picked = [];
+  let origin = null;
   const pickHost = document.getElementById("dealer-picker");
+  const postalNote = document.getElementById("postal-note");
+
   if (pickHost && window.createDealerPicker) {
     picker = createDealerPicker(pickHost, {
       count: 10,
+      embedded: true,      // the form already asks for a postal code
       onChange: (sel) => { picked = sel; },
     });
-    const seed = () => {
-      const o = DealerNet.fromCity(form.city ? form.city.value : "");
-      if (o) picker.setOrigin(o);
-    };
-    form.city?.addEventListener("change", () => { if (!picker.origin()) seed(); });
-    if (form.city && form.city.value) seed();
   }
+
+  /* The postal code is the single source of truth for location: it
+     ranks the dealers, and it sets the market the lot files under.
+     Resolved on blur rather than per keystroke, so a half-typed code
+     never fires a lookup. */
+  /* Which auction market a lot files under is decided by actual
+     distance from the resolved postal code, not by the postal
+     letter — a Saskatoon seller has no letter mapping but is
+     unambiguously closest to Winnipeg. */
+  function nearestMarket(o) {
+    const cities = (window.LYC_DATA && window.LYC_DATA.CITIES) || [];
+    let best = null, bestKm = Infinity;
+    for (const c of cities) {
+      const km = DealerNet.haversine(o.lat, o.lon, c.lat, c.lon);
+      if (km < bestKm) { bestKm = km; best = c; }
+    }
+    return best ? { slug: best.slug, km: bestKm } : null;
+  }
+
+  async function resolvePostal() {
+    const raw = form.postal ? form.postal.value.trim() : "";
+    if (!raw) return;
+    if (postalNote) postalNote.textContent = "Looking that up…";
+    try {
+      origin = await DealerNet.fromPostal(raw);
+      if (postalNote) {
+        postalNote.textContent = origin.place
+          ? origin.place + (origin.province ? ", " + origin.province : "")
+          : "Found.";
+        postalNote.classList.remove("is-error");
+      }
+      /* Offer the closest auction market, but never overwrite a
+         choice the seller has already made themselves. */
+      if (form.city && !form.city.value) {
+        const m = nearestMarket(origin);
+        if (m) form.city.value = m.slug;
+      }
+      if (picker) await picker.setOrigin(origin);
+    } catch (e) {
+      origin = null;
+      if (postalNote) {
+        postalNote.textContent = e.message || "We couldn't find that postal code.";
+        postalNote.classList.add("is-error");
+      }
+    }
+  }
+  form.postal?.addEventListener("blur", resolvePostal);
+  form.postal?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); form.postal.blur(); }
+  });
+  if (form.postal && form.postal.value) resolvePostal();
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -616,6 +665,7 @@ function pageSell() {
     const auction = Store.addAuction({
       make: f.make, model: f.model, trim: f.trim || "", year: Number(f.year),
       mileage: Number(f.mileage) || 0, condition: f.condition, city: f.city,
+      postal: (f.postal || "").toUpperCase(),
       reserve, startingBid, closesAt: closesAt.toISOString(),
       description: f.description || `${f.year} ${f.make} ${f.model}. ${titleCase(String(f.condition).replace("-", " "))} condition, ${kms(f.mileage || 0)}.`,
       photo: null,
@@ -630,9 +680,8 @@ function pageSell() {
     let matched = [];
     let invite = null;
     try {
-      matched = picked.length
-        ? picked
-        : await DealerNet.nearest(DealerNet.fromCity(f.city), 10);
+      const from = origin || DealerNet.fromCity(f.city);
+      matched = picked.length ? picked : (from ? await DealerNet.nearest(from, 10) : []);
       invite = Store.addInvite({
         auctionId: auction.id,
         vehicle: `${f.year} ${f.make} ${f.model}`,

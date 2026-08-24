@@ -27,6 +27,9 @@ function createDealerPicker(host, opts = {}) {
   };
 
   const onChange = typeof opts.onChange === "function" ? opts.onChange : () => {};
+  /* Embedded: the host form already collects a postal code, so the
+     picker shows results only and never asks for a location twice. */
+  const embedded = !!opts.embedded;
   const num = (n) => Number(n).toLocaleString("en-CA");
 
   /* ---------- Data flow ---------- */
@@ -77,6 +80,7 @@ function createDealerPicker(host, opts = {}) {
 
   function render() {
     const o = state.origin;
+    if (embedded) { renderEmbedded(o); return; }
     host.innerHTML =
       '<section class="dp">' +
         '<div class="dp-find">' +
@@ -103,6 +107,32 @@ function createDealerPicker(host, opts = {}) {
         "</div>" +
         (o ? renderFilters() : "") +
         (o ? renderList() : "") +
+      "</section>";
+    wire();
+  }
+
+  function renderEmbedded(o) {
+    if (!o) {
+      host.innerHTML =
+        '<section class="dp"><p class="muted small dp-await">' +
+          'Enter the postal code above and the closest dealerships appear here.' +
+        "</p></section>";
+      return;
+    }
+    host.innerHTML =
+      '<section class="dp">' +
+        '<div class="dp-find dp-find-slim">' +
+          '<p class="dp-origin muted small">' +
+            "Nearest to <strong>" + (o.label || "") + "</strong>" +
+            (o.place ? " · " + o.place : "") +
+            (state.within100 != null
+              ? " · <strong>" + num(state.within100) + "</strong> dealerships within 100 km"
+              : "") +
+          "</p>" +
+          (state.error ? '<p class="dp-error">' + state.error + "</p>" : "") +
+        "</div>" +
+        renderFilters() +
+        renderList() +
       "</section>";
     wire();
   }
