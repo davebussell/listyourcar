@@ -5,3 +5,4 @@ data/dealers-raw.json
 data/cities-todo.json
 *.csv
 .netlify/
+data/.ne-cache.geojson

@@ -61,13 +61,23 @@ function brandsFor(name) {
 
 const fsaOf = (z) => String(z || "").replace(/\s/g, "").toUpperCase().slice(0, 3);
 
+/* A coordinate counts only if it actually lands inside Canada.
+   Rural FSAs (a "0" in the second position) are absent from the postal
+   source, and six of them had been written as latitude 0 with the real
+   latitude spilled into the longitude slot — which put 22 dealers in
+   the Gulf of Guinea. Rejecting them here lets the city fallback take
+   over, and stops a bad geocode from ever reaching the map. */
+const usable = (c) =>
+  Array.isArray(c) && c.length === 2 && isFinite(c[0]) && isFinite(c[1]) &&
+  c[0] >= 41 && c[0] <= 83.5 && c[1] >= -141.5 && c[1] <= -52;
+
 /* Every distinct position is stored once; dealers reference it by
    index, which strips ~4,400 repeated coordinate pairs. */
 const posIdx = new Map();
 const positions = [];   // [city, province, lat, lon]
 function placeFor(d) {
   const f = fsaOf(d.z);
-  if (fsaCoords[f]) {
+  if (usable(fsaCoords[f])) {
     const key = "F:" + f;
     if (!posIdx.has(key)) {
       posIdx.set(key, positions.length);
@@ -76,7 +86,7 @@ function placeFor(d) {
     return posIdx.get(key);
   }
   const ck = d.c + ", " + d.p;
-  if (cityCoords[ck]) {
+  if (usable(cityCoords[ck])) {
     const key = "C:" + ck;
     if (!posIdx.has(key)) {
       posIdx.set(key, positions.length);
@@ -93,7 +103,7 @@ let dropped = 0, viaFsa = 0, viaCity = 0;
 for (const d of dealers) {
   const pi = placeFor(d);
   if (pi === -1) { dropped++; continue; }
-  if (fsaCoords[fsaOf(d.z)]) viaFsa++; else viaCity++;
+  if (usable(fsaCoords[fsaOf(d.z)])) viaFsa++; else viaCity++;
   const bs = brandsFor(d.n);
   bs.forEach((b) => brandSet.add(b));
   rows.push([d.n, pi, d.z, d.t, d.w, d.e || 0, bs]);

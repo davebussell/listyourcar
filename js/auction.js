@@ -239,6 +239,13 @@ function pageAuctions() {
   if (!grid) return;
 
   const state = { city: "", sort: "ending", status: "live" };
+  /* Open on the market the visitor pinned, the way a retailer opens
+     on your store. An explicit ?city= in the URL always wins, and the
+     chip bar shows the active filter so changing it is one click. */
+  const here = window.Locator ? Locator.get() : null;
+  if (here && here.market && (D.AUCTION_CITIES || []).includes(here.market.slug)) {
+    state.city = here.market.slug;
+  }
   ["city", "sort", "status"].forEach((k) => { const v = qs().get(k); if (v) state[k] = v; });
 
   const cityBar = $("#auction-cities");
@@ -644,6 +651,13 @@ function pageSell() {
   form.postal?.addEventListener("keydown", (e) => {
     if (e.key === "Enter") { e.preventDefault(); form.postal.blur(); }
   });
+  /* If the visitor already pinned a location in the header, the form
+     starts from it instead of asking for the same thing twice. */
+  const pinned = window.Locator ? Locator.get() : null;
+  if (pinned) {
+    if (form.postal && !form.postal.value && pinned.postal) form.postal.value = pinned.postal;
+    if (form.city && !form.city.value && pinned.market) form.city.value = pinned.market.slug;
+  }
   if (form.postal && form.postal.value) resolvePostal();
 
   form.addEventListener("submit", async (e) => {

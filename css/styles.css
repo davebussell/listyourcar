@@ -181,7 +181,7 @@ p{margin:0 0 1rem;max-width:66ch;}
 }
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
 
-.nav-links{display:flex;align-items:center;gap:2rem;}
+.nav-links{display:flex;align-items:center;gap:1.5rem;}
 .nav-links > a:not(.btn){
   font-family:var(--f-mono);font-size:.8125rem;letter-spacing:.09em;
   text-transform:uppercase;color:var(--ink-2);transition:color .2s;
@@ -807,7 +807,7 @@ p{margin:0 0 1rem;max-width:66ch;}
 /* The nav needs 990px to sit on one line; below that it wrapped onto
    two rows and collided with the brand. Given its own breakpoint so
    the page layout is not forced to collapse at the same width. */
-@media(max-width:1024px){
+@media(max-width:1260px){
   .nav-toggle{display:flex;}
   .nav-links{
     position:absolute;top:100%;left:0;right:0;display:none;flex-direction:column;
@@ -891,7 +891,7 @@ p{margin:0 0 1rem;max-width:66ch;}
   text-align:right;font-family:var(--f-mono);font-size:1.0625rem;font-weight:600;
   font-variant-numeric:tabular-nums;color:var(--ink);
 }
-.dealer-km em{display:block;font-style:normal;font-size:.6875rem;font-weight:400;color:var(--ink-3);letter-spacing:.08em;}
+.dealer-km em{display:block;font-style:normal;font-size:.75rem;font-weight:400;color:var(--ink-3);letter-spacing:.08em;}
 .dealers-foot{padding-top:1.5rem;border-top:1px solid var(--line);margin-top:.5rem;}
 .dealers-foot code{font-family:var(--f-mono);font-size:.8125rem;background:var(--paper-2);padding:.1rem .35rem;}
 @media(max-width:760px){
@@ -982,3 +982,239 @@ p{margin:0 0 1rem;max-width:66ch;}
 /* Selection inside a mark has to invert back, or it disappears. */
 .mark::selection{background:var(--paper);color:var(--ink);}
 .mark::-moz-selection{background:var(--paper);color:var(--ink);}
+
+/* ── Location context ─────────────────────────────────────────
+   A persistent "your location" chip in the header and the drawer
+   it opens. Set once, and the site orients around it: the auction
+   book opens on that market, the sell form knows the postal code,
+   and the nearest rooftops are listed underneath.
+   ──────────────────────────────────────────────────────────── */
+.sr-only{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;
+}
+
+.loc-chip{
+  display:inline-flex;align-items:center;gap:.5rem;
+  /* Hugs the brand; the nav links stay pinned right. */
+  margin-right:auto;margin-left:1.25rem;
+  padding:.42rem .7rem;border:1px solid var(--line-2);background:var(--paper);
+  font-family:var(--f-mono);font-size:.75rem;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--ink-2);
+  max-width:12rem;flex-shrink:0;transition:border-color .2s,color .2s;
+}
+.loc-chip:hover{border-color:var(--ink);color:var(--ink);}
+.loc-chip .loc-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.loc-chip .loc-caret{font-size:.7rem;opacity:.5;}
+/* The classic pin silhouette: a circle with one squared corner. */
+.loc-pin{
+  flex:none;width:8px;height:8px;background:var(--line-2);
+  border-radius:50% 50% 50% 0;transform:rotate(-45deg);
+}
+.loc-chip.is-set{border-color:var(--ink);color:var(--ink);}
+.loc-chip.is-set .loc-pin{background:var(--signal);}
+
+.loc-panel{
+  position:absolute;top:100%;left:0;right:0;z-index:65;display:none;
+  background:var(--paper);border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);box-shadow:0 28px 60px rgba(8,9,10,.12);
+  max-height:min(78vh,44rem);overflow-y:auto;
+}
+.loc-panel.open{display:block;}
+.loc-body{
+  max-width:var(--max);margin:0 auto;padding:1.75rem var(--gutter) 2rem;
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);
+  gap:2rem 3rem;align-items:start;
+}
+.loc-body .eyebrow{grid-column:1;}
+.loc-current{grid-column:1;margin:.5rem 0 0;font-size:1.125rem;line-height:1.3;}
+.loc-body > .muted{grid-column:1;margin:.5rem 0 0;max-width:40ch;}
+.loc-market{
+  display:block;margin-top:.35rem;font-family:var(--f-mono);font-size:.75rem;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);
+}
+
+.loc-actions{
+  grid-column:1;display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin-top:1.1rem;
+}
+.loc-or{font-family:var(--f-mono);font-size:.75rem;text-transform:uppercase;color:var(--ink-3);}
+.loc-postal input{
+  width:9rem;padding:.6rem .75rem;border:1px solid var(--line-2);background:var(--paper);
+  font-family:var(--f-mono);font-size:.8125rem;letter-spacing:.08em;text-transform:uppercase;
+}
+.loc-postal input:focus{outline:none;border-color:var(--ink);}
+.loc-body .dp-error{grid-column:1;margin-top:.6rem;}
+.loc-markets{grid-column:1;margin-top:.35rem;}
+.loc-markets .dp-label{display:block;margin-bottom:.55rem;}
+.loc-clear{grid-column:1;justify-self:start;margin-top:.25rem;}
+
+/* Right column: the rooftops nearest the set location. */
+.loc-dealers{grid-column:2;grid-row:1 / span 6;min-width:0;}
+.loc-dealers-head{
+  display:flex;align-items:baseline;justify-content:space-between;
+  gap:1rem;padding-bottom:.6rem;border-bottom:1px solid var(--line);
+}
+.loc-dealer-list{list-style:none;margin:0 0 1rem;padding:0;}
+.loc-dealer-list li{
+  display:grid;grid-template-columns:2rem minmax(0,1fr) auto;
+  gap:.75rem;align-items:baseline;
+  padding:.6rem 0;border-bottom:1px solid var(--line);
+}
+.loc-rank{
+  font-family:var(--f-mono);font-size:.75rem;color:var(--ink-3);font-variant-numeric:tabular-nums;
+}
+.loc-name{min-width:0;}
+.loc-name strong{display:block;font-size:.9375rem;font-weight:500;line-height:1.3;}
+.loc-name em{
+  display:block;font-style:normal;font-size:.8125rem;color:var(--ink-3);margin-top:.1rem;
+}
+.loc-km{
+  font-family:var(--f-mono);font-size:1rem;color:var(--ink);
+  font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+.loc-km i{font-style:normal;font-size:.75rem;color:var(--ink-3);margin-left:.15rem;}
+
+@media(max-width:900px){
+  .loc-body{grid-template-columns:1fr;gap:1.25rem;}
+  .loc-dealers{grid-column:1;grid-row:auto;}
+  .loc-body .eyebrow,.loc-current,.loc-actions,.loc-markets,.loc-clear,
+  .loc-body > .muted,.loc-body .dp-error{grid-column:1;}
+}
+/* The live-bidding flag is decorative, so it yields its room to the
+   chip and the four nav items well before the nav collapses.
+   Measured: a full row needs 1225px without the flag and 1395px with
+   it, so it only returns on genuinely wide screens. */
+@media(max-width:1500px){
+  .nav-brand .now-casting{display:none;}
+}
+@media(max-width:1260px){
+  /* The chip stays visible when the nav collapses — it is context,
+     not navigation. */
+  .loc-chip{margin-left:.75rem;max-width:11rem;}
+}
+@media(max-width:560px){
+  .loc-chip{max-width:8.5rem;padding:.4rem .55rem;}
+  .loc-postal input{width:7.5rem;}
+}
+
+/* -- Buyer map ------------------------------------------------
+   A vector map of Canada with one bubble per postal district.
+   Bubble area tracks dealer count, so the eye reads density
+   rather than a scatter of identical pins.
+   ------------------------------------------------------------ */
+.section-tight{padding-block:clamp(2.25rem,5vh,3.75rem);}
+
+.bm-intro{display:flex;align-items:flex-end;justify-content:space-between;gap:2rem;flex-wrap:wrap;}
+.bm-intro h1{margin:.4rem 0 .75rem;}
+.bm-intro .lead{max-width:52ch;margin:0;}
+.bm-count{
+  font-family:var(--f-mono);font-size:.8125rem;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--ink-3);white-space:nowrap;margin:0 0 .35rem;
+}
+.bm-count strong{color:var(--ink);font-weight:600;}
+
+/* Finder bar */
+.bm-bar{background:var(--paper-2);border-block:1px solid var(--line);}
+.bm-bar-in{padding-block:1.15rem;}
+.bm-find{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;}
+.bm-postal input{
+  width:10rem;padding:.6rem .75rem;border:1px solid var(--line-2);background:var(--paper);
+  font-family:var(--f-mono);font-size:.8125rem;letter-spacing:.08em;text-transform:uppercase;
+}
+.bm-postal input:focus{outline:none;border-color:var(--ink);}
+.bm-note{margin:.5rem 0 0;min-height:1.2em;}
+.bm-note.is-error{color:var(--signal-ink);}
+.bm-filters{margin-top:.9rem;display:grid;gap:.6rem;}
+.bm-row{display:flex;align-items:flex-start;gap:.85rem;flex-wrap:wrap;}
+.bm-row .dp-label{padding-top:.4rem;flex:none;min-width:4rem;}
+
+/* Stage */
+.bm-grid{display:grid;grid-template-columns:minmax(0,1fr) 22rem;gap:2rem;align-items:start;}
+.bm-stage-wrap{position:relative;min-width:0;}
+.bm-stage{
+  position:relative;background:var(--paper-2);border:1px solid var(--line);
+  aspect-ratio:16/10;overflow:hidden;
+}
+.bm-loading,.bm-fail{position:absolute;inset:0;display:grid;place-content:center;text-align:center;padding:2rem;}
+#bm-svg{display:block;width:100%;height:100%;cursor:grab;touch-action:none;}
+#bm-svg.is-dragging{cursor:grabbing;}
+#bm-svg.is-gliding{transition:none;}
+
+/* --bm-k is the zoom ratio; dividing by it keeps strokes and dots a
+   constant size on screen however far in you zoom. */
+#bm-svg{--bm-k:1;}
+.bm-prov{
+  fill:var(--paper);stroke:var(--line-2);
+  stroke-width:calc(1.1px * var(--bm-k));
+  transition:fill .18s;
+}
+.bm-prov:hover{fill:var(--paper-3);}
+.bm-dot{
+  fill:var(--signal);fill-opacity:.5;stroke:var(--paper);
+  stroke-width:calc(.9px * var(--bm-k));
+  transition:fill-opacity .15s;
+}
+.bm-dot:hover{fill-opacity:.85;}
+.bm-dot.is-on{fill:var(--gold-bright);fill-opacity:1;stroke:var(--ink);}
+.bm-you-halo{fill:var(--ink);fill-opacity:.10;}
+.bm-you-dot{fill:var(--ink);stroke:var(--paper);stroke-width:calc(1.5px * var(--bm-k));}
+
+.bm-zoom{position:absolute;top:.75rem;right:.75rem;display:flex;flex-direction:column;gap:1px;}
+.bm-zoom button{
+  width:2rem;height:2rem;background:var(--paper);border:1px solid var(--line-2);
+  font-family:var(--f-mono);font-size:.8125rem;color:var(--ink-2);cursor:pointer;
+}
+.bm-zoom button:hover{border-color:var(--ink);color:var(--ink);}
+.bm-hint{margin:.6rem 0 0;max-width:64ch;}
+
+/* Side panel */
+.bm-panel{border:1px solid var(--line);background:var(--paper);padding:1.25rem;position:sticky;top:5.5rem;}
+.bm-panel-head h3{margin:.35rem 0 .3rem;font-size:1.25rem;}
+.bm-panel-head p{margin:0 0 .5rem;}
+.bm-list{list-style:none;margin:.75rem 0 0;padding:0;max-height:26rem;overflow-y:auto;}
+.bm-dealer{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.1rem .75rem;
+  padding:.65rem 0;border-bottom:1px solid var(--line);
+}
+.bm-dealer strong{grid-column:1;font-size:.9375rem;font-weight:500;line-height:1.3;}
+.bm-tags{grid-column:1;font-size:.8125rem;color:var(--ink-3);}
+.bm-contact{grid-column:1;font-size:.8125rem;}
+.bm-km{
+  grid-column:2;grid-row:1 / span 3;align-self:center;
+  font-family:var(--f-mono);font-size:1rem;color:var(--ink);
+  font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+.bm-km i{font-style:normal;font-size:.75rem;color:var(--ink-3);margin-left:.15rem;}
+.bm-cta{margin-top:1rem;width:100%;justify-content:center;}
+
+.bm-provs{list-style:none;margin:.75rem 0 0;padding:0;}
+.bm-provs button{
+  display:grid;grid-template-columns:2.25rem minmax(0,1fr) 3.25rem;
+  align-items:center;gap:.6rem;width:100%;padding:.4rem 0;
+  background:none;border:0;cursor:pointer;text-align:left;
+}
+.bm-p-code{font-family:var(--f-mono);font-size:.8125rem;color:var(--ink-2);}
+.bm-p-bar{height:6px;background:var(--paper-3);display:block;}
+.bm-p-bar i{display:block;height:100%;background:var(--signal);opacity:.75;}
+.bm-p-n{
+  font-family:var(--f-mono);font-size:.8125rem;color:var(--ink);
+  text-align:right;font-variant-numeric:tabular-nums;
+}
+.bm-provs button:hover .bm-p-bar i{opacity:1;}
+.bm-provs button:hover .bm-p-code{color:var(--ink);}
+
+.bm-side-note{border:1px solid var(--line);background:var(--paper);padding:1.5rem;}
+.bm-side-note p{margin:.6rem 0 0;font-size:.9375rem;}
+
+@media(max-width:1024px){
+  .bm-grid{grid-template-columns:1fr;}
+  .bm-panel{position:static;}
+  .bm-stage{aspect-ratio:4/3;}
+  .bm-list{max-height:none;}
+}
+@media(max-width:600px){
+  .bm-intro{display:block;}
+  .bm-count{white-space:normal;margin-top:.75rem;}
+  .bm-stage{aspect-ratio:1/1;}
+  .bm-row .dp-label{min-width:0;}
+}

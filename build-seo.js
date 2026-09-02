@@ -23,7 +23,7 @@ const { estimateValue } = window.LYC_VAL;
 
 const ROOT = __dirname;
 const ORIGIN = "https://listyourcar.ca";
-const V = 21;
+const V = 23;
 const THIS_YEAR = new Date().getFullYear();
 
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -74,6 +74,7 @@ ${jsonld.map((j) => `<script type="application/ld+json">${j}</script>`).join("\n
     <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span><span></span></button>
     <nav class="nav-links">
       <a href="/auctions.html">Live Auctions</a>
+      <a href="/find-buyers.html">Find Buyers</a>
       <a href="/value.html">What's It Worth</a>
       <div class="nav-more">
         <button type="button" class="nav-more-btn" aria-expanded="false" aria-haspopup="true">More <span class="caret">▾</span></button>
@@ -84,6 +85,7 @@ ${jsonld.map((j) => `<script type="application/ld+json">${j}</script>`).join("\n
           </div>
           <div class="nm-group"><span class="nm-label">Buying</span>
             <a href="/auctions.html">Live auctions</a>
+            <a href="/find-buyers.html">Buyer map</a>
             <a href="/dealers.html">For dealers</a>
           </div>
           <div class="nm-group"><span class="nm-label">Your account</span>
@@ -106,7 +108,7 @@ ${body}
       <p class="muted" style="margin-top:1rem;max-width:32ch">List your car, set your reserve, and let dealers and private buyers bid it up. Canada-wide.</p>
     </div>
     <div><h4>Sell</h4><a href="/value.html">What's my car worth</a><a href="/sell.html">List for auction</a><a href="/sell-my-car/">Sell by city</a><a href="/how-it-works.html">How it works</a></div>
-    <div><h4>Buy</h4><a href="/auctions.html">Live auctions</a><a href="/car-auctions/">Auctions by city</a><a href="/dealers.html">For dealers</a></div>
+    <div><h4>Buy</h4><a href="/auctions.html">Live auctions</a><a href="/find-buyers.html">Buyer map</a><a href="/car-auctions/">Auctions by city</a><a href="/dealers.html">For dealers</a></div>
     <div><h4>Values</h4><a href="/what-is-my-car-worth/">Car values by model</a><a href="/about.html">About</a><a href="/contact.html">Contact</a></div>
   </div>
   <div class="footer-bottom"><p>&copy; <span id="year"></span> listyourcar.ca — All rights reserved.</p></div>
@@ -120,6 +122,7 @@ ${body}
 <script src="/js/analytics.js?v=${V}"></script>
 <script src="/js/app.js?v=${V}"></script>
 <script src="/js/auction.js?v=${V}"></script>
+<script src="/js/locator.js?v=${V}"></script>
 </body>
 </html>
 `;
@@ -600,6 +603,7 @@ const core = [
   [`${ORIGIN}/value.html`, "0.9"],
   [`${ORIGIN}/sell.html`, "0.9"],
   [`${ORIGIN}/auctions.html`, "0.9"],
+  [`${ORIGIN}/find-buyers.html`, "0.8"],
   [`${ORIGIN}/how-it-works.html`, "0.7"],
   [`${ORIGIN}/dealers.html`, "0.7"],
   [`${ORIGIN}/about.html`, "0.4"],
