@@ -125,6 +125,9 @@ function createDealerPicker(host, opts = {}) {
           '<p class="dp-origin muted small">' +
             "Nearest to <strong>" + (o.label || "") + "</strong>" +
             (o.place ? " · " + o.place : "") +
+            (o.rural && o.precision === "district"
+              ? " · <em>district only — add the full code for an exact match</em>"
+              : "") +
             (state.within100 != null
               ? " · <strong>" + num(state.within100) + "</strong> dealerships within 100 km"
               : "") +

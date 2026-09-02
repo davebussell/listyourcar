@@ -97,6 +97,8 @@ const Locator = (() => {
     return set({
       lat: loc.lat, lon: loc.lon, place: loc.place, province: loc.province,
       postal: loc.label, market, source: "postal", at: Date.now(),
+      // How exact the fix is: "postal" is the street, "district" the FSA.
+      precision: loc.precision, rural: !!loc.rural,
     });
   }
 
@@ -160,7 +162,7 @@ const Locator = (() => {
     if (window.DealerNet) { dealersReady = Promise.resolve(); return dealersReady; }
     dealersReady = new Promise((resolve, reject) => {
       const s = document.createElement("script");
-      s.src = "/js/dealers.js?v=23";
+      s.src = "/js/dealers.js?v=24";
       s.onload = resolve;
       s.onerror = () => reject(new Error("Couldn't load the dealer network."));
       document.head.appendChild(s);
@@ -207,6 +209,9 @@ const Locator = (() => {
           ? '<p class="loc-current"><strong>' + (shortPlace(l.place) || l.postal) + "</strong>" +
               (l.province ? ", " + l.province : "") +
               (l.postal && l.place ? " · " + l.postal : "") +
+              (l.rural && l.precision === "district"
+                ? '<span class="loc-market">Placed to the postal district only — enter the full code for an exact match</span>'
+                : "") +
               (l.market ? '<span class="loc-market">Auctions filed under ' + l.market.name + "</span>" : "") +
             "</p>"
           : '<p class="muted small">Set it once and the whole site follows — the auction book opens on your market, and listing a car knows where it is.</p>') +

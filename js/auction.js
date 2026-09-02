@@ -630,6 +630,12 @@ function pageSell() {
         postalNote.textContent = origin.place
           ? origin.place + (origin.province ? ", " + origin.province : "")
           : "Found.";
+        /* A rural district can be 100 km wide. If only the district
+           resolved, say so, so a seller knows why the list looks off
+           and that the full code fixes it. */
+        if (origin.rural && origin.precision === "district") {
+          postalNote.textContent += " — placed to the postal district only; the full six-character code gives an exact match.";
+        }
         postalNote.classList.remove("is-error");
       }
       /* Offer the closest auction market, but never overwrite a

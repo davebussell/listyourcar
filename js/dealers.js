@@ -43,27 +43,81 @@ const DealerNet = (() => {
   /* ---------- Locating the seller ---------- */
 
   const FSA_RE = /^[A-Za-z]\d[A-Za-z]/;
+  const FULL_RE = /^[A-Za-z]\d[A-Za-z]\d[A-Za-z]\d$/;
   const normPostal = (s) => String(s || "").replace(/\s+/g, "").toUpperCase();
+  const pretty = (c) => c.length === 6 ? c.slice(0, 3) + " " + c.slice(3) : c;
+  const inCanada = (la, lo) => la >= 41 && la <= 83.5 && lo >= -141.5 && lo <= -52;
+  /* A "0" in the second position marks a rural code. Its first three
+     characters cover a region, not a neighbourhood — J0X spans the
+     whole Outaouais, over 100 km wide — so for these the district
+     centroid is a last resort, not an answer. */
+  const isRural = (c) => c[1] === "0";
 
-  /* Canadian postal codes resolve to a neighbourhood, not a city —
-     which is the whole point of asking for one. */
+  /* The full six-character code, resolved to the street or village.
+     Only trusted when the service echoes the same code back and the
+     point lands in Canada: a fuzzy near-miss is worse than a miss. */
+  async function fromFullCode(clean) {
+    const url = "https://nominatim.openstreetmap.org/search?" + new URLSearchParams({
+      postalcode: pretty(clean), country: "Canada", format: "json", limit: "1", addressdetails: "1",
+    });
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const hit = (await res.json())[0];
+    if (!hit) return null;
+    const a = hit.address || {};
+    if (normPostal(a.postcode) !== clean) return null;
+    const lat = +hit.lat, lon = +hit.lon;
+    if (!inCanada(lat, lon)) return null;
+    const prov = a["ISO3166-2-lvl4"] ? a["ISO3166-2-lvl4"].replace("CA-", "") : (a.state || "");
+    return {
+      lat, lon, province: prov,
+      place: a.village || a.town || a.city || a.municipality || a.hamlet || a.county || "",
+      precision: "postal",
+    };
+  }
+
+  /* The three-character district, from the postal centroid service. */
+  async function fromDistrict(fsa) {
+    const res = await fetch("https://api.zippopotam.us/ca/" + fsa);
+    if (!res.ok) return null;
+    const j = await res.json();
+    const p = j.places && j.places[0];
+    if (!p) return null;
+    return {
+      lat: +p.latitude, lon: +p.longitude,
+      place: p["place name"], province: p["state abbreviation"] || p.state,
+      precision: "district",
+    };
+  }
+
+  /* Resolves a postal code to a point, as precisely as the code allows.
+     A full code is tried first; the district is the fallback. The
+     result carries `precision` so callers can say how sure to be —
+     an urban district is a neighbourhood, a rural one is a region. */
   async function fromPostal(code) {
     const clean = normPostal(code);
     if (!FSA_RE.test(clean)) throw new Error("That doesn't look like a Canadian postal code.");
     const fsa = clean.slice(0, 3);
-    if (_postalCache[fsa]) return { ..._postalCache[fsa], source: "postal", label: fsa };
+    const full = FULL_RE.test(clean);
+    const key = full ? clean : fsa;
+    if (_postalCache[key]) return { ..._postalCache[key] };
 
-    const res = await fetch("https://api.zippopotam.us/ca/" + fsa);
-    if (!res.ok) throw new Error("We couldn't find that postal code.");
-    const j = await res.json();
-    const p = j.places && j.places[0];
-    if (!p) throw new Error("We couldn't find that postal code.");
-    const loc = {
-      lat: +p.latitude, lon: +p.longitude,
-      place: p["place name"], province: p["state abbreviation"] || p.state,
+    let loc = null;
+    if (full) {
+      try { loc = await fromFullCode(clean); } catch { loc = null; }
+    }
+    if (!loc) {
+      try { loc = await fromDistrict(fsa); } catch { loc = null; }
+    }
+    if (!loc) throw new Error("We couldn't find that postal code.");
+
+    const out = {
+      ...loc, source: "postal",
+      label: loc.precision === "postal" ? pretty(clean) : fsa,
+      rural: isRural(clean),
     };
-    _postalCache[fsa] = loc;
-    return { ...loc, source: "postal", label: fsa };
+    _postalCache[key] = out;
+    return { ...out };
   }
 
   /* Device location, when the visitor would rather not type. */
