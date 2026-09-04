@@ -214,14 +214,40 @@ const DealerNet = (() => {
       { key: "truck",       label: "Truck specialists",       test: (x) => x.spec === "truck" },
       { key: "performance", label: "Performance specialists", test: (x) => x.spec === "performance" },
       { key: "import",      label: "Import specialists",      test: (x) => x.spec === "import" },
+      { key: "ev",          label: "EV specialists",          test: (x) => x.focus.includes("ev") },
+      { key: "premium",     label: "Premium independents",    test: (x) => !x.brands.length && x.focus.includes("premium") },
+      { key: "budget",      label: "Budget lots",             test: (x) => !x.brands.length && x.focus.includes("budget") },
       { key: "indep",       label: "Independent used-car dealers",
         test: (x) => !x.brands.length && (x.spec === "" || x.spec === "import") },
+      { key: "groups",      label: "Dealer groups",           test: (x) => x.sites >= 2 || !!x.group },
       { key: "franchise",   label: "Any franchised dealer",  test: (x) => x.brands.length > 0 },
     ].filter((a) => a.key !== "make" || make);
     return { make, kind, defaults, all };
   }
 
   /* ---------- Ranking ---------- */
+
+  /* The profile codes written by build-dealers.js, read back into
+     plain fields. Anything absent is the default: a single-site,
+     English-speaking car dealer of medium marque confidence. */
+  const SIZE_LABEL = { 1: "1–5 staff", 2: "6–20 staff", 3: "21–60 staff", 4: "61–150 staff", 5: "150+ staff" };
+  const SITES_LABEL = { 1: "Single location", 2: "2–5 locations", 3: "6+ locations" };
+  function profileOf(codes) {
+    const p = { role: "dealer", size: 2, sites: 1, group: "", french: false, focus: [],
+                multi: false, tollfree: false, confidence: "medium" };
+    (codes || []).forEach((c) => {
+      if (c.startsWith("r:")) p.role = c.slice(2);
+      else if (/^s[1-5]$/.test(c)) p.size = +c[1];
+      else if (/^l[1-3]$/.test(c)) p.sites = +c[1];
+      else if (c.startsWith("g:")) p.group = c.slice(2);
+      else if (c === "fr") p.french = true;
+      else if (c.startsWith("x:")) p.focus.push(c.slice(2));
+      else if (c === "multi") p.multi = true;
+      else if (c === "tf") p.tollfree = true;
+      else if (c.startsWith("c:")) p.confidence = c.slice(2);
+    });
+    return p;
+  }
 
   function hydrate(d, dist) {
     return d.dealers.map((row, i) => ({
@@ -239,6 +265,7 @@ const DealerNet = (() => {
       spec: row[7] || "",
       tier: tierOfBrands(row[6] || []),
       km: dist ? dist[row[1]] : null,
+      ...profileOf(row[8]),
     }));
   }
 
@@ -316,7 +343,8 @@ const DealerNet = (() => {
   const brands = () => (_data ? _data.brands : []);
 
   return { load, nearest, ranked, countWithin, brandsNear, fromPostal, fromDevice, fromCity, haversine,
-           byId, audiencesFor, audienceCounts, guessKind, canonMake, KINDS, KIND_LABEL, tierOfBrands, brands };
+           byId, audiencesFor, audienceCounts, guessKind, canonMake, KINDS, KIND_LABEL, tierOfBrands, brands,
+           SIZE_LABEL, SITES_LABEL };
 })();
 
 window.DealerNet = DealerNet;

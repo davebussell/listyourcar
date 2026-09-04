@@ -1105,6 +1105,31 @@ window.pageDealers = pageDealers;
 /* ============================================================
    Dealer page — one dealership, rendered from the bundle.
    ============================================================ */
+
+/* Everything the export says about the business beyond its name
+   and marques: what it does, how big it is, whether it is part of
+   a group, the language it trades in, and what it specialises in.
+   Only facts present in the data are shown; nothing is inferred
+   for display that the profile did not record. */
+function profileBlock(d) {
+  const ROLE = { service: "Repair, collision or towing — not a car buyer", finance: "Financing and credit — not a car buyer",
+    salvage: "Salvage and parts — buys wrecks, not retail cars", broker: "Broker or consignment", rental: "Rental, leasing or fleet — not a retail buyer",
+    auction: "Auction house", media: "Marketing or media company — not a dealer" };
+  const FOCUS = { ev: "Electric and hybrid", truck: "Trucks and commercial", classic: "Classic and collector", exotic: "Exotic",
+    import: "Imports", performance: "Performance and motorsport", budget: "Budget and wholesale", premium: "Premium and luxury" };
+  const facts = [];
+  if (d.role !== "dealer") facts.push(["What it does", ROLE[d.role] || d.role]);
+  facts.push(["Size", DealerNet.SIZE_LABEL[d.size] + (d.tollfree ? " · toll-free line" : "")]);
+  facts.push(["Footprint", DealerNet.SITES_LABEL[d.sites] + (d.group ? " · part of " + d.group : "")]);
+  if (d.brands.length) facts.push(["Marques", (d.multi ? "Multi-marque store · " : "") + d.brands.join(", ") +
+    (d.confidence === "high" ? " · confirmed by website" : d.confidence === "low" ? " · read from a run-together name" : "")]);
+  if (d.focus.length) facts.push(["Specialises in", d.focus.map((f) => FOCUS[f] || f).join(", ")]);
+  if (d.french) facts.push(["Language", "Trades in French"]);
+  return `<section class="dealer-profile">
+    <span class="eyebrow">Profile</span>
+    <dl class="dealer-facts">${facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join("")}</dl>
+  </section>`;
+}
 async function pageDealer() {
   const host = $("#dealer-page");
   if (!host) return;
@@ -1145,6 +1170,7 @@ async function pageDealer() {
         <div><dt>Location</dt><dd>${d.city}, ${d.province}${d.postal ? "<br>" + d.postal : ""}</dd></div>
         ${m ? `<div><dt>Auction market</dt><dd>${m.name} · ${m.km} km</dd></div>` : ""}
       </dl>
+      ${profileBlock(d)}
       <aside class="dealer-cta">
         <span class="eyebrow">Sell to them</span>
         <h3>Put your car in front of ${d.name}.</h3>

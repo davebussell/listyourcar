@@ -1262,3 +1262,8 @@ p{margin:0 0 1rem;max-width:66ch;}
   .dealer-grid{grid-template-columns:1fr;gap:1.5rem;}
   .dealer-facts > div{grid-template-columns:6.5rem minmax(0,1fr);}
 }
+
+/* Dealer profile block: the export facts beyond name and marques. */
+.dealer-profile{grid-column:1;margin-top:2rem;}
+.dealer-profile .eyebrow{display:block;margin-bottom:.6rem;}
+.dealer-profile .dealer-facts{border-top:1px solid var(--line);}
