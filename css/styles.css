@@ -1218,3 +1218,47 @@ p{margin:0 0 1rem;max-width:66ch;}
   .bm-stage{aspect-ratio:1/1;}
   .bm-row .dp-label{min-width:0;}
 }
+
+/* -- The car, and the dealer page ---------------------------------
+   "What are you selling?" in the header drawer, the audience chips
+   it drives in the picker and the map, and the one-dealer page.
+   ------------------------------------------------------------ */
+.loc-car{grid-column:1;margin-top:1.25rem;padding-top:1.1rem;border-top:1px solid var(--line);}
+.loc-car-row{display:flex;flex-wrap:wrap;align-items:flex-end;gap:.6rem;margin-top:.7rem;}
+.loc-f{display:flex;flex-direction:column;gap:.3rem;}
+.loc-f span{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);}
+.loc-f input{
+  padding:.6rem .75rem;border:1px solid var(--line-2);background:var(--paper);
+  font-size:.9375rem;width:6.5rem;
+}
+.loc-f-make input{width:11rem;}
+.loc-f input:focus{outline:none;border-color:var(--ink);}
+.loc-kinds{margin-top:.8rem;}
+.loc-kinds .dp-label{display:block;margin-bottom:.5rem;}
+.loc-car-hint{margin:.6rem 0 0;max-width:44ch;}
+.loc-aud{margin:.75rem 0 .25rem;}
+.fchip em{font-style:normal;opacity:.55;margin-left:.3rem;font-variant-numeric:tabular-nums;}
+
+.dp-car{align-items:baseline;gap:.5rem;}
+.dp-car strong{font-weight:600;}
+.dealer-link{color:var(--ink);font-weight:500;text-decoration:none;border-bottom:1px solid transparent;transition:border-color .15s;}
+.dealer-link:hover{border-bottom-color:var(--ink);}
+.dealer-link strong{font-weight:500;}
+
+.dealer-page .crumbs{margin-bottom:1.5rem;}
+.dealer-page h1{margin:.4rem 0 .6rem;}
+.dealer-page .lead{margin:0 0 2rem;}
+.dealer-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:2.5rem;align-items:start;}
+.dealer-facts{margin:0;padding:0;display:grid;gap:0;border-top:1px solid var(--line);}
+.dealer-facts > div{display:grid;grid-template-columns:8rem minmax(0,1fr);gap:1rem;padding:.9rem 0;border-bottom:1px solid var(--line);}
+.dealer-facts dt{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);padding-top:.15rem;}
+.dealer-facts dd{margin:0;font-size:1rem;line-height:1.45;}
+.dealer-cta{border:1px solid var(--line);background:var(--paper-2);padding:1.5rem;display:grid;gap:.75rem;justify-items:start;}
+.dealer-cta h3{margin:.2rem 0 0;font-size:1.25rem;}
+.dealer-cta p{margin:0;}
+.dealer-cta .btn{margin-top:.25rem;}
+.dealer-note{margin-top:2rem;}
+@media(max-width:800px){
+  .dealer-grid{grid-template-columns:1fr;gap:1.5rem;}
+  .dealer-facts > div{grid-template-columns:6.5rem minmax(0,1fr);}
+}

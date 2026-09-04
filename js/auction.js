@@ -594,12 +594,42 @@ function pageSell() {
   const pickHost = document.getElementById("dealer-picker");
   const postalNote = document.getElementById("postal-note");
 
+  /* The car on the form decides who is asked to bid. The header may
+     already know it; the form is the source of truth while here, and
+     writes back so the rest of the site follows. */
+  const headerCar = window.Locator && Locator.car ? Locator.car() : null;
+  if (headerCar) {
+    if (form.make && !form.make.value && headerCar.make) form.make.value = headerCar.make;
+    if (form.year && !form.year.value && headerCar.year) form.year.value = headerCar.year;
+  }
+  function carOnForm() {
+    const make = form.make ? form.make.value.trim() : "";
+    const year = form.year ? Number(form.year.value) || "" : "";
+    if (!make && !year) return null;
+    const body = window.LYC_VAL && LYC_VAL.guessBody && form.model ? LYC_VAL.guessBody(form.model.value) : "";
+    const kind = headerCar && headerCar.make && headerCar.make.toLowerCase() === make.toLowerCase() && headerCar.kind
+      ? headerCar.kind : "";
+    return { make: window.DealerNet ? DealerNet.canonMake(make) : make, year, body, kind,
+             audience: headerCar && headerCar.audience && kind ? headerCar.audience : null };
+  }
+
   if (pickHost && window.createDealerPicker) {
     picker = createDealerPicker(pickHost, {
       count: 10,
       embedded: true,      // the form already asks for a postal code
+      car: carOnForm(),
       onChange: (sel) => { picked = sel; },
     });
+    let carTimer = null;
+    const syncCar = () => {
+      clearTimeout(carTimer);
+      carTimer = setTimeout(() => {
+        const c = carOnForm();
+        picker.setCar(c);
+        if (c && window.Locator && Locator.setCar) Locator.setCar({ ...(Locator.car() || {}), ...c, audience: null });
+      }, 350);
+    };
+    ["make", "year", "model"].forEach((k) => form[k]?.addEventListener("input", syncCar));
   }
 
   /* The postal code is the single source of truth for location: it
@@ -1072,6 +1102,70 @@ function pageDealers() {
 }
 
 window.pageDealers = pageDealers;
+/* ============================================================
+   Dealer page — one dealership, rendered from the bundle.
+   ============================================================ */
+async function pageDealer() {
+  const host = $("#dealer-page");
+  if (!host) return;
+  const id = qs().get("id") || "";
+  let d = null;
+  try { d = await DealerNet.byId(id); } catch { d = null; }
+  if (!d) {
+    host.innerHTML = `<p class="muted">We couldn't find that dealership. <a class="link" href="/find-buyers.html">Browse the buyer map →</a></p>`;
+    return;
+  }
+  const tier = { exotic: "Exotic marques", luxury: "Luxury marques", mainstream: "Franchised dealer" }[d.tier] || "";
+  const kind = d.brands.length ? tier
+    : d.spec === "other" ? "Not a retail car buyer"
+    : d.spec ? d.spec.charAt(0).toUpperCase() + d.spec.slice(1) + " specialist"
+    : "Independent used-car dealer";
+  const here = window.Locator ? Locator.get() : null;
+  const km = here ? DealerNet.haversine(here.lat, here.lon, d.lat, d.lon) : null;
+  const m = (window.Locator && Locator.nearestMarket) ? Locator.nearestMarket(d.lat, d.lon) : null;
+  const tel = d.phone ? d.phone.replace(/[^0-9+]/g, "") : "";
+  const site = d.website ? "https://" + d.website.replace(/^https?:\/\//, "") : "";
+
+  setSeo({
+    title: `${d.name} — ${d.city}, ${d.province} | listyourcar.ca`,
+    desc: `${d.name} in ${d.city}, ${d.province}: ${kind.toLowerCase()}${d.brands.length ? " carrying " + d.brands.join(", ") : ""}. Invite them to bid on your car.`,
+    canonical: "https://listyourcar.ca/dealer.html?id=" + encodeURIComponent(d.id),
+  });
+
+  host.innerHTML = `
+    <nav class="crumbs"><a href="/find-buyers.html">Find buyers</a> / ${d.city}, ${d.province}</nav>
+    <span class="eyebrow">${kind}</span>
+    <h1>${d.name}</h1>
+    <p class="lead">${d.city}, ${d.province}${d.postal ? " · " + d.postal : ""}${km != null ? " · " + (km < 1 ? "under 1" : Math.round(km)) + " km from you" : ""}</p>
+    <div class="dealer-grid">
+      <dl class="dealer-facts">
+        <div><dt>Phone</dt><dd>${tel ? `<a class="link-inline" href="tel:${tel}">${d.phone}</a>` : `<span class="muted">Not on file</span>`}</dd></div>
+        <div><dt>Website</dt><dd>${site ? `<a class="link-inline" href="${site}" target="_blank" rel="noopener">${d.website}</a>` : `<span class="muted">Not on file</span>`}</dd></div>
+        <div><dt>Marques</dt><dd>${d.brands.length ? d.brands.join(", ") : "None — buys across makes"}</dd></div>
+        <div><dt>Location</dt><dd>${d.city}, ${d.province}${d.postal ? "<br>" + d.postal : ""}</dd></div>
+        ${m ? `<div><dt>Auction market</dt><dd>${m.name} · ${m.km} km</dd></div>` : ""}
+      </dl>
+      <aside class="dealer-cta">
+        <span class="eyebrow">Sell to them</span>
+        <h3>Put your car in front of ${d.name}.</h3>
+        <p class="muted">List it, set your reserve, and they are invited to bid against every other buyer in range — until your closing time.</p>
+        <a class="btn btn-primary" href="/sell.html">List my car</a>
+        <a class="link" href="/find-buyers.html">See every buyer nearby →</a>
+      </aside>
+    </div>
+    <p class="muted small dealer-note">Contact details come from the dealer network export and may be out of date. Placed by ${d.postal && /^[A-Za-z]0/.test(d.postal) ? "full postal code" : "postal district"}.</p>`;
+
+  const ld = {
+    "@context": "https://schema.org", "@type": "AutoDealer", name: d.name,
+    address: { "@type": "PostalAddress", addressLocality: d.city, addressRegion: d.province, postalCode: d.postal || undefined, addressCountry: "CA" },
+    ...(d.phone ? { telephone: d.phone } : {}), ...(site ? { url: site } : {}),
+    ...(d.brands.length ? { brand: d.brands.map((b) => ({ "@type": "Brand", name: b })) } : {}),
+  };
+  const s = document.createElement("script"); s.type = "application/ld+json"; s.textContent = JSON.stringify(ld);
+  document.head.appendChild(s);
+}
+window.pageDealer = pageDealer;
+
 window.pageCity = pageCity;
 window.pageModel = () => {}; // model pages are fully static
 window.pageAuctionDashboard = pageAuctionDashboard;

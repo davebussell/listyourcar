@@ -20,6 +20,8 @@ const BuyerMap = (() => {
     groups: [],         // one entry per position: { i, x, y, city, prov, dealers[] }
     brand: "",          // marque filter
     type: "all",        // all | franchise | independent
+    car: null,          // the visitor's car from the header, if set
+    audience: null,     // audience keys in force when a car is set
     selected: null,     // the group whose dealers are listed
     origin: null,       // the visitor's pinned location
     view: null,         // current viewBox [x, y, w, h]
@@ -69,10 +71,13 @@ const BuyerMap = (() => {
 
     // Roll the 4,441 dealers up onto their shared positions once.
     const byPos = new Map();
-    net.dealers.forEach((row) => {
-      const [name, pi, postal, phone, website, , brands] = row;
+    net.dealers.forEach((row, i) => {
+      const [name, pi, postal, phone, website, , brands, spec] = row;
       if (!byPos.has(pi)) byPos.set(pi, []);
-      byPos.get(pi).push({ name, postal, phone, website, brands: brands || [] });
+      byPos.get(pi).push({
+        id: "d" + i, name, postal, phone, website,
+        brands: brands || [], spec: spec || "", tier: DealerNet.tierOfBrands(brands || []),
+      });
     });
     state.groups = [...byPos.entries()].map(([pi, dealers]) => {
       const [city, prov, lat, lon] = net.positions[pi];
@@ -82,10 +87,18 @@ const BuyerMap = (() => {
     }).sort((a, b) => a.dealers.length - b.dealers.length);
   }
 
-  /* A group's dealers under the current filters. */
+  /* A group's dealers under the current filters. With a car set, the
+     audience chips decide; otherwise the franchised/independent
+     toggle does. RV, marine and leasing businesses are never shown as
+     buyers. */
   function visible(g) {
+    const tests = state.car && state.audience && state.audience.length
+      ? DealerNet.audiencesFor(state.car).all.filter((a) => state.audience.includes(a.key)).map((a) => a.test)
+      : null;
     return g.dealers.filter((d) => {
+      if (d.spec === "other") return false;
       if (state.brand && !d.brands.includes(state.brand)) return false;
+      if (tests) return tests.some((t) => t(d));
       if (state.type === "franchise" && !d.brands.length) return false;
       if (state.type === "independent" && d.brands.length) return false;
       return true;
@@ -237,7 +250,8 @@ const BuyerMap = (() => {
   /* ---------- Side panel ---------- */
 
   function dealerRow(d, km) {
-    const tags = d.brands.length ? d.brands.slice(0, 3).join(", ") : "Independent";
+    const tags = d.brands.length ? d.brands.slice(0, 3).join(", ")
+      : d.spec ? d.spec.charAt(0).toUpperCase() + d.spec.slice(1) + " specialist" : "Independent";
     const tel = d.phone
       ? '<a class="link-inline" href="tel:' + d.phone.replace(/[^0-9+]/g, "") + '">' + d.phone + "</a>"
       : "";
@@ -245,7 +259,7 @@ const BuyerMap = (() => {
       ? '<a class="dealer-web" href="https://' + d.website + '" target="_blank" rel="noopener">' + d.website + "</a>"
       : "";
     return '<li class="bm-dealer">' +
-      "<strong>" + d.name + "</strong>" +
+      '<a class="dealer-link" href="/dealer.html?id=' + d.id + '"><strong>' + d.name + "</strong></a>" +
       '<span class="bm-tags">' + tags + "</span>" +
       '<span class="bm-contact">' + [tel, web].filter(Boolean).join(" · ") + "</span>" +
       (km != null ? '<span class="bm-km">' + (km < 1 ? "&lt;1" : Math.round(km)) + "<i>km</i></span>" : "") +
@@ -337,12 +351,37 @@ const BuyerMap = (() => {
       d.brands.forEach((b) => { counts[b] = (counts[b] || 0) + 1; })));
     const brands = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 16);
 
-    host.innerHTML =
-      '<div class="bm-row"><span class="dp-label">Show</span><div class="chipbar">' +
-        [["all", "All buyers"], ["franchise", "Franchised"], ["independent", "Independent"]].map((t) =>
-          '<button type="button" class="fchip' + (state.type === t[0] ? " active" : "") +
-          '" data-type="' + t[0] + '">' + t[1] + "</button>").join("") +
-      "</div></div>" +
+    /* With a car set in the header, the first row is its audiences —
+       the same chips the sell form uses, so the map shows exactly who
+       would be asked. Without one, the franchised/independent toggle. */
+    let firstRow;
+    if (state.car && (state.car.make || state.car.year)) {
+      const a = DealerNet.audiencesFor(state.car);
+      const all = [].concat(...state.groups.map((g) => g.dealers)).filter((d) => d.spec !== "other");
+      const offered = a.all.map((x) => ({ ...x, n: all.filter(x.test).length })).filter((x) => x.n > 0);
+      if (!state.audience) state.audience = a.defaults.filter((k) => offered.some((x) => x.key === k));
+      firstRow =
+        '<div class="bm-row"><span class="dp-label">Buyers for</span><div class="chipbar dp-car">' +
+          "<strong>" + [state.car.year, state.car.make].filter(Boolean).join(" ") + "</strong>" +
+          (a.kind ? ' <span class="muted small">· ' + (DealerNet.KIND_LABEL[a.kind] || a.kind) + "</span>" : "") +
+          ' <button type="button" class="link-btn" id="bm-car-edit">Change</button>' +
+        "</div></div>" +
+        '<div class="bm-row"><span class="dp-label">Ask</span><div class="chipbar">' +
+          offered.map((x) =>
+            '<button type="button" class="fchip' + (state.audience.includes(x.key) ? " active" : "") +
+            '" data-aud="' + x.key + '">' + x.label + " <em>" + num(x.n) + "</em></button>").join("") +
+        "</div></div>";
+    } else {
+      firstRow =
+        '<div class="bm-row"><span class="dp-label">Show</span><div class="chipbar">' +
+          [["all", "All buyers"], ["franchise", "Franchised"], ["independent", "Independent"]].map((t) =>
+            '<button type="button" class="fchip' + (state.type === t[0] ? " active" : "") +
+            '" data-type="' + t[0] + '">' + t[1] + "</button>").join("") +
+          ' <button type="button" class="link-btn" id="bm-car-edit">Set your car to see its buyers</button>' +
+        "</div></div>";
+    }
+
+    host.innerHTML = firstRow +
       '<div class="bm-row"><span class="dp-label">Marque</span><div class="chipbar">' +
         (state.brand ? '<button type="button" class="fchip dp-clear" data-brand="">Clear</button>' : "") +
         brands.map(([b, n]) =>
@@ -353,6 +392,16 @@ const BuyerMap = (() => {
     host.querySelectorAll("[data-type]").forEach((b) => b.addEventListener("click", () => {
       state.type = b.dataset.type; state.selected = null; refresh();
     }));
+    host.querySelectorAll("[data-aud]").forEach((b) => b.addEventListener("click", () => {
+      const k = b.dataset.aud, cur = new Set(state.audience || []);
+      if (cur.has(k)) cur.delete(k); else cur.add(k);
+      state.audience = [...cur]; state.selected = null; refresh();
+    }));
+    // The car is set in the header drawer, so that is where "Change" goes.
+    $m("#bm-car-edit", host)?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (window.Locator) Locator.open();
+    });
     host.querySelectorAll("[data-brand]").forEach((b) => b.addEventListener("click", () => {
       state.brand = b.dataset.brand; state.selected = null; refresh();
     }));
@@ -479,12 +528,20 @@ const BuyerMap = (() => {
     wire(svg);
     wireFinder();
 
-    // Inherit whatever location the header chip already knows.
+    // Inherit whatever the header chip already knows: where, and what.
+    state.car = window.Locator && Locator.car ? Locator.car() : null;
+    if (state.car && state.car.audience) state.audience = state.car.audience;
     const pinned = window.Locator ? Locator.get() : null;
     if (pinned) { await useOrigin(pinned); } else { refresh(); }
 
     document.addEventListener("lyc:location", (e) => {
       if (e.detail) useOrigin(e.detail);
+    });
+    document.addEventListener("lyc:car", (e) => {
+      state.car = e.detail;
+      state.audience = e.detail && e.detail.audience ? e.detail.audience : null;
+      state.selected = null;
+      refresh();
     });
   }
 

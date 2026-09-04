@@ -106,9 +106,40 @@ const Locator = (() => {
     const c = ((window.LYC_DATA && window.LYC_DATA.CITIES) || []).find((x) => x.slug === slug);
     if (!c) return null;
     return set({
+      ...(get() || {}),
       lat: c.lat, lon: c.lon, place: c.name, province: c.province, postal: "",
       market: { slug: c.slug, name: c.name, km: 0 }, source: "market", at: Date.now(),
+      precision: "market", rural: false,
     });
+  }
+
+  /* ---------- The car ----------
+     "Where are you" and "what are you selling" together decide who
+     gets asked to bid. The car lives in the same record as the
+     location so one event carries both, and it survives without a
+     location — a seller can say "2015 Toyota" before saying where. */
+  const CAR_KEY = "lyc_car";
+
+  function car() {
+    try { return JSON.parse(localStorage.getItem(CAR_KEY)) || null; }
+    catch { return null; }
+  }
+
+  function setCar(c) {
+    const next = c && (c.make || c.year)
+      ? { make: String(c.make || "").trim(), year: Number(c.year) || "", kind: c.kind || "",
+          audience: Array.isArray(c.audience) ? c.audience : null }
+      : null;
+    if (!next) localStorage.removeItem(CAR_KEY);
+    else localStorage.setItem(CAR_KEY, JSON.stringify(next));
+    document.dispatchEvent(new CustomEvent("lyc:car", { detail: next }));
+    return next;
+  }
+
+  function carLabel(c) {
+    c = c || car();
+    if (!c) return "";
+    return [c.year, c.make].filter(Boolean).join(" ");
   }
 
   /* Postal lookups name every neighbourhood in the FSA in
@@ -162,7 +193,7 @@ const Locator = (() => {
     if (window.DealerNet) { dealersReady = Promise.resolve(); return dealersReady; }
     dealersReady = new Promise((resolve, reject) => {
       const s = document.createElement("script");
-      s.src = "/js/dealers.js?v=24";
+      s.src = "/js/dealers.js?v=25";
       s.onload = resolve;
       s.onerror = () => reject(new Error("Couldn't load the dealer network."));
       document.head.appendChild(s);
@@ -186,6 +217,12 @@ const Locator = (() => {
     panel.classList.add("open");
     chip.setAttribute("aria-expanded", "true");
     render();
+    // The car row wants the marque list and the kind guesser, which
+    // live in the dealer bundle. Pull it once and redraw when it lands.
+    if (!window.DealerNet || !DealerNet.brands().length) {
+      ensureDealers().then(() => DealerNet.load()).then(() => { if (panel.classList.contains("open")) render(); })
+        .catch(() => {});
+    }
   }
 
   function close() {
@@ -230,6 +267,8 @@ const Locator = (() => {
         '<div class="loc-markets"><span class="dp-label">Or pick a market</span>' +
           '<div class="chipbar">' + markets + "</div></div>" +
 
+        renderCar() +
+
         '<div class="loc-dealers" id="loc-dealers">' +
           (l ? '<p class="muted small">Loading the dealerships near you…</p>' : "") +
         "</div>" +
@@ -241,31 +280,85 @@ const Locator = (() => {
     if (l) showDealers(l);
   }
 
+  /* "What are you selling?" — make, year, and the kind of car. The
+     kind is guessed from the make and year and can be overridden;
+     it decides which buyers are offered first. */
+  function renderCar() {
+    const c = car() || {};
+    const kinds = (window.DealerNet ? DealerNet.KINDS : ["everyday", "luxury", "exotic", "classic", "truck", "performance"]);
+    const labels = window.DealerNet ? DealerNet.KIND_LABEL : {};
+    const guessed = window.DealerNet && (c.make || c.year) ? DealerNet.guessKind(c) : "";
+    const kind = c.kind || guessed;
+    const makes = window.DealerNet && DealerNet.brands ? DealerNet.brands() : [];
+    return '<div class="loc-car">' +
+      '<span class="eyebrow">What are you selling?</span>' +
+      '<div class="loc-car-row">' +
+        '<label class="loc-f"><span>Year</span><input type="number" id="loc-year" min="1950" max="2027" placeholder="2018" value="' + (c.year || "") + '" /></label>' +
+        '<label class="loc-f loc-f-make"><span>Make</span><input type="text" id="loc-make" list="loc-makes" placeholder="Toyota" autocomplete="off" value="' + (c.make || "") + '" /></label>' +
+        '<datalist id="loc-makes">' + makes.map((m) => '<option value="' + m + '">').join("") + "</datalist>" +
+        '<button type="button" class="btn btn-ghost btn-sm" id="loc-car-set">Set</button>' +
+      "</div>" +
+      ((c.make || c.year)
+        ? '<div class="loc-kinds"><span class="dp-label">Sell it as</span><div class="chipbar">' +
+            kinds.map((k) => '<button type="button" class="fchip' + (kind === k ? " active" : "") + '" data-kind="' + k + '">' +
+              (labels[k] || k) + (k === guessed && !c.kind ? " <em>guess</em>" : "") + "</button>").join("") +
+          "</div></div>"
+        : '<p class="muted small loc-car-hint">Say what it is and the list below narrows to the buyers who actually want it.</p>') +
+    "</div>";
+  }
+
   /* The nearest rooftops, shown under the location — the point of
-     setting one in the first place. */
+     setting one in the first place. With a car set, the list is the
+     buyers for *that* car, with chips to widen or narrow the set. */
   async function showDealers(l) {
     const host = panel.querySelector("#loc-dealers");
     if (!host) return;
     try {
       await ensureDealers();
+      const c = car();
+      const withCar = !!(c && (c.make || c.year));
+      let audience = null, counts = [];
+      if (withCar) {
+        const a = DealerNet.audiencesFor(c);
+        counts = await DealerNet.audienceCounts(l, c, 150);
+        const offered = counts.filter((x) => x.n > 0).map((x) => x.key);
+        audience = (c.audience || a.defaults).filter((k) => offered.includes(k));
+        if (!audience.length) audience = offered.includes("indep") ? ["indep"] : offered.slice(0, 1);
+      }
       const [near, within] = await Promise.all([
-        DealerNet.nearest(l, 10),
+        DealerNet.nearest(l, 10, withCar ? { audience, car: c } : {}),
         DealerNet.countWithin(l, 100),
       ]);
-      if (!near.length) { host.innerHTML = '<p class="muted small">No dealerships found near there.</p>'; return; }
+      const chips = withCar
+        ? '<div class="chipbar loc-aud">' + counts.filter((x) => x.n > 0).map((x) =>
+            '<button type="button" class="fchip' + (audience.includes(x.key) ? " active" : "") +
+            '" data-aud="' + x.key + '">' + x.label + " <em>" + x.n + "</em></button>").join("") + "</div>"
+        : "";
       host.innerHTML =
         '<div class="loc-dealers-head">' +
-          '<span class="dp-label">Closest dealerships</span>' +
+          '<span class="dp-label">' + (withCar ? "Buyers for your " + carLabel(c) : "Closest dealerships") + "</span>" +
           '<span class="muted small">' + Number(within).toLocaleString("en-CA") + " within 100 km</span>" +
-        "</div>" +
-        '<ol class="loc-dealer-list">' +
-          near.map((d, i) =>
-            '<li><span class="loc-rank">' + String(i + 1).padStart(2, "0") + "</span>" +
-            '<span class="loc-name"><strong>' + d.name + "</strong>" +
-              '<em>' + d.city + ", " + d.province + (d.brands.length ? " · " + d.brands.slice(0, 2).join(", ") : "") + "</em></span>" +
-            '<span class="loc-km">' + (d.km < 1 ? "&lt;1" : Math.round(d.km)) + "<i>km</i></span></li>").join("") +
-        "</ol>" +
-        '<a class="link" href="/sell.html">List a car here →</a>';
+        "</div>" + chips +
+        (near.length
+          ? '<ol class="loc-dealer-list">' +
+              near.map((d, i) =>
+                '<li><span class="loc-rank">' + String(i + 1).padStart(2, "0") + "</span>" +
+                '<span class="loc-name"><a class="dealer-link" href="/dealer.html?id=' + d.id + '">' + d.name + "</a>" +
+                  '<em>' + d.city + ", " + d.province +
+                    (d.brands.length ? " · " + d.brands.slice(0, 2).join(", ") : d.spec ? " · " + d.spec : " · independent") +
+                  "</em></span>" +
+                '<span class="loc-km">' + (d.km < 1 ? "&lt;1" : Math.round(d.km)) + "<i>km</i></span></li>").join("") +
+            "</ol>"
+          : '<p class="muted small">No buyers of that kind near there — widen the set above.</p>') +
+        '<a class="link" href="/sell.html">' + (withCar ? "List it for these buyers →" : "List a car here →") + "</a>";
+
+      host.querySelectorAll("[data-aud]").forEach((b) => b.addEventListener("click", () => {
+        const k = b.dataset.aud;
+        const cur = new Set(audience);
+        if (cur.has(k)) cur.delete(k); else cur.add(k);
+        setCar({ ...c, audience: [...cur] });
+        showDealers(l);
+      }));
     } catch (e) {
       host.innerHTML = '<p class="muted small">' + (e.message || "Couldn't load dealerships.") + "</p>";
     }
@@ -291,11 +384,33 @@ const Locator = (() => {
     panel.querySelectorAll("[data-market]").forEach((b) =>
       b.addEventListener("click", () => run(async () => fromMarket(b.dataset.market))));
     panel.querySelector("#loc-clear")?.addEventListener("click", () => { clear(); render(); });
+
+    /* The car. Setting it re-renders so the kind chips appear and the
+       buyer list narrows; a kind chip is an explicit override. */
+    const readCar = () => ({
+      ...(car() || {}),
+      make: panel.querySelector("#loc-make")?.value || "",
+      year: panel.querySelector("#loc-year")?.value || "",
+    });
+    const commitCar = (extra) => {
+      const c = readCar();
+      if (window.DealerNet && c.make) c.make = DealerNet.canonMake(c.make);
+      setCar({ ...c, ...(extra || {}), audience: null });   // a new car resets the audience
+      render();
+    };
+    panel.querySelector("#loc-car-set")?.addEventListener("click", () => commitCar());
+    ["#loc-make", "#loc-year"].forEach((s) =>
+      panel.querySelector(s)?.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") { e.preventDefault(); commitCar(); }
+      }));
+    panel.querySelectorAll("[data-kind]").forEach((b) =>
+      b.addEventListener("click", () => commitCar({ kind: b.dataset.kind })));
   }
 
   document.addEventListener("DOMContentLoaded", mount);
 
-  return { get, set, clear, detect, fromPostal, fromMarket, nearestMarket, open, close, label };
+  return { get, set, clear, detect, fromPostal, fromMarket, nearestMarket, open, close, label,
+           car, setCar, carLabel };
 })();
 
 window.Locator = Locator;

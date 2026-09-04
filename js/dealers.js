@@ -144,35 +144,149 @@ const DealerNet = (() => {
     return c ? { lat: c.lat, lon: c.lon, place: c.name, province: c.province, source: "city" } : null;
   }
 
+  /* ---------- Who buys what ---------- */
+
+  /* Marque tiers. A dealer's tier is the highest tier it carries, so
+     an Audi–Volkswagen store counts as luxury. Anything not listed is
+     mainstream. Tesla sells direct and is not in the network. */
+  const TIER = {
+    exotic: ["Ferrari", "Lamborghini", "McLaren", "Rolls-Royce", "Bentley", "Aston Martin", "Maserati"],
+    luxury: ["Audi", "BMW", "Mercedes-Benz", "Lexus", "Porsche", "Jaguar", "Land Rover", "Genesis",
+             "Acura", "Infiniti", "Cadillac", "Lincoln", "Volvo", "Alfa Romeo"],
+  };
+  const tierOfBrands = (bs) =>
+    bs.some((b) => TIER.exotic.includes(b)) ? "exotic"
+    : bs.some((b) => TIER.luxury.includes(b)) ? "luxury"
+    : bs.length ? "mainstream" : "";
+
+  /* Match a typed make to a network marque: "merc" -> Mercedes-Benz,
+     "vw" -> Volkswagen, "chevy" -> Chevrolet. */
+  const ALIAS = { vw: "Volkswagen", chevy: "Chevrolet", merc: "Mercedes-Benz", mercedes: "Mercedes-Benz",
+                  benz: "Mercedes-Benz", landrover: "Land Rover", rangerover: "Land Rover",
+                  "alfa": "Alfa Romeo", "aston": "Aston Martin", "rolls": "Rolls-Royce", "mb": "Mercedes-Benz" };
+  function canonMake(make) {
+    const q = String(make || "").trim().toLowerCase();
+    if (!q) return "";
+    const key = q.replace(/[^a-z]/g, "");
+    if (ALIAS[key]) return ALIAS[key];
+    const all = [...TIER.exotic, ...TIER.luxury, ...(_data ? _data.brands : [])];
+    return all.find((b) => b.toLowerCase().replace(/[^a-z]/g, "") === key)
+        || all.find((b) => b.toLowerCase().startsWith(q))
+        || String(make).trim().replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+
+  /* The kinds of car a seller can say they have. */
+  const KINDS = ["everyday", "luxury", "exotic", "classic", "truck", "performance"];
+  const KIND_LABEL = { everyday: "Everyday car", luxury: "Luxury", exotic: "Exotic",
+                       classic: "Classic or vintage", truck: "Truck or commercial", performance: "Performance" };
+
+  /* Best guess at the kind from the make and year; the seller can
+     override. Twenty-five years is the usual collector threshold. */
+  function guessKind(car) {
+    const make = canonMake(car && car.make);
+    const year = Number(car && car.year) || 0;
+    if (year && year <= new Date().getFullYear() - 25) return "classic";
+    const t = tierOfBrands([make]);
+    if (t === "exotic" || t === "luxury") return t;
+    if (car && car.body === "truck") return "truck";
+    return "everyday";
+  }
+
+  /* The audiences a car can be offered to, each a predicate over a
+     dealer. Which ones a seller starts with depends on the kind. */
+  function audiencesFor(car) {
+    const make = canonMake(car && car.make);
+    const kind = (car && KINDS.includes(car.kind)) ? car.kind : guessKind(car);
+    const defaults = {
+      everyday:    ["make", "indep"],
+      luxury:      ["make", "luxury", "indep"],
+      exotic:      ["make", "exotic", "luxury"],
+      classic:     ["classic", "make", "indep"],
+      truck:       ["truck", "make", "indep"],
+      performance: ["performance", "make", "indep"],
+    }[kind];
+    const all = [
+      { key: "make",        label: make ? make + " dealers" : "Your marque",
+        test: (x) => !!make && x.brands.includes(make) },
+      { key: "luxury",      label: "Luxury marques",    test: (x) => x.tier === "luxury" || x.tier === "exotic" },
+      { key: "exotic",      label: "Exotic marques",    test: (x) => x.tier === "exotic" },
+      { key: "classic",     label: "Classic specialists",     test: (x) => x.spec === "classic" },
+      { key: "truck",       label: "Truck specialists",       test: (x) => x.spec === "truck" },
+      { key: "performance", label: "Performance specialists", test: (x) => x.spec === "performance" },
+      { key: "import",      label: "Import specialists",      test: (x) => x.spec === "import" },
+      { key: "indep",       label: "Independent used-car dealers",
+        test: (x) => !x.brands.length && (x.spec === "" || x.spec === "import") },
+      { key: "franchise",   label: "Any franchised dealer",  test: (x) => x.brands.length > 0 },
+    ].filter((a) => a.key !== "make" || make);
+    return { make, kind, defaults, all };
+  }
+
   /* ---------- Ranking ---------- */
 
-  /* Every dealer, scored against an origin. Callers slice what they
-     need after filtering, so a brand filter still returns the ten
-     nearest of that marque rather than ten from an already-cut list. */
-  async function ranked(origin, opts = {}) {
-    const d = await load();
-    const dist = d.positions.map((p) => haversine(origin.lat, origin.lon, p[2], p[3]));
-    const { brands = [], type = "all", maxKm = null } = opts;
-
-    let list = d.dealers.map((row, i) => ({
+  function hydrate(d, dist) {
+    return d.dealers.map((row, i) => ({
       id: "d" + i,
       name: row[0],
       city: d.positions[row[1]][0],
       province: d.positions[row[1]][1],
+      lat: d.positions[row[1]][2],
+      lon: d.positions[row[1]][3],
       postal: row[2] || "",
       phone: row[3] || "",
       website: row[4] || "",
       staff: row[5] || 0,
       brands: row[6] || [],
-      km: dist[row[1]],
+      spec: row[7] || "",
+      tier: tierOfBrands(row[6] || []),
+      km: dist ? dist[row[1]] : null,
     }));
+  }
 
+  /* One dealer by the id the lists link with. */
+  async function byId(id) {
+    const d = await load();
+    const i = Number(String(id || "").replace(/^d/, ""));
+    if (!Number.isInteger(i) || i < 0 || i >= d.dealers.length) return null;
+    return hydrate(d)[i];
+  }
+
+  /* Every dealer, scored against an origin. Callers slice what they
+     need after filtering, so a brand filter still returns the ten
+     nearest of that marque rather than ten from an already-cut list.
+
+     `audience` is a list of audience keys from audiencesFor(); a dealer
+     is kept if it matches any of them. Without one, `type` narrows to
+     franchised or independent as before. Businesses tagged "other"
+     (RV, marine, leasing) are left out unless asked for by type. */
+  async function ranked(origin, opts = {}) {
+    const d = await load();
+    const dist = d.positions.map((p) => haversine(origin.lat, origin.lon, p[2], p[3]));
+    const { brands = [], type = "all", maxKm = null, audience = null, car = null } = opts;
+
+    let list = hydrate(d, dist);
+
+    if (audience && audience.length) {
+      const tests = audiencesFor(car).all.filter((a) => audience.includes(a.key)).map((a) => a.test);
+      list = list.filter((x) => x.spec !== "other" && tests.some((t) => t(x)));
+    } else {
+      if (type === "franchise") list = list.filter((x) => x.brands.length);
+      else if (type === "independent") list = list.filter((x) => !x.brands.length && x.spec !== "other");
+      else list = list.filter((x) => x.spec !== "other");
+    }
     if (brands.length) list = list.filter((x) => x.brands.some((b) => brands.includes(b)));
-    if (type === "franchise") list = list.filter((x) => x.brands.length);
-    else if (type === "independent") list = list.filter((x) => !x.brands.length);
     if (maxKm != null) list = list.filter((x) => x.km <= maxKm);
 
     return list.sort((a, b) => a.km - b.km || b.staff - a.staff || a.name.localeCompare(b.name));
+  }
+
+  /* How many dealers each audience would reach within a radius, so a
+     chip can say "Toyota dealers (14)" and never offer an empty one. */
+  async function audienceCounts(origin, car, km = 150) {
+    const d = await load();
+    const dist = d.positions.map((p) => haversine(origin.lat, origin.lon, p[2], p[3]));
+    const near = hydrate(d, dist).filter((x) => x.km <= km && x.spec !== "other");
+    const a = audiencesFor(car);
+    return a.all.map((aud) => ({ key: aud.key, label: aud.label, n: near.filter(aud.test).length }));
   }
 
   async function nearest(origin, n = 10, opts = {}) {
@@ -198,7 +312,11 @@ const DealerNet = (() => {
     return Object.entries(tally).sort((a, b) => b[1] - a[1]);
   }
 
-  return { load, nearest, ranked, countWithin, brandsNear, fromPostal, fromDevice, fromCity, haversine };
+  /* The marques in the network, once loaded; empty before that. */
+  const brands = () => (_data ? _data.brands : []);
+
+  return { load, nearest, ranked, countWithin, brandsNear, fromPostal, fromDevice, fromCity, haversine,
+           byId, audiencesFor, audienceCounts, guessKind, canonMake, KINDS, KIND_LABEL, tierOfBrands, brands };
 })();
 
 window.DealerNet = DealerNet;

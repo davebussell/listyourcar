@@ -194,6 +194,7 @@ document.addEventListener("DOMContentLoaded", () => {
     dashboard: () => window.pageAuctionDashboard && window.pageAuctionDashboard(),
     dealers:   () => window.pageDealers && window.pageDealers(),
     buyers:    () => window.pageBuyerMap && window.pageBuyerMap(),
+    dealer:    () => window.pageDealer && window.pageDealer(),
     city:      () => window.pageCity && window.pageCity(),
     model:     () => window.pageModel && window.pageModel(),
   }[page] || (() => {}))();

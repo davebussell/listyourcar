@@ -23,7 +23,7 @@ const { estimateValue } = window.LYC_VAL;
 
 const ROOT = __dirname;
 const ORIGIN = "https://listyourcar.ca";
-const V = 24;
+const V = 25;
 const THIS_YEAR = new Date().getFullYear();
 
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");

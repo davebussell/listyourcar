@@ -16,6 +16,9 @@ function createDealerPicker(host, opts = {}) {
     origin: null,
     brands: [],           // marque filter
     type: "all",          // all | franchise | independent
+    car: opts.car || null, // { make, year, kind } — chooses the audience
+    audience: null,       // audience keys in force; null = defaults for the car
+    audiences: [],        // offered audiences near the origin, with counts
     count: Number(opts.count) || 10,
     selected: new Set(),  // dealer ids the seller has chosen
     touched: false,       // has the seller hand-edited the selection?
@@ -54,8 +57,21 @@ function createDealerPicker(host, opts = {}) {
     state.busy = true;
     render();
     try {
+      const withCar = !!(state.car && (state.car.make || state.car.year));
+      if (withCar) {
+        /* Offer only audiences with someone behind them, and start
+           from the defaults for this kind of car. */
+        state.audiences = (await DealerNet.audienceCounts(state.origin, state.car, 150)).filter((a) => a.n > 0);
+        const offered = state.audiences.map((a) => a.key);
+        const want = (state.audience || DealerNet.audiencesFor(state.car).defaults).filter((k) => offered.includes(k));
+        state.audience = want.length ? want : (offered.includes("indep") ? ["indep"] : offered.slice(0, 1));
+      } else {
+        state.audiences = []; state.audience = null;
+      }
       const [list, brands, within] = await Promise.all([
-        DealerNet.nearest(state.origin, state.count, { brands: state.brands, type: state.type }),
+        DealerNet.nearest(state.origin, state.count, withCar
+          ? { brands: state.brands, audience: state.audience, car: state.car }
+          : { brands: state.brands, type: state.type }),
         DealerNet.brandsNear(state.origin, 150),
         DealerNet.countWithin(state.origin, 100),
       ]);
@@ -154,8 +170,20 @@ function createDealerPicker(host, opts = {}) {
       '<button type="button" class="fchip ' + (state.count === n ? "active" : "") +
       '" data-count="' + n + '">' + n + "</button>").join("");
 
-    return '<div class="dp-filters">' +
-      '<div class="dp-row"><span class="dp-label">Show</span><div class="chipbar">' + typeChips + "</div></div>" +
+    const audChips = state.audiences.map((a) =>
+      '<button type="button" class="fchip ' + (state.audience && state.audience.includes(a.key) ? "active" : "") +
+      '" data-aud="' + a.key + '">' + a.label + " <em>" + a.n + "</em></button>").join("");
+    const carLine = state.car && (state.car.make || state.car.year)
+      ? '<div class="dp-row"><span class="dp-label">Buyers for</span><div class="chipbar dp-car">' +
+          '<strong>' + [state.car.year, state.car.make].filter(Boolean).join(" ") + "</strong>" +
+          (state.car.kind ? ' <span class="muted small">· ' + (DealerNet.KIND_LABEL[state.car.kind] || state.car.kind) + "</span>" : "") +
+          "</div></div>"
+      : "";
+
+    return '<div class="dp-filters">' + carLine +
+      (state.audiences.length
+        ? '<div class="dp-row"><span class="dp-label">Ask</span><div class="chipbar">' + audChips + "</div></div>"
+        : '<div class="dp-row"><span class="dp-label">Show</span><div class="chipbar">' + typeChips + "</div></div>") +
       (brands.length
         ? '<div class="dp-row"><span class="dp-label">Marque</span><div class="chipbar dp-brands">' +
             (state.brands.length ? '<button type="button" class="fchip dp-clear" data-brand="">Clear</button>' : "") +
@@ -173,7 +201,8 @@ function createDealerPicker(host, opts = {}) {
     }
     const rows = state.results.map((d, i) => {
       const picked = state.selected.has(d.id);
-      const tags = d.brands.length ? d.brands.slice(0, 3).join(", ") : "independent";
+      const tags = d.brands.length ? d.brands.slice(0, 3).join(", ")
+        : d.spec ? d.spec + " specialist" : "independent";
       const contact = d.phone
         ? '<a href="tel:' + d.phone.replace(/[^0-9+]/g, "") + '" class="link-inline">' + d.phone + "</a>"
         : '<span class="muted small">no phone on file</span>';
@@ -186,7 +215,7 @@ function createDealerPicker(host, opts = {}) {
       return '<li class="dealer ' + (picked ? "is-picked" : "") + '">' +
         '<label class="dealer-pick"><input type="checkbox" data-pick="' + d.id + '"' + (picked ? " checked" : "") + " />" +
           '<span class="dealer-rank">' + String(i + 1).padStart(2, "0") + "</span></label>" +
-        '<span class="dealer-body"><strong>' + d.name + "</strong>" +
+        '<span class="dealer-body"><a class="dealer-link" href="/dealer.html?id=' + d.id + '">' + d.name + "</a>" +
           '<span class="dealer-meta">' + d.city + ", " + d.province +
             (d.postal ? " · " + d.postal : "") + " · " + tags + "</span></span>" +
         '<span class="dealer-contact">' + contact + web + "</span>" +
@@ -218,6 +247,13 @@ function createDealerPicker(host, opts = {}) {
     if (code) code.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); go(); } });
     const hereBtn = host.querySelector("#dp-here");
     if (hereBtn) hereBtn.addEventListener("click", () => locate(() => DealerNet.fromDevice()));
+
+    host.querySelectorAll("[data-aud]").forEach((b) =>
+      b.addEventListener("click", () => {
+        const k = b.dataset.aud, cur = new Set(state.audience || []);
+        if (cur.has(k)) cur.delete(k); else cur.add(k);
+        state.audience = [...cur]; state.touched = false; refresh();
+      }));
 
     host.querySelectorAll("[data-type]").forEach((b) =>
       b.addEventListener("click", () => { state.type = b.dataset.type; state.touched = false; refresh(); }));
@@ -264,6 +300,14 @@ function createDealerPicker(host, opts = {}) {
     selection,
     origin: () => state.origin,
     setOrigin: (o) => { state.origin = o; state.touched = false; return refresh(); },
+    /* A new car resets the audience to that car's defaults. */
+    setCar: (c) => {
+      const next = c && (c.make || c.year) ? c : null;
+      const changed = JSON.stringify(next) !== JSON.stringify(state.car);
+      state.car = next; if (changed) { state.audience = null; state.touched = false; }
+      return state.origin ? refresh() : (render(), Promise.resolve());
+    },
+    audience: () => state.audience,
   };
 }
 

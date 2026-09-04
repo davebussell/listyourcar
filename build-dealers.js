@@ -111,6 +111,36 @@ function placeFor(d) {
   return -1;
 }
 
+/* What kind of independent this is, read from the name.
+
+   Only unbranded dealers get a specialty. A franchised store named
+   "Performance Mazda" or "Elite BMW" is a Mazda or BMW store — the
+   adjective is branding, not a category — whereas an independent
+   called "Classic Mustang" or "JDM Connection" really is a specialist.
+   Marque tier (luxury, exotic) is not stored: it follows from the
+   brands and is derived on the client.
+
+     classic      collector, vintage and muscle cars
+     truck        trucks, fleet and commercial
+     performance  motorsport and tuning
+     import       European and Japanese import specialists
+     other        RV, marine, powersports, leasing, rental, wholesale —
+                  real businesses, but not retail car buyers, so they
+                  are never offered as bid targets by default
+     ""           a general used-car dealer */
+const SPEC = [
+  ["other",       /\b(rv|rvs|trailers?|marine|boats?|powersports?|motorcycles?|atvs?|snowmobiles?|leasing|lease|rentals?|rent|wholesalers?|wholesale)\b/i],
+  ["classic",     /\b(classic|classics|vintage|collector|collectors|antique|muscle|hot ?rods?)\b/i],
+  ["truck",       /\b(trucks?|fleet|commercial|vans?|diesel)\b/i],
+  ["performance", /\b(motorsports?|performance|racing|tuning)\b/i],
+  ["import",      /\b(imports?|euro|european|jdm|japanese|german)\b/i],
+];
+function specialtyOf(name, brands) {
+  if (brands.length) return "";
+  for (const [tag, re] of SPEC) if (re.test(name)) return tag;
+  return "";
+}
+
 const brandSet = new Set();
 const rows = [];
 let dropped = 0, viaPostal = 0, viaFsa = 0, viaCity = 0;
@@ -121,7 +151,7 @@ for (const d of dealers) {
   if (k === "P") viaPostal++; else if (k === "C") viaCity++; else viaFsa++;
   const bs = brandsFor(d.n);
   bs.forEach((b) => brandSet.add(b));
-  rows.push([d.n, pi, d.z, d.t, d.w, d.e || 0, bs]);
+  rows.push([d.n, pi, d.z, d.t, d.w, d.e || 0, bs, specialtyOf(d.n, bs)]);
 }
 
 const payload = {

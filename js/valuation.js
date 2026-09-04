@@ -359,4 +359,4 @@ async function estimateNarrativeHook(estimate, vehicle) {
   } catch { return null; }
 }
 
-window.LYC_VAL = { estimateValue, estimateNarrativeHook, VAL_BASE, VAL_DEMAND };
+window.LYC_VAL = { estimateValue, estimateNarrativeHook, guessBody, VAL_BASE, VAL_DEMAND };

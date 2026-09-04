@@ -3,31 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Live car auctions across Canada | listyourcar.ca</title>
-  <meta name="description" content="Browse live car auctions from private Canadian sellers. Real bids from verified dealers and private buyers, visible reserves, and a hard closing time on every lot." />
-  <link rel="canonical" href="https://listyourcar.ca/auctions.html" />
+  <title>Dealership | listyourcar.ca</title>
+  <meta name="description" content="Dealership profile and contact details from the listyourcar.ca buyer network." />
+  <link rel="canonical" href="https://listyourcar.ca/dealer.html" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="listyourcar.ca" />
-  <meta property="og:title" content="Live car auctions across Canada" />
-  <meta property="og:description" content="Private cars, disclosed reserves, a hard closing time, and every bid in the open." />
-  <meta property="og:url" content="https://listyourcar.ca/auctions.html" />
+  <meta property="og:title" content="Dealership | listyourcar.ca" />
   <meta property="og:image" content="https://listyourcar.ca/assets/cars/model3.jpg" />
-  <meta property="og:image:width" content="960" />
-  <meta property="og:image:height" content="498" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Live car auctions across Canada" />
-  <meta name="twitter:description" content="Private cars, disclosed reserves, a hard closing time, and every bid in the open." />
-  <meta name="twitter:image" content="https://listyourcar.ca/assets/cars/model3.jpg" />
+  <meta name="twitter:card" content="summary" />
   <link rel="stylesheet" href="css/styles.css?v=25" />
 </head>
-<body data-page="auctions">
+<body data-page="dealer">
   <header class="site-header">
     <div class="container nav">
       <div class="nav-brand"><a href="index.html" class="logo">List<span>Your</span>Car<span class="tld">.ca</span></a><span class="now-casting"><span class="live-dot"></span>Live bidding</span></div>
       <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span><span></span></button>
       <nav class="nav-links">
-        <a href="auctions.html" class="active">Live Auctions</a>
-        <a href="find-buyers.html">Find Buyers</a>
+        <a href="auctions.html">Live Auctions</a>
+        <a href="find-buyers.html" class="active">Find Buyers</a>
         <a href="value.html">What's It Worth</a>
         <div class="nav-more">
           <button type="button" class="nav-more-btn" aria-expanded="false" aria-haspopup="true">More <span class="caret">▾</span></button>
@@ -53,51 +46,11 @@
     </div>
   </header>
 
-  <main class="container section">
-    <div class="page-head">
-      <span class="eyebrow">The book</span>
-      <h1>Live auctions</h1>
-      <p class="lead narrow">Private Canadian cars, sold to the highest bidder at a fixed closing time. Every bid is public. Every reserve is disclosed.</p>
+  <section class="section">
+    <div class="container dealer-page" id="dealer-page">
+      <p class="muted">Loading the dealership…</p>
     </div>
-
-    <div class="auc-toolbar">
-      <div class="chipbar" id="auction-cities"><span class="chip-label">City</span></div>
-      <div class="auc-controls">
-        <span class="auc-count" id="auction-count"></span>
-        <label class="inline-sel">Show
-          <select id="auction-status">
-            <option value="live" selected>Live now</option>
-            <option value="closed">Closed</option>
-            <option value="all">All</option>
-          </select>
-        </label>
-        <label class="inline-sel">Sort
-          <select id="auction-sort">
-            <option value="ending" selected>Ending soonest</option>
-            <option value="newest">Newest</option>
-            <option value="bid-high">Highest bid</option>
-            <option value="bid-low">Lowest bid</option>
-            <option value="bids">Most bids</option>
-          </select>
-        </label>
-      </div>
-    </div>
-
-    <div id="auction-demo-note"></div>
-    <div class="ac-grid" id="auction-grid"></div>
-
-    <section class="sell-band section-line">
-      <div>
-        <span class="eyebrow">Selling instead?</span>
-        <h2>Put your car in the next book.</h2>
-        <p class="muted">Check what it should fetch, set your reserve, and let them bid.</p>
-      </div>
-      <div class="hero-actions">
-        <a class="btn btn-primary" href="value.html">What's my car worth?</a>
-        <a class="btn btn-ghost" href="sell.html">List for auction</a>
-      </div>
-    </section>
-  </main>
+  </section>
 
   <footer class="site-footer">
     <div class="footer-grid">
@@ -119,6 +72,7 @@
   <script src="js/config.js?v=25"></script>
   <script src="js/analytics.js?v=25"></script>
   <script src="js/app.js?v=25"></script>
+  <script src="js/dealers.js?v=25"></script>
   <script src="js/auction.js?v=25"></script>
   <script src="js/locator.js?v=25"></script>
 </body>
