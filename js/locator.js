@@ -193,7 +193,7 @@ const Locator = (() => {
     if (window.DealerNet) { dealersReady = Promise.resolve(); return dealersReady; }
     dealersReady = new Promise((resolve, reject) => {
       const s = document.createElement("script");
-      s.src = "/js/dealers.js?v=26";
+      s.src = "/js/dealers.js?v=27";
       s.onload = resolve;
       s.onerror = () => reject(new Error("Couldn't load the dealer network."));
       document.head.appendChild(s);

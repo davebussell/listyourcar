@@ -132,8 +132,32 @@ const BuyerMap = (() => {
 
   /* Radius by square root of count, so a bubble's *area* tracks the
      number of dealers. Scaling the radius directly would make Toronto
-     look ten times the dealer count it actually has. */
-  const radiusFor = (n) => Math.min(2.2 + Math.sqrt(n) * 2.4, 22);
+     look ten times the dealer count it actually has.
+
+     Radii are in map units at the home zoom. They are rescaled on
+     every zoom so a bubble keeps the same size on screen: otherwise
+     zooming in enlarges the bubbles with the map, and neighbouring
+     districts a few kilometres apart swallow each other in rings. */
+  /* Radii are in screen pixels. They are converted to map units for
+     the current view on every zoom, so a bubble is the same size on
+     screen whether you are looking at the country or one city. */
+  /* Sizes are tuned for a ~700px stage and scaled down on narrower
+     ones, or the country view on a phone is one solid blob. */
+  const stageScale = () => {
+    const svg = $m("#bm-svg");
+    const w = svg ? svg.getBoundingClientRect().width : 700;
+    return Math.min(1, Math.max(0.5, w / 700));
+  };
+  const radiusPx = (n) => Math.min(3 + Math.sqrt(n) * 2.1, 15) * stageScale();
+  const CLOSE_FLOOR_PX = 7;        // when close, every bubble is at least this: tappable, and room for its count
+  const LABEL_MIN_PX = 7;          // a count is drawn only when the bubble can hold it
+
+  /* Map units per screen pixel for the current view. */
+  function unitsPerPx() {
+    const svg = $m("#bm-svg");
+    const w = svg ? svg.getBoundingClientRect().width : 0;
+    return w && state.view ? state.view[2] / w : 1;
+  }
 
   function drawBubbles(root) {
     const old = $m(".bm-dots", root);
@@ -141,16 +165,43 @@ const BuyerMap = (() => {
     const g = el("g", { class: "bm-dots" });
     filtered().forEach(({ g: grp, list }) => {
       const c = el("circle", {
-        cx: grp.x.toFixed(1), cy: grp.y.toFixed(1), r: radiusFor(list.length).toFixed(1),
+        cx: grp.x.toFixed(1), cy: grp.y.toFixed(1), r: 1, "data-px": radiusPx(list.length).toFixed(2),
         class: "bm-dot" + (state.selected === grp ? " is-on" : ""),
         "data-pos": grp.i,
       });
       c.appendChild(el("title", {})).textContent =
         grp.city + ", " + grp.prov + " — " + list.length + (list.length === 1 ? " dealer" : " dealers");
       g.appendChild(c);
+      // The count, shown once zoomed in enough for it to fit.
+      if (list.length > 1) {
+        const t = el("text", { x: grp.x.toFixed(1), y: grp.y.toFixed(1), class: "bm-n", "data-pos": grp.i });
+        t.textContent = list.length;
+        g.appendChild(t);
+      }
     });
     root.appendChild(g);
+    lastU = null;
+    scaleShapes(root, unitsPerPx());
     return g;
+  }
+
+  /* Rescale every shape for the current view so screen size holds. */
+  let lastU = null;
+  function scaleShapes(svg, u) {
+    if (u === lastU) return;
+    lastU = u;
+    const close = state.view && state.home ? state.view[2] / state.home[2] < 0.4 : false;
+    svg.querySelectorAll(".bm-dot").forEach((c) => {
+      const px = close ? Math.max(+c.dataset.px, CLOSE_FLOOR_PX) : +c.dataset.px;
+      c.setAttribute("r", (px * u).toFixed(3));
+      const t = c.nextElementSibling;
+      if (t && t.classList.contains("bm-n")) t.style.display = close && px >= LABEL_MIN_PX ? "" : "none";
+    });
+    svg.querySelectorAll(".bm-you-halo").forEach((c) => c.setAttribute("r", (14 * u).toFixed(3)));
+    svg.querySelectorAll(".bm-you-dot").forEach((c) => c.setAttribute("r", (4.5 * u).toFixed(3)));
+    // Strokes and labels read this: 1px on screen = --bm-u map units.
+    svg.style.setProperty("--bm-u", u.toFixed(4));
+    svg.classList.toggle("is-close", close);
   }
 
   function drawOrigin(root) {
@@ -158,9 +209,10 @@ const BuyerMap = (() => {
     if (old) old.remove();
     if (!state.origin) return;
     const [x, y] = project(state.origin.lat, state.origin.lon);
+    const u = unitsPerPx();
     const g = el("g", { class: "bm-you" });
-    g.appendChild(el("circle", { cx: x, cy: y, r: 16, class: "bm-you-halo" }));
-    g.appendChild(el("circle", { cx: x, cy: y, r: 4.5, class: "bm-you-dot" }));
+    g.appendChild(el("circle", { cx: x, cy: y, r: (14 * u).toFixed(3), class: "bm-you-halo" }));
+    g.appendChild(el("circle", { cx: x, cy: y, r: (4.5 * u).toFixed(3), class: "bm-you-dot" }));
     root.appendChild(g);
   }
 
@@ -172,15 +224,18 @@ const BuyerMap = (() => {
     if (animate) svg.classList.add("is-gliding");
     svg.setAttribute("viewBox", v.map((n) => n.toFixed(1)).join(" "));
     if (animate) setTimeout(() => svg.classList.remove("is-gliding"), 420);
-    // Keep strokes and dots a constant size on screen as we zoom in.
-    const k = v[2] / state.home[2];
-    svg.style.setProperty("--bm-k", k.toFixed(3));
+    // Keep strokes, dots and labels a constant size on screen as we zoom.
+    svg.style.setProperty("--bm-k", (v[2] / state.home[2]).toFixed(3));
+    scaleShapes(svg, unitsPerPx());
   }
 
   function zoomBy(factor, cx, cy) {
     const [x, y, w, h] = state.view;
     const [vb] = [state.map.viewBox];
-    const nw = Math.min(Math.max(w * factor, vb[2] * 0.04), vb[2] * 1.6);
+    /* The floor is city scale: 4 map units is roughly 22 km across,
+       which is what it takes for neighbouring postal districts a few
+       kilometres apart to separate on screen. */
+    const nw = Math.min(Math.max(w * factor, vb[2] * 0.004), vb[2] * 1.6);
     const nh = nw * (h / w);
     // keep the point under the cursor fixed
     const px = cx == null ? x + w / 2 : cx;
@@ -271,7 +326,8 @@ const BuyerMap = (() => {
     drawBubbles($m("#bm-svg"));
     drawOrigin($m("#bm-svg"));
     renderPanel();
-    if (g) fitTo(g.x - 40, g.y - 40, 80, 80, 1);
+    // About 65 km across: the district and its neighbours, not the province.
+    if (g) fitTo(g.x - 6, g.y - 6, 12, 12, 1);
   }
 
   function renderPanel() {
@@ -441,7 +497,8 @@ const BuyerMap = (() => {
     refresh();
     if (o) {
       const [x, y] = project(o.lat, o.lon);
-      fitTo(x - 90, y - 90, 180, 180, 1);
+      // About 160 km across: the region a seller's buyers actually come from.
+      fitTo(x - 15, y - 15, 30, 30, 1);
     }
   }
 

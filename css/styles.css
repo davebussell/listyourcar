@@ -1142,22 +1142,22 @@ p{margin:0 0 1rem;max-width:66ch;}
 
 /* --bm-k is the zoom ratio; dividing by it keeps strokes and dots a
    constant size on screen however far in you zoom. */
-#bm-svg{--bm-k:1;}
+#bm-svg{--bm-k:1;--bm-u:1;}
 .bm-prov{
   fill:var(--paper);stroke:var(--line-2);
-  stroke-width:calc(1.1px * var(--bm-k));
+  stroke-width:calc(1.1px * var(--bm-u));
   transition:fill .18s;
 }
 .bm-prov:hover{fill:var(--paper-3);}
 .bm-dot{
   fill:var(--signal);fill-opacity:.5;stroke:var(--paper);
-  stroke-width:calc(.9px * var(--bm-k));
+  stroke-width:calc(.9px * var(--bm-u));
   transition:fill-opacity .15s;
 }
 .bm-dot:hover{fill-opacity:.85;}
 .bm-dot.is-on{fill:var(--gold-bright);fill-opacity:1;stroke:var(--ink);}
 .bm-you-halo{fill:var(--ink);fill-opacity:.10;}
-.bm-you-dot{fill:var(--ink);stroke:var(--paper);stroke-width:calc(1.5px * var(--bm-k));}
+.bm-you-dot{fill:var(--ink);stroke:var(--paper);stroke-width:calc(1.5px * var(--bm-u));}
 
 .bm-zoom{position:absolute;top:.75rem;right:.75rem;display:flex;flex-direction:column;gap:1px;}
 .bm-zoom button{
@@ -1267,3 +1267,19 @@ p{margin:0 0 1rem;max-width:66ch;}
 .dealer-profile{grid-column:1;margin-top:2rem;}
 .dealer-profile .eyebrow{display:block;margin-bottom:.6rem;}
 .dealer-profile .dealer-facts{border-top:1px solid var(--line);}
+
+/* Semantic zoom on the buyer map. Bubbles are rescaled in JS so they
+   hold their size on screen; here the fill goes solid and the counts
+   appear once the map is close enough (.is-close, past 2.5x). */
+.bm-n{
+  display:none;pointer-events:none;
+  font-family:var(--f-mono);font-weight:600;
+  font-size:calc(8px * var(--bm-u));
+  fill:var(--paper);text-anchor:middle;dominant-baseline:central;
+  paint-order:stroke;stroke:var(--signal-ink);stroke-width:calc(2.5px * var(--bm-u));stroke-linejoin:round;
+}
+
+#bm-svg.is-close .bm-dot{fill-opacity:.9;stroke-width:calc(1.4px * var(--bm-u));}
+#bm-svg.is-close .bm-dot:hover{fill-opacity:1;}
+#bm-svg.is-close .bm-dot.is-on{fill:var(--gold-bright);}
+#bm-svg.is-close .bm-dot.is-on + .bm-n{stroke:var(--ink);}
