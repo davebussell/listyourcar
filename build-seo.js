@@ -23,7 +23,7 @@ const { estimateValue } = window.LYC_VAL;
 
 const ROOT = __dirname;
 const ORIGIN = "https://listyourcar.ca";
-const V = 27;
+const V = 28;
 const THIS_YEAR = new Date().getFullYear();
 
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -108,7 +108,7 @@ ${body}
       <p class="muted" style="margin-top:1rem;max-width:32ch">List your car, set your reserve, and let dealers and private buyers bid it up. Canada-wide.</p>
     </div>
     <div><h4>Sell</h4><a href="/value.html">What's my car worth</a><a href="/sell.html">List for auction</a><a href="/sell-my-car/">Sell by city</a><a href="/how-it-works.html">How it works</a></div>
-    <div><h4>Buy</h4><a href="/auctions.html">Live auctions</a><a href="/find-buyers.html">Buyer map</a><a href="/car-auctions/">Auctions by city</a><a href="/dealers.html">For dealers</a></div>
+    <div><h4>Buy</h4><a href="/auctions.html">Live auctions</a><a href="/find-buyers.html">Buyer map</a><a href="/used-car-dealers/">Used car dealers</a><a href="/car-auctions/">Auctions by city</a><a href="/dealers.html">For dealers</a></div>
     <div><h4>Values</h4><a href="/what-is-my-car-worth/">Car values by model</a><a href="/about.html">About</a><a href="/contact.html">Contact</a></div>
   </div>
   <div class="footer-bottom"><p>&copy; <span id="year"></span> listyourcar.ca — All rights reserved.</p></div>
@@ -596,6 +596,11 @@ try {
 }
 
 /* ============================================================
+   4b. Used car dealers by metro — see seo-dealer-guides.js
+   ============================================================ */
+const guides = require("./seo-dealer-guides.js")({ ROOT, ORIGIN, shell, track, esc, breadcrumbLd });
+
+/* ============================================================
    5. Sitemap
    ============================================================ */
 const core = [
@@ -622,4 +627,5 @@ console.log(`Generated ${count} SEO pages`);
 console.log(`  sell-my-car/       ${D.CITIES.length} cities + index`);
 console.log(`  car-auctions/      ${D.CITIES.length} cities + index`);
 console.log(`  what-is-my-car-worth/ ${MODELS.length} models + index`);
+console.log(`  used-car-dealers/  ${guides.metros} metros + index, ${guides.dealers} dealers listed`);
 console.log(`Sitemap: ${core.length + urls.length} URLs`);

@@ -676,6 +676,10 @@ p{margin:0 0 1rem;max-width:66ch;}
 
 .seo-block{display:grid;grid-template-columns:4rem 1fr;gap:2rem;padding-block:3rem;border-top:1px solid var(--line);}
 .seo-block .index{padding-top:.4rem;}
+/* A grid track will not shrink below its content by default, so a wide
+   table stretched the whole page sideways on phones instead of scrolling
+   inside its .table-scroll box. */
+.seo-block > *{min-width:0;}
 .seo-block h2{font-size:clamp(1.4rem,1.3rem + .5vw,1.75rem);margin-bottom:1.25rem;}
 .seo-block .steps{border-top:0;margin-top:2rem;}
 
@@ -1283,3 +1287,31 @@ p{margin:0 0 1rem;max-width:66ch;}
 #bm-svg.is-close .bm-dot:hover{fill-opacity:1;}
 #bm-svg.is-close .bm-dot.is-on{fill:var(--gold-bright);}
 #bm-svg.is-close .bm-dot.is-on + .bm-n{stroke:var(--ink);}
+
+/* -- Used car dealers by metro ----------------------------------
+   The /used-car-dealers/ pages: a town breakdown, dealer tables,
+   and a heading per make. Tables reuse .valtable.
+   ------------------------------------------------------------ */
+.ud-towns{list-style:none;margin:1.5rem 0 0;padding:0;max-width:40rem;}
+.ud-towns li{display:grid;grid-template-columns:minmax(0,12rem) minmax(0,1fr) 3rem;gap:.75rem;align-items:center;padding:.35rem 0;}
+.ud-town{font-size:.9375rem;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ud-n{font-family:var(--f-mono);font-size:.8125rem;text-align:right;font-variant-numeric:tabular-nums;}
+.ud-table{min-width:40rem;}
+.ud-table tbody th{white-space:normal;font-weight:500;}
+.ud-table td,.ud-table tbody th{padding-top:.7rem;padding-bottom:.7rem;}
+.ud-table .num a{color:var(--ink);text-decoration:none;}
+.ud-web{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin-left:.45rem;text-decoration:none;}
+.ud-web:hover{color:var(--signal-ink);}
+.ud-jump{margin:1.25rem 0 .5rem;}
+.ud-jump .fchip{text-decoration:none;}
+.ud-marque{margin:2.25rem 0 0;font-size:1.25rem;scroll-margin-top:6rem;}
+.ud-marque span{font-family:var(--f-mono);font-size:.8125rem;color:var(--ink-3);font-weight:400;margin-left:.35rem;}
+.ud-marque + .table-scroll{margin-top:.75rem;}
+.ud-prov,.ud-faq{margin-top:1.5rem;}
+.ud-prov:first-child,.ud-faq:first-of-type{margin-top:0;}
+.ud-prov h3,.ud-faq h3{font-size:1.0625rem;margin:0 0 .4rem;}
+.ud-prov p,.ud-faq p{margin:0;max-width:68ch;}
+.ud-note{margin:2rem 0 0;}
+.ud-idx-prov{font-size:1.125rem;letter-spacing:.02em;text-transform:uppercase;margin:3rem 0 1rem;}
+.ud-idx-prov:first-of-type{margin-top:0;}
+@media(max-width:600px){.ud-towns li{grid-template-columns:minmax(0,8rem) minmax(0,1fr) 2.5rem;}}
