@@ -126,6 +126,51 @@ const Store = (() => {
     write(KEYS.invites, list);
     return rec;
   }
+  /* A seller's own request to dealers, from the start flow. Unlike an
+     auction invite it has no lot; the seller contacts each dealer
+     themselves, and ticks them off. Saved again whenever the seller
+     changes the list, keeping any ticks already made. */
+  function saveRequest({ id, vehicle, city, place, dealers, flow }) {
+    const list = read(KEYS.invites);
+    const i = id ? list.findIndex((x) => x.id === id) : -1;
+    const prev = i >= 0 ? list[i] : null;
+    const ticked = new Map(prev ? prev.dealers.filter((d) => d.contactedAt).map((d) => [d.id, d.contactedAt]) : []);
+    const rec = {
+      id: prev ? prev.id : uid("req"),
+      kind: "request",
+      auctionId: null,
+      vehicle, city, place,
+      created: prev ? prev.created : new Date().toISOString(),
+      status: ticked.size ? "sent" : "matched",
+      channel: ticked.size ? "seller" : undefined,
+      dealers: (dealers || []).map((d) => ({
+        id: d.id, name: d.name, city: d.city, province: d.province,
+        phone: d.phone, website: d.website, email: d.email || "", km: Math.round(d.km),
+        contactedAt: ticked.get(d.id) || null,
+      })),
+      flow,
+    };
+    if (i >= 0) list[i] = rec; else list.unshift(rec);
+    write(KEYS.invites, list);
+    return rec;
+  }
+
+  /* The seller says they contacted a dealer. "sent" means at least one
+     was, by the seller's own account — the only evidence we have. */
+  function markContacted(requestId, dealerId, on) {
+    const list = read(KEYS.invites);
+    const i = list.findIndex((x) => x.id === requestId);
+    if (i === -1) return null;
+    const rec = list[i];
+    rec.dealers = rec.dealers.map((d) => d.id === dealerId ? { ...d, contactedAt: on ? new Date().toISOString() : null } : d);
+    const n = rec.dealers.filter((d) => d.contactedAt).length;
+    rec.status = n ? "sent" : "matched";
+    rec.channel = n ? "seller" : undefined;
+    list[i] = rec;
+    write(KEYS.invites, list);
+    return rec;
+  }
+
   function markInviteSent(id, channel) {
     const list = read(KEYS.invites);
     const i = list.findIndex((x) => x.id === id);
@@ -143,7 +188,7 @@ const Store = (() => {
     allAuctions, userAuctions, getAuction, addAuction,
     addBid, bidsFor, myBids,
     watchlist, isWatching, toggleWatch,
-    invites, invitesFor, addInvite, markInviteSent,
+    invites, invitesFor, addInvite, markInviteSent, saveRequest, markContacted,
     resetAll,
   };
 })();

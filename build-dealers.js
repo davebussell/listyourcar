@@ -296,6 +296,28 @@ function profileOf(d, brands) {
   return p;
 }
 
+/* ============================================================
+   Dealer email addresses — opt-in only.
+
+   The export carries no email addresses. The start flow emails a
+   dealer in one click when it has one, so addresses belong here as
+   dealers give them — a dealer asking to receive cars, or confirming
+   the address on its own contact page. This file is published inside
+   dealers.json, so only add an address the dealer is content to have
+   public. Do not fill it by scraping: collecting addresses with a
+   program to send them commercial messages is prohibited in Canada.
+
+   data/dealer-emails.json, keyed by the dealer's website domain:
+     { "pacifichonda.ca": "sales@pacifichonda.ca" }
+   ============================================================ */
+const EMAIL_FILE = path.join(DIR, "dealer-emails.json");
+const EMAILS = fs.existsSync(EMAIL_FILE) ? JSON.parse(fs.readFileSync(EMAIL_FILE, "utf8")) : {};
+const domainOf = (w) => String(w || "").toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0];
+function emailFor(d) {
+  const e = EMAILS[domainOf(d.w)];
+  return e && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) ? e : "";
+}
+
 const brandSet = new Set();
 const rows = [];
 let dropped = 0, viaPostal = 0, viaFsa = 0, viaCity = 0;
@@ -313,7 +335,10 @@ for (const d of dealers) {
   const role = (prof.find((c) => c.startsWith("r:")) || "").slice(2);
   const focus = prof.filter((c) => c.startsWith("x:")).map((c) => c.slice(2));
   const spec = role ? "other" : (focus.find((f) => ["classic", "truck", "performance", "import"].includes(f)) || "");
-  rows.push([d.n, pi, d.z, d.t, d.w, d.e || 0, bs, spec, prof]);
+  const row = [d.n, pi, d.z, d.t, d.w, d.e || 0, bs, spec, prof];
+  const email = emailFor(d);
+  if (email) row.push(email);            // row[9] only when there is one, to keep the bundle lean
+  rows.push(row);
 }
 
 const payload = {

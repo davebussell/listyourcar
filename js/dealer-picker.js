@@ -20,8 +20,10 @@ function createDealerPicker(host, opts = {}) {
     audience: null,       // audience keys in force; null = defaults for the car
     audiences: [],        // offered audiences near the origin, with counts
     count: Number(opts.count) || 10,
-    selected: new Set(),  // dealer ids the seller has chosen
-    touched: false,       // has the seller hand-edited the selection?
+    // A caller returning to the picker passes the seller's earlier choice,
+    // which then stands instead of being replaced by the nearest matches.
+    selected: new Set(opts.selected || []),  // dealer ids the seller has chosen
+    touched: !!(opts.selected && opts.selected.length),  // hand-edited, or restored?
     results: [],
     available: [],
     within100: null,
@@ -299,7 +301,10 @@ function createDealerPicker(host, opts = {}) {
   return {
     selection,
     origin: () => state.origin,
-    setOrigin: (o) => { state.origin = o; state.touched = false; return refresh(); },
+    /* A new place means new dealers, so the selection re-tracks the
+       nearest — unless the caller is restoring an earlier choice for
+       the same place, and says so with keepSelection. */
+    setOrigin: (o, keepSelection) => { state.origin = o; if (!keepSelection) state.touched = false; return refresh(); },
     /* A new car resets the audience to that car's defaults. */
     setCar: (c) => {
       const next = c && (c.make || c.year) ? c : null;

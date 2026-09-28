@@ -23,7 +23,7 @@ const { estimateValue } = window.LYC_VAL;
 
 const ROOT = __dirname;
 const ORIGIN = "https://listyourcar.ca";
-const V = 28;
+const V = 30;
 const THIS_YEAR = new Date().getFullYear();
 
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -94,7 +94,7 @@ ${jsonld.map((j) => `<script type="application/ld+json">${j}</script>`).join("\n
           </div>
         </div>
       </div>
-      <a href="/sell.html" class="btn btn-primary btn-sm">Sell My Car</a>
+      <a href="/start.html" class="btn btn-primary btn-sm">Sell My Car</a>
     </nav>
   </div>
 </header>
@@ -605,6 +605,7 @@ const guides = require("./seo-dealer-guides.js")({ ROOT, ORIGIN, shell, track, e
    ============================================================ */
 const core = [
   [`${ORIGIN}/`, "1.0"],
+  [`${ORIGIN}/start.html`, "0.9"],
   [`${ORIGIN}/value.html`, "0.9"],
   [`${ORIGIN}/sell.html`, "0.9"],
   [`${ORIGIN}/auctions.html`, "0.9"],

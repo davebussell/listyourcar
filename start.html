@@ -3,24 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dealership | listyourcar.ca</title>
-  <meta name="description" content="Dealership profile and contact details from the listyourcar.ca buyer network." />
-  <link rel="canonical" href="https://listyourcar.ca/dealer.html" />
+  <title>Get started — what it&#39;s worth, or dealers bidding | listyourcar.ca</title>
+  <meta name="description" content="Find out what your car is worth in seconds, or pick the dealers near you who buy your kind of car and send it to all of them in a few steps." />
+  <link rel="canonical" href="https://listyourcar.ca/start.html" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="listyourcar.ca" />
-  <meta property="og:title" content="Dealership | listyourcar.ca" />
+  <meta property="og:title" content="What is your car worth — or get dealers bidding" />
   <meta property="og:image" content="https://listyourcar.ca/assets/cars/model3.jpg" />
   <meta name="twitter:card" content="summary" />
   <link rel="stylesheet" href="css/styles.css?v=30" />
 </head>
-<body data-page="dealer">
+<body data-page="start">
   <header class="site-header">
     <div class="container nav">
       <div class="nav-brand"><a href="index.html" class="logo">List<span>Your</span>Car<span class="tld">.ca</span></a><span class="now-casting"><span class="live-dot"></span>Live bidding</span></div>
       <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false"><span></span><span></span><span></span></button>
       <nav class="nav-links">
         <a href="auctions.html">Live Auctions</a>
-        <a href="find-buyers.html" class="active">Find Buyers</a>
+        <a href="find-buyers.html">Find Buyers</a>
         <a href="value.html">What's It Worth</a>
         <div class="nav-more">
           <button type="button" class="nav-more-btn" aria-expanded="false" aria-haspopup="true">More <span class="caret">▾</span></button>
@@ -46,11 +46,9 @@
     </div>
   </header>
 
-  <section class="section">
-    <div class="container dealer-page" id="dealer-page">
-      <p class="muted">Loading the dealership…</p>
-    </div>
-  </section>
+  <main class="flow" id="flow">
+    <noscript><div class="flow-inner"><h1>This needs JavaScript</h1><p class="lead">The estimate and dealer finder run in your browser. <a class="link-inline" href="/used-car-dealers/">Browse used car dealers by city</a> instead.</p></div></noscript>
+  </main>
 
   <footer class="site-footer">
     <div class="footer-grid">
@@ -73,7 +71,8 @@
   <script src="js/analytics.js?v=30"></script>
   <script src="js/app.js?v=30"></script>
   <script src="js/dealers.js?v=30"></script>
-  <script src="js/auction.js?v=30"></script>
+  <script src="js/dealer-picker.js?v=30"></script>
+  <script src="js/start.js?v=30"></script>
   <script src="js/locator.js?v=30"></script>
 </body>
 </html>

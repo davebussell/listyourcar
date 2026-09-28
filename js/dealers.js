@@ -265,6 +265,7 @@ const DealerNet = (() => {
       spec: row[7] || "",
       tier: tierOfBrands(row[6] || []),
       km: dist ? dist[row[1]] : null,
+      email: row[9] || "",       // only dealers who have given an address — see build-dealers.js
       ...profileOf(row[8]),
     }));
   }

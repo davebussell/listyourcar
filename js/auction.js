@@ -918,14 +918,20 @@ function homeAuctions() {
   }
 
   // Hero quick-estimate — three fields, straight to the answer.
-  const qf = $("#quick-value");
-  qf?.addEventListener("submit", (e) => {
+  /* The front door: one car, two paths. Whichever button is pressed
+     decides the path; the car travels with it so the flow can skip
+     the question it has already been answered. Nothing is required
+     here — an empty form still opens the flow at the car screen. */
+  const sf = $("#start-form");
+  sf?.addEventListener("submit", (e) => {
     e.preventDefault();
-    const f = Object.fromEntries(new FormData(qf));
-    window.Analytics?.track("estimate_started", { from: "hero", make: String(f.make || "").toLowerCase() });
-    const u = new URLSearchParams();
-    Object.entries(f).forEach(([k, v]) => { if (v) u.set(k, v); });
-    location.href = "value.html?" + u.toString();
+    const path = (e.submitter && e.submitter.value) || "value";
+    const f = Object.fromEntries(new FormData(sf));
+    window.Analytics?.track(path === "value" ? "estimate_started" : "flow_started",
+      { from: "hero", path, make: String(f.make || "").toLowerCase() });
+    const u = new URLSearchParams({ path, from: "hero" });
+    ["year", "make", "model"].forEach((k) => { if (f[k] && String(f[k]).trim()) u.set(k, String(f[k]).trim()); });
+    location.href = "start.html?" + u.toString();
   });
 
   // Live ticker of recent bidding activity — proof the room is full.
@@ -1009,7 +1015,21 @@ function pageAuctionDashboard() {
   const mi = $("#my-invites");
   if (mi) {
     const invites = Store.invites();
-    mi.innerHTML = invites.length ? invites.map((v) => `
+    mi.innerHTML = invites.length ? invites.map((v) => v.kind === "request" ? `
+      <div class="row-card invite-row">
+        <div class="grow">
+          <strong>${v.vehicle}</strong>
+          <span class="rc-state ${v.status === "sent" ? "sold" : ""}">${v.dealers.filter((d) => d.contactedAt).length} of ${v.dealers.length} contacted</span>
+          <div class="muted small">Dealer request${v.place ? " · " + v.place : ""} · started ${relTime(v.created)}</div>
+          <details class="invite-detail">
+            <summary>See the list</summary>
+            <ol class="invite-dealers">
+              ${v.dealers.map((d) => `<li><span>${d.name}${d.contactedAt ? " ✓" : ""}</span><span class="muted small">${d.city}, ${d.province} · ${d.km} km</span></li>`).join("")}
+            </ol>
+          </details>
+        </div>
+        <a class="btn btn-sm btn-ghost" href="start.html?request=${v.id}">Continue</a>
+      </div>` : `
       <div class="row-card invite-row">
         <div class="grow">
           <strong>${v.vehicle}</strong>
@@ -1027,7 +1047,7 @@ function pageAuctionDashboard() {
         </div>
         <a class="btn btn-sm btn-ghost" href="auction.html?id=${v.auctionId}">View lot</a>
       </div>`).join("")
-      : `<p class="muted">No invitations yet. <a href="sell.html" class="link-inline">List a car →</a> and we'll match the ten closest dealerships to it.</p>`;
+      : `<p class="muted">No dealer requests yet. <a href="start.html?path=dealers" class="link-inline">Get dealers bidding →</a> and we'll find the ten closest that buy your car.</p>`;
   }
 
   /* — Watchlist — */

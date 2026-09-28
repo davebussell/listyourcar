@@ -18,7 +18,7 @@
   <meta name="twitter:title" content="Sell your car to the highest bidder" />
   <meta name="twitter:description" content="List your car, set your reserve and closing time, and let dealers and private buyers bid against each other." />
   <meta name="twitter:image" content="https://listyourcar.ca/assets/cars/model3.jpg" />
-  <link rel="stylesheet" href="css/styles.css?v=28" />
+  <link rel="stylesheet" href="css/styles.css?v=30" />
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"listyourcar.ca","url":"https://listyourcar.ca/","description":"Canadian car auction platform. List your car, set a reserve and closing time, and let dealers and private buyers bid against each other.","areaServed":{"@type":"Country","name":"Canada"}}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"listyourcar.ca","url":"https://listyourcar.ca/"}</script>
 </head>
@@ -50,7 +50,7 @@
             </div>
           </div>
         </div>
-        <a href="sell.html" class="btn btn-primary btn-sm">Sell My Car</a>
+        <a href="/start.html" class="btn btn-primary btn-sm">Sell My Car</a>
       </nav>
     </div>
   </header>
@@ -61,17 +61,25 @@
       <div class="hero-copy">
         <span class="eyebrow">Canada's car auction</span>
         <h1 class="has-mark"><span class="mark">Don't take the first offer.</span> Make them bid.</h1>
-        <p class="lead">List your car once. Dealers and private buyers bid against each other until your closing time. You set the reserve — nothing sells below it.</p>
+        <p class="lead">Find out what your car is worth, or send it straight to the dealers near you and let them compete. Either way you'll know the number before anyone makes you an offer.</p>
 
-        <form class="quick-value" id="quick-value">
-          <span class="qv-label">What's my car worth?</span>
-          <div class="qv-row">
-            <label class="qv-f"><span>Year</span><input type="number" name="year" placeholder="2020" min="1950" max="2027" required /></label>
-            <label class="qv-f"><span>Make</span><input type="text" name="make" placeholder="Toyota" required /></label>
-            <label class="qv-f"><span>Model</span><input type="text" name="model" placeholder="RAV4" required /></label>
-            <button type="submit" class="btn btn-primary">Estimate</button>
+        <form class="quick-value start-form" id="start-form" action="start.html">
+          <span class="qv-label">Start with your car</span>
+          <div class="qv-row sf-row">
+            <label class="qv-f"><span>Year</span><input type="number" name="year" placeholder="2020" min="1950" max="2027" inputmode="numeric" /></label>
+            <label class="qv-f"><span>Make</span><input type="text" name="make" placeholder="Toyota" autocomplete="off" /></label>
+            <label class="qv-f"><span>Model</span><input type="text" name="model" placeholder="RAV4" autocomplete="off" /></label>
           </div>
-          <span class="qv-note muted small">Free, instant, no account. See the range before you commit to anything.</span>
+          <div class="sf-paths">
+            <button type="submit" name="path" value="value" class="sf-path">
+              <span class="sf-k">01</span><strong>What's it worth?</strong>
+              <span>A free estimate in seconds. No account.</span>
+            </button>
+            <button type="submit" name="path" value="dealers" class="sf-path is-primary">
+              <span class="sf-k">02</span><strong>Get dealers bidding</strong>
+              <span>Pick dealers near you and send them your car.</span>
+            </button>
+          </div>
         </form>
 
         <div class="hero-facts" id="hero-facts"></div>
@@ -188,14 +196,14 @@
     <div class="footer-bottom"><p>&copy; <span id="year"></span> listyourcar.ca — All rights reserved.</p></div>
   </footer>
 
-  <script src="js/data.js?v=28"></script>
-  <script src="js/auction-data.js?v=28"></script>
-  <script src="js/valuation.js?v=28"></script>
-  <script src="js/store.js?v=28"></script>
-  <script src="js/config.js?v=28"></script>
-  <script src="js/analytics.js?v=28"></script>
-  <script src="js/app.js?v=28"></script>
-  <script src="js/auction.js?v=28"></script>
-  <script src="js/locator.js?v=28"></script>
+  <script src="js/data.js?v=30"></script>
+  <script src="js/auction-data.js?v=30"></script>
+  <script src="js/valuation.js?v=30"></script>
+  <script src="js/store.js?v=30"></script>
+  <script src="js/config.js?v=30"></script>
+  <script src="js/analytics.js?v=30"></script>
+  <script src="js/app.js?v=30"></script>
+  <script src="js/auction.js?v=30"></script>
+  <script src="js/locator.js?v=30"></script>
 </body>
 </html>
