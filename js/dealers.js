@@ -214,9 +214,9 @@ const DealerNet = (() => {
       { key: "truck",       label: "Truck specialists",       test: (x) => x.spec === "truck" },
       { key: "performance", label: "Performance specialists", test: (x) => x.spec === "performance" },
       { key: "import",      label: "Import specialists",      test: (x) => x.spec === "import" },
-      { key: "ev",          label: "EV specialists",          test: (x) => x.focus.includes("ev") },
-      { key: "premium",     label: "Premium independents",    test: (x) => !x.brands.length && x.focus.includes("premium") },
-      { key: "budget",      label: "Budget lots",             test: (x) => !x.brands.length && x.focus.includes("budget") },
+      { key: "ev",          label: "EV specialists",          test: (x) => (x.focus || []).includes("ev") },
+      { key: "premium",     label: "Premium independents",    test: (x) => !x.brands.length && (x.focus || []).includes("premium") },
+      { key: "budget",      label: "Budget lots",             test: (x) => !x.brands.length && (x.focus || []).includes("budget") },
       { key: "indep",       label: "Independent used-car dealers",
         test: (x) => !x.brands.length && (x.spec === "" || x.spec === "import") },
       { key: "groups",      label: "Dealer groups",           test: (x) => x.sites >= 2 || !!x.group },
@@ -252,6 +252,7 @@ const DealerNet = (() => {
   function hydrate(d, dist) {
     return d.dealers.map((row, i) => ({
       id: "d" + i,
+      pos: row[1],               // index into positions; the map groups on it
       name: row[0],
       city: d.positions[row[1]][0],
       province: d.positions[row[1]][1],
@@ -340,12 +341,17 @@ const DealerNet = (() => {
     return Object.entries(tally).sort((a, b) => b[1] - a[1]);
   }
 
+  /* Every dealer as a full record — profile fields included — with no
+     distance. The map uses this rather than building its own records,
+     so a filter that reads a profile field works everywhere at once. */
+  async function all() { return hydrate(await load()); }
+
   /* The marques in the network, once loaded; empty before that. */
   const brands = () => (_data ? _data.brands : []);
 
   return { load, nearest, ranked, countWithin, brandsNear, fromPostal, fromDevice, fromCity, haversine,
            byId, audiencesFor, audienceCounts, guessKind, canonMake, KINDS, KIND_LABEL, tierOfBrands, brands,
-           SIZE_LABEL, SITES_LABEL };
+           SIZE_LABEL, SITES_LABEL, all };
 })();
 
 window.DealerNet = DealerNet;

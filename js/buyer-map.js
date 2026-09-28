@@ -69,15 +69,13 @@ const BuyerMap = (() => {
     state.map = map;
     state.net = net;
 
-    // Roll the 4,441 dealers up onto their shared positions once.
+    // Roll the 4,441 dealers up onto their shared positions once. The
+    // records come from DealerNet.all(), the same ones every other page
+    // uses, so each filter sees every field it reads.
     const byPos = new Map();
-    net.dealers.forEach((row, i) => {
-      const [name, pi, postal, phone, website, , brands, spec] = row;
-      if (!byPos.has(pi)) byPos.set(pi, []);
-      byPos.get(pi).push({
-        id: "d" + i, name, postal, phone, website,
-        brands: brands || [], spec: spec || "", tier: DealerNet.tierOfBrands(brands || []),
-      });
+    (await DealerNet.all()).forEach((d) => {
+      if (!byPos.has(d.pos)) byPos.set(d.pos, []);
+      byPos.get(d.pos).push(d);
     });
     state.groups = [...byPos.entries()].map(([pi, dealers]) => {
       const [city, prov, lat, lon] = net.positions[pi];
