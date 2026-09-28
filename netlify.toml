@@ -53,12 +53,16 @@
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
 
-# The dealer network is large and changes only when rebuilt. Cache it
-# hard; the version query on the fetch busts it when it does change.
+# The dealer network, its evidence and the map change whenever they are
+# rebuilt, and code that reads them changes with them — a stale copy
+# beside new code shows wrong takes or breaks outright. So browsers
+# revalidate every time, like the scripts; an unchanged file costs only
+# a 304. The fetches also carry the release's ?v= so a new release is
+# fetched fresh without waiting on revalidation at all.
 [[headers]]
   for = "/data/*"
   [headers.values]
-    Cache-Control = "public, max-age=86400"
+    Cache-Control = "public, max-age=0, must-revalidate"
 
 # Vehicle photos are content-addressed by filename and never mutate.
 [[headers]]

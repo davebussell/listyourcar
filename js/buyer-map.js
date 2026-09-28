@@ -14,6 +14,11 @@
    ============================================================ */
 
 const BuyerMap = (() => {
+  // The release version, carried onto the map data like the scripts.
+  const ASSET_V = (() => {
+    try { const v = new URL(document.currentScript.src, location.href).searchParams.get("v"); return v ? "?v=" + v : ""; }
+    catch { return ""; }
+  })();
   const state = {
     map: null,          // projected province paths
     net: null,          // { positions, dealers, brands }
@@ -60,7 +65,7 @@ const BuyerMap = (() => {
 
   async function load() {
     const [map, net] = await Promise.all([
-      fetch("/data/canada-map.json").then((r) => {
+      fetch("/data/canada-map.json" + ASSET_V).then((r) => {
         if (!r.ok) throw new Error("map data unavailable");
         return r.json();
       }),

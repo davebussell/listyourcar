@@ -18,6 +18,14 @@
    ============================================================ */
 
 const DealerNet = (() => {
+  /* The release version this script was loaded with (?v=33 and so on),
+     carried onto the data it fetches so a new release never pairs new
+     code with a cached old bundle. Empty when run by the Node build. */
+  const ASSET_V = (() => {
+    try { return new URL(document.currentScript.src, location.href).searchParams.get("v") || ""; }
+    catch { return ""; }
+  })();
+  const withV = (u) => (ASSET_V ? u + "?v=" + ASSET_V : u);
   let _data = null;          // { positions:[[city,prov,lat,lon]], dealers:[[name,posIdx,postal,phone,web,staff,brands]], brands:[] }
   let _loading = null;
   const _postalCache = {};   // FSA -> [lat,lon], so a retyped code costs nothing
@@ -25,7 +33,7 @@ const DealerNet = (() => {
   function load() {
     if (_data) return Promise.resolve(_data);
     if (_loading) return _loading;
-    _loading = fetch("/data/dealers.json")
+    _loading = fetch(withV("/data/dealers.json"))
       .then((r) => { if (!r.ok) throw new Error("dealer data " + r.status); return r.json(); })
       .then((d) => { _data = d; return d; })
       .catch((e) => { _loading = null; throw e; });
@@ -436,7 +444,7 @@ const DealerNet = (() => {
     if (!dom) return null;
     const shards = evidence();
     const k = /^[a-z0-9]/.test(dom) ? dom[0] : "_";
-    if (!shards[k]) shards[k] = fetch("/data/evidence/" + k + ".json")
+    if (!shards[k]) shards[k] = fetch(withV("/data/evidence/" + k + ".json"))
       .then((r) => (r.ok ? r.json() : { sites: {} })).catch(() => ({ sites: {} }));
     const e = await shards[k];
     return (e.sites || {})[dom] || null;
