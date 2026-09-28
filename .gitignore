@@ -6,3 +6,4 @@ data/cities-todo.json
 *.csv
 .netlify/
 data/.ne-cache.geojson
+data/.research-cache.json

@@ -27,6 +27,8 @@ const StartFlow = (() => {
   const PATHS = {
     value: ["car", "result"],
     dealers: ["car", "where", "dealers", "details", "send"],
+    // Skip the dealer: sell straight to a person, through a shareable listing.
+    private: ["car", "price", "where", "ad", "share"],
   };
   const CONDITIONS = [["excellent", "Excellent"], ["good", "Good"], ["fair", "Fair"], ["needs-work", "Needs work"]];
 
@@ -47,6 +49,9 @@ const StartFlow = (() => {
     seller: { name: "", email: "", phone: "" },
     floor: "", notes: "",
     requestId: null,
+    // The private listing: what buyers see, and how they reach the seller.
+    ad: { price: "", desc: "", photos: "", showPhone: false, textOk: false },
+    listingId: null,
   });
   let S = blank();
   let step = null;
@@ -104,7 +109,7 @@ const StartFlow = (() => {
     const i = list.indexOf(step);
     const progress = i >= 0
       ? `<div class="flow-progress" aria-hidden="true"><i style="width:${((i + 1) / list.length * 100).toFixed(1)}%"></i></div>
-         <p class="flow-k">${S.path === "value" ? "What's it worth" : "Get dealers bidding"} · Step ${i + 1} of ${list.length}</p>`
+         <p class="flow-k">${{ value: "What's it worth", dealers: "Get dealers bidding", private: "Skip the dealer" }[S.path]} · Step ${i + 1} of ${list.length}</p>`
       : "";
     const back = step !== "choose"
       ? `<button type="button" class="link-btn flow-back" id="flow-back">← Back</button>` : "";
@@ -126,6 +131,10 @@ const StartFlow = (() => {
           <button type="button" class="sf-path is-primary" data-path="dealers">
             <span class="sf-k">02</span><strong>Get dealers bidding</strong>
             <span>Pick the dealers near you who buy your kind of car, and send them your car in one go.</span>
+          </button>
+          <button type="button" class="sf-path" data-path="private">
+            <span class="sf-k">03</span><strong>Skip the dealer</strong>
+            <span>Sell straight to a person. Get a listing link to share, and buyers contact you directly.</span>
           </button>
         </div>`);
     },
@@ -181,11 +190,91 @@ const StartFlow = (() => {
         <p class="muted small">The gap between the first two numbers is what one offer leaves on the table. <button type="button" class="link-btn" data-go="car">Change the car</button></p>`);
     },
 
+    /* ---- Skip the dealer: price, ad, share ---- */
+
+    price() {
+      const e = estimate();
+      const suggested = e ? Math.round(e.privateHigh / 100) * 100 : "";
+      return frame(`
+        <h1>What should you ask?</h1>
+        ${e ? `<div class="flow-answer">
+          <span class="flow-answer-k">A private sale can reach</span>
+          <strong class="flow-answer-n">${money(e.privateHigh)}</strong>
+        </div>
+        <dl class="flow-compare">
+          <div><dt>A dealer's trade-in offer</dt><dd>${money(e.tradeIn)}</dd></div>
+          <div><dt>Dealers bidding against each other</dt><dd>${money(e.bidLow)} – ${money(e.bidHigh)}</dd></div>
+          <div><dt>What skipping the dealer can add</dt><dd class="up">+${money(Math.max(0, e.privateHigh - e.tradeIn))}</dd></div>
+        </dl>` : ""}
+        <form class="flow-form" id="flow-price" novalidate>
+          <div class="flow-row flow-row-2">
+            <label class="flow-f"><span>Asking price</span><input name="price" type="number" inputmode="numeric" min="1" step="100" value="${esc(S.ad.price || suggested)}" required /></label>
+            <label class="flow-f"><span>Kilometres</span><input name="mileage" type="number" inputmode="numeric" min="0" step="1000" placeholder="85000" value="${esc(S.car.mileage)}" /></label>
+          </div>
+          <div class="flow-f"><span>Condition</span><div class="chipbar">${CONDITIONS.map(([k, l]) =>
+            `<button type="button" class="fchip${S.car.condition === k ? " active" : ""}" data-cond="${k}">${l}</button>`).join("")}</div></div>
+          <p class="flow-note">Most private sales settle a little under the asking price, so leave yourself some room.</p>
+          <p class="flow-error" id="flow-err" role="alert"></p>
+          <div class="flow-actions"><button type="submit" class="btn btn-primary">Continue</button></div>
+        </form>`);
+    },
+
+    ad() {
+      const a = S.ad;
+      return frame(`
+        <h1>Write your listing</h1>
+        <p class="lead">Everything here goes into your listing link, so anyone you share it with can see it. Your street address is never included.</p>
+        <form class="flow-form" id="flow-ad" novalidate>
+          <label class="flow-f"><span>About the car</span><textarea name="desc" rows="5" maxlength="800" placeholder="One owner, all service records, winter tires on rims included. No accidents.">${esc(a.desc)}</textarea></label>
+          <p class="flow-note flow-count-chars" id="flow-chars"></p>
+          <label class="flow-f"><span>Link to your photos <em>optional</em></span><input name="photos" type="url" placeholder="https://photos.app.goo.gl/…" value="${esc(a.photos)}" /></label>
+          <div class="flow-row flow-row-2">
+            <label class="flow-f"><span>First name</span><input name="name" autocomplete="given-name" value="${esc(S.seller.name)}" required /></label>
+            <label class="flow-f"><span>Email for buyers</span><input name="email" type="email" autocomplete="email" value="${esc(S.seller.email)}" required /></label>
+          </div>
+          <label class="flow-f"><span>Phone <em>optional</em></span><input name="phone" type="tel" autocomplete="tel" value="${esc(S.seller.phone)}" /></label>
+          <div class="flow-checks">
+            <label><input type="checkbox" name="showPhone"${a.showPhone ? " checked" : ""} /> Show my phone number on the listing</label>
+            <label><input type="checkbox" name="textOk"${a.textOk ? " checked" : ""} /> Buyers can text me</label>
+          </div>
+          <p class="flow-error" id="flow-err" role="alert"></p>
+          <div class="flow-actions"><button type="submit" class="btn btn-primary">Create my listing →</button></div>
+        </form>`);
+    },
+
+    share() {
+      const url = S.listingUrl || "";
+      const prov = S.origin && S.origin.province;
+      const paper = ((window.LYC_DATA && LYC_DATA.CITIES) || []).find((c) => c.province === prov);
+      return frame(`
+        <h1>Your listing is ready</h1>
+        <p class="lead">Share the link anywhere. Buyers who open it can contact you or make an offer straight to <strong>${esc(S.seller.email)}</strong> — no dealer, no fee.</p>
+        <label class="flow-f flow-link"><span>Your listing link</span><input id="flow-url" readonly value="${esc(url)}" /></label>
+        <div class="flow-send-top">
+          <button type="button" class="btn btn-primary" id="flow-copy-link">Copy link</button>
+          ${navigator.share ? `<button type="button" class="btn btn-ghost" id="flow-share">Share…</button>` : ""}
+          <a class="btn btn-ghost" href="${esc(url)}" target="_blank" rel="noopener">Open my listing ↗</a>
+        </div>
+        <p class="flow-note" id="flow-copied" aria-live="polite"></p>
+        <div class="flow-howto">
+          <p><strong>Put it where buyers look.</strong> Post on Kijiji, Facebook Marketplace or AutoTrader, and paste your link into the ad — it carries the price check, your details and a way to make an offer.
+          <button type="button" class="link-btn" id="flow-copy-ad">Copy ad text</button></p>
+        </div>
+        <div class="flow-howto">
+          <p><strong>Selling privately${paper ? " in " + esc(paper.provinceName) : ""}:</strong> ${paper ? esc(paper.paperwork) : "Check your province's transfer rules before the handover: a signed bill of sale, the registration and any required inspection."} Meet in daylight, take payment by bank draft you can verify with the issuing bank, and never hand over the keys before the money clears.</p>
+        </div>
+        <div class="flow-after">
+          <p class="muted">Want dealers to compete as well? <a class="link-inline" href="/start.html?path=dealers">Get dealers bidding on it →</a></p>
+        </div>`);
+    },
+
     where() {
       const o = S.origin;
       return frame(`
         <h1>Where's the car?</h1>
-        <p class="lead">We use this to find the dealers closest to it. It stays in your browser.</p>
+        <p class="lead">${S.path === "private"
+          ? "Buyers see your town and the first three characters of your postal code — never your address."
+          : "We use this to find the dealers closest to it. It stays in your browser."}</p>
         <form class="flow-form" id="flow-where" novalidate>
           <div class="flow-row flow-row-where">
             <label class="flow-f"><span>Postal code</span><input name="postal" autocomplete="postal-code" maxlength="7" placeholder="K1A 0A6" value="${esc(o && o.postal ? o.postal : "")}" /></label>
@@ -193,14 +282,14 @@ const StartFlow = (() => {
           </div>
           <p class="flow-note" id="flow-where-note" aria-live="polite">${o ? "Using <strong>" + esc(shortPlace(o.place) || o.postal) + "</strong>" + (o.province ? ", " + esc(o.province) : "") : ""}</p>
           <p class="flow-error" id="flow-err" role="alert"></p>
-          <div class="flow-actions"><button type="submit" class="btn btn-primary">Find my dealers</button></div>
+          <div class="flow-actions"><button type="submit" class="btn btn-primary">${S.path === "private" ? "Continue" : "Find my dealers"}</button></div>
         </form>`);
     },
 
     dealers() {
       return frame(`
         <h1>Pick the dealers to ask</h1>
-        <p class="lead">These are the closest dealers that buy your ${esc(carLabel() || "car")}. We've ticked them all — untick any you'd rather skip, or widen the set.</p>
+        <p class="lead">The best buyers near you for your ${esc(carLabel() || "car")}, ranked by our buyer's take: what each dealer says on its own website, and what it sells. We've ticked them all — untick any, compare them side by side, or switch to nearest first.</p>
         <div id="flow-picker"></div>
         <p class="flow-error" id="flow-err" role="alert"></p>
         <div class="flow-actions flow-sticky"><button type="button" class="btn btn-primary" id="flow-dealers-go">Continue</button></div>`, { wide: true });
@@ -343,6 +432,45 @@ const StartFlow = (() => {
       let ok = false; try { ok = document.execCommand("copy"); } catch { ok = false; }
       t.remove(); return ok;
     }
+  }
+
+  /* ---------- The private listing ----------
+     The whole listing travels in its link (see js/listing.js), so it
+     works with no server: whoever has the link sees the listing, and
+     contacts the seller directly. Only the town and the first three
+     characters of the postal code go in — never an address. */
+  function buildListing() {
+    const o = S.origin || {};
+    const data = {
+      v: 1, y: S.car.year, mk: S.car.make, md: S.car.model, km: S.car.mileage || "", c: S.car.condition || "good",
+      p: S.ad.price, d: S.ad.desc, ph: S.ad.photos,
+      t: shortPlace(o.place) || "", pr: o.province || "", f: String(o.postal || "").replace(/\s/g, "").slice(0, 3).toUpperCase(),
+      n: S.seller.name.split(/\s+/)[0], e: S.seller.email,
+      tel: S.ad.showPhone || S.ad.textOk ? S.seller.phone : "", sms: S.ad.textOk ? 1 : 0, call: S.ad.showPhone ? 1 : 0,
+      at: new Date().toISOString().slice(0, 10),
+    };
+    S.listingUrl = location.origin + "/listing.html#" + ListingCodec.encode(data);
+    const rec = Store.saveListing({ id: S.listingId, vehicle: carLabel(), price: Number(S.ad.price),
+      place: [data.t, data.pr].filter(Boolean).join(", "), url: S.listingUrl });
+    S.listingId = rec.id;
+    save();
+  }
+
+  function adText(withLink) {
+    const e = estimate();
+    const cond = (CONDITIONS.find(([k]) => k === S.car.condition) || [, "Good"])[1];
+    const place = [shortPlace((S.origin || {}).place), (S.origin || {}).province].filter(Boolean).join(", ");
+    return [
+      `${carLabel()} — ${money(S.ad.price)}`,
+      [S.car.mileage ? kmFmt(S.car.mileage) : null, cond + " condition", place || null].filter(Boolean).join(" · "),
+      "",
+      S.ad.desc || null,
+      S.ad.desc ? "" : null,
+      e ? `Independent estimate for this car: dealers bidding ${money(e.bidLow)}–${money(e.bidHigh)}, private sale up to ${money(e.privateHigh)}.` : null,
+      "Private sale, no dealer. Serious buyers, send me an offer.",
+      withLink ? "" : null,
+      withLink ? `Details and offers: ${S.listingUrl}` : null,
+    ].filter((l) => l !== null).join("\n");
   }
 
   /* ---------- The request record ---------- */
@@ -545,6 +673,62 @@ const StartFlow = (() => {
       });
     },
 
+    price() {
+      const form = $f("#flow-price");
+      wireCond(form);
+      form.addEventListener("submit", (ev) => {
+        ev.preventDefault();
+        const f = readForm(form);
+        const price = Math.round(Number(f.price));
+        if (!price || price < 100) return fail("Add an asking price.");
+        S.ad.price = String(price);
+        S.car.mileage = f.mileage || "";
+        save();
+        track("private_price_set", { price_band: window.Analytics && Analytics.band ? Analytics.band(price) : undefined });
+        go(nextStep());
+      });
+    },
+
+    ad() {
+      const form = $f("#flow-ad");
+      const chars = $f("#flow-chars");
+      const count = () => { chars.textContent = `${form.desc.value.length} / 800`; };
+      form.desc.addEventListener("input", count); count();
+      form.addEventListener("submit", (ev) => {
+        ev.preventDefault();
+        const f = readForm(form);
+        const photos = (f.photos || "").trim();
+        if (!f.name.trim()) return fail("Add your first name so buyers know who they're talking to.");
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim())) return fail("Add an email address buyers can reach you at.");
+        if (photos && !/^https?:\/\/[^\s]+$/i.test(photos)) return fail("The photo link should start with https://");
+        if ((form.showPhone.checked || form.textOk.checked) && !f.phone.trim()) return fail("Add your phone number, or untick the phone options.");
+        S.seller = { ...S.seller, name: f.name.trim(), email: f.email.trim(), phone: f.phone.trim() };
+        S.ad = { ...S.ad, desc: (f.desc || "").trim().slice(0, 800), photos,
+                 showPhone: form.showPhone.checked, textOk: form.textOk.checked };
+        buildListing();
+        track("private_listing_created", { has_photos: !!photos, phone_shown: S.ad.showPhone });
+        go(nextStep());
+      });
+    },
+
+    share() {
+      if (!S.listingUrl) return go("ad");
+      const note = $f("#flow-copied");
+      const flash = (t) => { note.textContent = t; clearTimeout(flash.t); flash.t = setTimeout(() => { note.textContent = ""; }, 4000); };
+      $f("#flow-copy-link").addEventListener("click", async () => {
+        flash((await copy(S.listingUrl)) ? "Link copied." : "Couldn't copy — select the link above instead.");
+        track("private_link_copied", {});
+      });
+      $f("#flow-share")?.addEventListener("click", async () => {
+        try { await navigator.share({ title: carLabel() + " for sale", text: adText(false), url: S.listingUrl }); track("private_link_shared", {}); }
+        catch { /* the seller closed the share sheet */ }
+      });
+      $f("#flow-copy-ad").addEventListener("click", async () => {
+        flash((await copy(adText(true))) ? "Ad text copied, with your link at the end." : "Couldn't copy on this browser.");
+      });
+      $f("#flow-url").addEventListener("focus", (e) => e.target.select());
+    },
+
     send() {
       const count = () => {
         const done = contactedSet().size, n = S.selected.length;
@@ -627,10 +811,12 @@ const StartFlow = (() => {
     const hash = location.hash.replace("#", "");
     step = hash && RENDER[hash] && (hash === "choose" || steps().includes(hash)) ? hash : firstStep();
     // A step that needs earlier answers falls back to the first gap.
-    if (["result", "where", "dealers", "details", "send"].includes(step) && !carKnown()) step = S.path ? "car" : "choose";
-    if (["dealers", "details", "send"].includes(step) && !S.origin) step = "where";
+    if (["result", "where", "dealers", "details", "send", "price", "ad", "share"].includes(step) && !carKnown()) step = S.path ? "car" : "choose";
+    if (["where", "ad", "share"].includes(step) && S.path === "private" && !S.ad.price) step = "price";
+    if (["dealers", "details", "send", "ad", "share"].includes(step) && !S.origin) step = "where";
     if (["details", "send"].includes(step) && !S.selected.length) step = "dealers";
     if (step === "send" && !S.requestId) step = "details";
+    if (step === "share" && !S.listingUrl) step = "ad";
 
     if (S.path) track("flow_started", { path: S.path, from: q.get("from") || "direct" });
     history.replaceState({ step, path: S.path }, "", location.pathname + location.search + "#" + step);

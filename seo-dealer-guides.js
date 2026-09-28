@@ -138,6 +138,19 @@ function parseProfile(codes) {
 
 module.exports = function buildDealerGuides({ ROOT, ORIGIN, shell, track, esc, breadcrumbLd }) {
   const bundle = JSON.parse(fs.readFileSync(path.join(ROOT, "data", "dealers.json"), "utf8"));
+  /* The buyer's take comes from js/dealers.js — the same function the
+     browser runs — so a page and the live site never disagree. */
+  global.window = global.window || {};
+  require(path.join(ROOT, "js", "dealers.js"));
+  const Net = global.window.DealerNet;
+  const records = Net.fromBundle(bundle);
+  const evDir = path.join(ROOT, "data", "evidence");
+  const EVIDENCE = { sites: {} };
+  if (fs.existsSync(evDir)) for (const f of fs.readdirSync(evDir)) {
+    Object.assign(EVIDENCE.sites, JSON.parse(fs.readFileSync(path.join(evDir, f), "utf8")).sites);
+  }
+  const siteKey = (w) => String(w || "").toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0].trim();
+  const evidenceOf = (d) => EVIDENCE.sites[siteKey(d.web)] || null;   // d.web is the website address here
   const bySlug = Object.fromEntries(METROS.map((m) => [m[0], m]));
   const coreSlug = Object.fromEntries(METROS.map((m) => [fold(coreTown(m[1])), m[0]]));
 
@@ -174,6 +187,7 @@ module.exports = function buildDealerGuides({ ROOT, ORIGIN, shell, track, esc, b
       id: "d" + i, name: row[0], town, townKey: fold(town), prov: pos[1],
       postal: row[2] || "", phone: row[3] || "", web: row[4] || "", brands: row[6] || [],
       spec: row[7] || "", ...prof,
+      take: Net.buyerTake(records[i]), research: records[i].web,
     });
   });
 
@@ -190,6 +204,9 @@ module.exports = function buildDealerGuides({ ROOT, ORIGIN, shell, track, esc, b
     if (d.group) bits.push(`${esc(d.group)} group`);
     return bits.length ? bits.join(" · ") : `<span class="muted">—</span>`;
   };
+
+  const takeCell = (d) => `<span class="take-chip take-${d.take.tier}">${d.take.label}</span>` +
+    (d.take.reasons[0] ? `<span class="ud-take">${esc(d.take.reasons[0].text.split(" — ")[0])}</span>` : "");
 
   /* ---------- One page per metro ---------- */
   const summaries = [];
@@ -252,18 +269,18 @@ module.exports = function buildDealerGuides({ ROOT, ORIGIN, shell, track, esc, b
       `<li><span class="ud-town">${esc(t)}</span><span class="bm-p-bar"><i style="width:${(n / maxTown * 100).toFixed(1)}%"></i></span><span class="ud-n">${n}</span></li>`).join("");
 
     const indepRows = indep.map((d) =>
-      `<tr><th>${dealerCell(d)}</th><td>${esc(d.town)}</td><td>${focusOf(d)}</td><td class="num">${tel(d.phone)}</td></tr>`).join("");
+      `<tr><th>${dealerCell(d)}</th><td>${esc(d.town)}</td><td>${takeCell(d)}</td><td>${focusOf(d)}</td><td class="num">${tel(d.phone)}</td></tr>`).join("");
 
     const marqueJump = marques.map(([b, ds]) =>
       `<a class="fchip" href="#m-${esc(b.toLowerCase().replace(/[^a-z0-9]+/g, "-"))}">${esc(b)} <em>${ds.length}</em></a>`).join("");
     const marqueTables = marques.map(([b, ds]) => {
       const rows = ds.slice().sort((x, y) => x.town.localeCompare(y.town) || x.name.localeCompare(y.name)).map((d) => {
         const also = d.brands.filter((x) => x !== b);
-        return `<tr><th>${dealerCell(d)}</th><td>${esc(d.town)}</td><td>${also.length ? esc(also.join(", ")) : `<span class="muted">—</span>`}</td><td class="num">${tel(d.phone)}</td></tr>`;
+        return `<tr><th>${dealerCell(d)}</th><td>${esc(d.town)}</td><td>${takeCell(d)}</td><td>${also.length ? esc(also.join(", ")) : `<span class="muted">—</span>`}</td><td class="num">${tel(d.phone)}</td></tr>`;
       }).join("");
       return `<h3 class="ud-marque" id="m-${esc(b.toLowerCase().replace(/[^a-z0-9]+/g, "-"))}">${esc(b)} <span>${ds.length}</span></h3>
       <div class="table-scroll"><table class="valtable ud-table">
-        <thead><tr><th>Dealer</th><th>Community</th><th>Also sells</th><th class="num">Phone</th></tr></thead>
+        <thead><tr><th>Dealer</th><th>Community</th><th>Buyer's take</th><th>Also sells</th><th class="num">Phone</th></tr></thead>
         <tbody>${rows}</tbody></table></div>`;
     }).join("");
 
@@ -285,6 +302,23 @@ module.exports = function buildDealerGuides({ ROOT, ORIGIN, shell, track, esc, b
       .map((x) => `<a href="/used-car-dealers/${x[0]}/">Used car dealers in ${esc(x[1])}</a>`).join("");
 
     /* FAQ — answers computed from the same data as the page. */
+    const recommended = list.slice().sort((a, b) => b.take.score - a.take.score || a.name.localeCompare(b.name)).slice(0, 10);
+    const researched = list.filter((d) => d.research.read).length;
+    const sayBuy = list.filter((d) => d.research.buys).length;
+    const recCards = recommended.map((d, n) => {
+      const ev = evidenceOf(d);
+      const quote = ev && ev.e && (ev.e.buys || ev.e.trade);
+      const why = d.take.reasons.slice(0, 3).map((r) => `<li>${esc(r.text)}</li>`).join("");
+      return `<li class="ud-rec">
+        <span class="ud-rec-n">${String(n + 1).padStart(2, "0")}</span>
+        <div class="ud-rec-body">
+          <p class="ud-rec-head">${dealerCell(d)} <span class="muted">· ${esc(d.town)}</span> <span class="take-chip take-${d.take.tier}">${d.take.label}</span></p>
+          <ul class="ud-rec-why">${why}</ul>
+          ${quote ? `<p class="ud-rec-quote">On their website: “${esc(quote)}”</p>` : ""}
+        </div>
+        <span class="ud-rec-tel">${tel(d.phone)}</span>
+      </li>`;
+    }).join("");
     const faq = [
       [`How many used car dealers are there in ${name}?`,
         `Our network lists ${num(list.length)} dealerships in the ${name} area that sell used cars: ${num(indep.length)} independent used-car lots and ${num(franch.length)} franchised new-car stores, which also sell the trade-ins they take in.`],
@@ -292,6 +326,10 @@ module.exports = function buildDealerGuides({ ROOT, ORIGIN, shell, track, esc, b
         towns.length > 1
           ? `${towns.slice(0, 3).map(([t, n]) => `${t} (${n})`).join(", ")}. Together those account for ${pct(towns.slice(0, 3).reduce((a, [, n]) => a + n, 0), list.length)}% of the dealers in the area.`
           : `All ${num(list.length)} are in ${towns[0][0]}.`],
+      [`Which ${name} dealers are most likely to buy my car?`,
+        recommended.length
+          ? `On what their own websites say and what they sell, ${recommended.slice(0, 3).map((d) => d.name).join(", ")} rank highest in our network. For a specific car, the dealers that sell that make new are usually the strongest buyers.`
+          : `Dealers that sell your make new are usually the strongest buyers for it.`],
       [`Can I get ${name} dealers to compete for my car?`,
         `Yes. List your car on listyourcar.ca, set a reserve and a closing time, and the dealerships nearest to you are invited to bid against each other and against private buyers. Nothing sells below your reserve.`],
     ];
@@ -342,18 +380,28 @@ module.exports = function buildDealerGuides({ ROOT, ORIGIN, shell, track, esc, b
   <section class="seo-block">
     <span class="index">02</span>
     <div>
+      <h2>Recommended buyers in ${esc(name)}</h2>
+      <p class="muted">The dealers most likely to want a seller's car, ranked by our buyer's take. We read ${num(researched)} of these ${num(list.length)} dealers' websites${researched ? `; ${num(sayBuy)} say outright that they buy cars from the public` : ""}. The take weighs what a dealer says and sells, not its service or prices — ask several and compare the offers.</p>
+      <ol class="ud-recs">${recCards}</ol>
+      <p class="muted small">Tell us your car in <a class="link-inline" href="/start.html?path=dealers">Get dealers bidding</a> and the ranking re-weighs for your make and kind of car.</p>
+    </div>
+  </section>
+
+  <section class="seo-block">
+    <span class="index">03</span>
+    <div>
       <h2>Independent used-car dealers in ${esc(name)}</h2>
       <p class="muted">Lots that are not tied to a manufacturer and buy across every make. ${indep.length ? `Sorted by community.` : ""}</p>
       ${indep.length
         ? `<div class="table-scroll"><table class="valtable ud-table">
-        <thead><tr><th>Dealer</th><th>Community</th><th>Known for</th><th class="num">Phone</th></tr></thead>
+        <thead><tr><th>Dealer</th><th>Community</th><th>Buyer's take</th><th>Known for</th><th class="num">Phone</th></tr></thead>
         <tbody>${indepRows}</tbody></table></div>`
         : `<p class="muted">None in our network yet — the franchised stores below all sell used cars.</p>`}
     </div>
   </section>
 
   <section class="seo-block">
-    <span class="index">03</span>
+    <span class="index">04</span>
     <div>
       <h2>Franchised dealers selling used cars, by make</h2>
       <p class="muted">New-car stores sell the trade-ins they take in, and they are usually the strongest buyers for a used car of their own make. Stores that carry several makes appear under each.</p>
@@ -363,7 +411,7 @@ module.exports = function buildDealerGuides({ ROOT, ORIGIN, shell, track, esc, b
   </section>
 
   <section class="seo-block">
-    <span class="index">04</span>
+    <span class="index">05</span>
     <div>
       <h2>Before you buy from a dealer</h2>
       ${provGuide}
@@ -372,7 +420,7 @@ module.exports = function buildDealerGuides({ ROOT, ORIGIN, shell, track, esc, b
   </section>
 
   <section class="seo-block">
-    <span class="index">05</span>
+    <span class="index">06</span>
     <div>
       <h2>Selling instead?</h2>
       <p class="muted">A trade-in is one offer from one dealer. List your car here instead: set a reserve and a closing time, and the ${esc(name)} dealers nearest you are invited to bid against each other — and against private buyers. You see every bid, and nothing sells below your floor.</p>
@@ -385,7 +433,7 @@ module.exports = function buildDealerGuides({ ROOT, ORIGIN, shell, track, esc, b
   </section>
 
   <section class="seo-block">
-    <span class="index">06</span>
+    <span class="index">07</span>
     <div>
       <h2>Common questions</h2>
       ${faqHtml}

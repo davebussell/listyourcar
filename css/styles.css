@@ -1415,3 +1415,83 @@ p{margin:0 0 1rem;max-width:66ch;}
   .sf-row{grid-template-columns:4.5rem 1fr;}
   .sf-row label:last-child{grid-column:1 / -1;}
 }
+
+/* -- Buyer's take, comparisons, recommended buyers ---------------
+   A take is a verdict chip plus the reasons behind it. Strong fit is
+   gold (money), good fit ink, worth-asking a quiet outline.
+   ------------------------------------------------------------ */
+.take-chip{
+  display:inline-block;font-family:var(--f-mono);font-size:.75rem;letter-spacing:.07em;
+  text-transform:uppercase;padding:.15rem .45rem;border:1px solid var(--line-2);color:var(--ink-2);
+  white-space:nowrap;vertical-align:.1em;
+}
+.take-strong{background:var(--gold);border-color:var(--gold);color:#fff;}
+.take-good{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+.take-ask{background:transparent;}
+.dealer-take{display:block;margin-top:.35rem;font-size:.8125rem;color:var(--ink-2);line-height:1.4;}
+.dealer-take .take-chip{margin-right:.35rem;}
+.ud-take{display:block;margin-top:.3rem;font-size:.8125rem;color:var(--ink-3);line-height:1.35;}
+
+.dp-compare{margin:.75rem 0 1rem;}
+.cmp-table{width:100%;border-collapse:collapse;font-size:.875rem;min-width:36rem;}
+.cmp-table th,.cmp-table td{padding:.6rem .75rem .6rem 0;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+.cmp-table thead th{font-weight:600;border-bottom:1px solid var(--ink);}
+.cmp-table thead th span{display:block;font-weight:400;font-size:.8125rem;color:var(--ink-3);margin-top:.15rem;}
+.cmp-table tbody th{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);font-weight:400;white-space:nowrap;}
+.cmp-yes{color:var(--ink);font-weight:600;}
+.cmp-no{color:var(--ink-3);}
+.cmp-unk{color:var(--ink-3);font-style:italic;}
+
+.dealer-takebox{grid-column:1;margin-top:2rem;border-top:1px solid var(--ink);padding-top:1.25rem;}
+.take-verdict{font-size:1.125rem;line-height:1.45;margin:.6rem 0 1rem;}
+.take-verdict .take-chip{margin-right:.4rem;}
+.take-reasons{list-style:none;margin:0 0 1rem;padding:0;border-top:1px solid var(--line);}
+.take-reasons li{padding:.7rem 0;border-bottom:1px solid var(--line);}
+.take-reasons strong{display:block;font-weight:500;}
+.take-src{display:block;font-size:.8125rem;color:var(--ink-3);margin-top:.2rem;line-height:1.4;}
+.take-foot{max-width:66ch;}
+.take-compare{margin-top:2rem;}
+.take-compare h3{font-size:1.0625rem;margin:0 0 .5rem;}
+
+.ud-recs{list-style:none;margin:1.25rem 0 1rem;padding:0;border-top:1px solid var(--line);}
+.ud-rec{display:grid;grid-template-columns:2.25rem minmax(0,1fr) auto;gap:1rem;align-items:start;padding:1rem 0;border-bottom:1px solid var(--line);}
+.ud-rec-n{font-family:var(--f-mono);font-size:.8125rem;color:var(--ink-3);padding-top:.2rem;}
+.ud-rec-head{margin:0;line-height:1.5;}
+.ud-rec-head .take-chip{margin-left:.35rem;}
+.ud-rec-why{margin:.45rem 0 0;padding-left:1.1rem;font-size:.875rem;color:var(--ink-2);}
+.ud-rec-why li{margin:.15rem 0;}
+.ud-rec-quote{margin:.5rem 0 0;font-size:.8125rem;color:var(--ink-3);font-style:italic;}
+.ud-rec-tel{font-family:var(--f-mono);font-size:.8125rem;white-space:nowrap;padding-top:.2rem;}
+.ud-rec-tel a{color:var(--ink);text-decoration:none;}
+
+/* -- Skip the dealer: the flow's extra fields and the listing page -- */
+.sf-skip{display:inline-block;margin-top:1rem;font-size:.9375rem;}
+.flow-checks{display:grid;gap:.5rem;}
+.flow-checks label{display:flex;gap:.6rem;align-items:center;font-size:.9375rem;color:var(--ink-2);cursor:pointer;}
+.flow-checks input{width:1.1rem;height:1.1rem;accent-color:var(--ink);}
+.flow-count-chars{text-align:right;margin-top:-.75rem;font-size:.8125rem;color:var(--ink-3);}
+.flow-link input{font-family:var(--f-mono);font-size:.8125rem;}
+
+.listing-banner{background:var(--paper-2);border:1px solid var(--line);border-left:3px solid var(--gold-bright);padding:.75rem 1rem;font-size:.9375rem;color:var(--ink-2);margin:0 0 2rem;}
+.listing-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:2.5rem;align-items:start;}
+.listing h1{font-size:clamp(1.9rem,1.5rem + 1.6vw,2.75rem);letter-spacing:-.03em;margin:.5rem 0 .25rem;}
+.listing-price{font-size:clamp(1.75rem,1.4rem + 1.2vw,2.25rem);font-weight:600;letter-spacing:-.03em;margin:0 0 1.5rem;font-variant-numeric:tabular-nums;}
+.listing-facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(9rem,1fr));gap:0;margin:0 0 1.5rem;border-top:1px solid var(--line);}
+.listing-facts div{padding:.75rem 1rem .75rem 0;border-bottom:1px solid var(--line);}
+.listing-facts dt{font-family:var(--f-mono);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);}
+.listing-facts dd{margin:.3rem 0 0;font-weight:500;}
+.listing-desc{white-space:pre-wrap;line-height:1.6;margin:0 0 1.5rem;max-width:62ch;}
+.listing-panel{border-top:1px solid var(--line);padding-top:1.25rem;margin-top:2rem;}
+.listing-panel p{max-width:64ch;}
+.listing-contact{position:sticky;top:6rem;border:1px solid var(--line);background:var(--paper);padding:1.25rem;}
+.listing-acts{display:flex;flex-wrap:wrap;gap:.5rem;margin:.75rem 0 1.25rem;}
+.listing-offer{border-top:1px solid var(--line);padding-top:1rem;gap:.9rem;}
+.listing-safe ul{margin:.75rem 0 0;padding-left:1.2rem;max-width:68ch;color:var(--ink-2);}
+.listing-safe li{margin:.4rem 0;}
+.listing-empty{max-width:40rem;padding:3rem 0;}
+@media(max-width:860px){
+  .listing-grid{grid-template-columns:1fr;}
+  .listing-contact{position:static;}
+  .ud-rec{grid-template-columns:2rem minmax(0,1fr);}
+  .ud-rec-tel{grid-column:2;}
+}

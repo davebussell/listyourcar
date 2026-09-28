@@ -20,6 +20,8 @@ function createDealerPicker(host, opts = {}) {
     audience: null,       // audience keys in force; null = defaults for the car
     audiences: [],        // offered audiences near the origin, with counts
     count: Number(opts.count) || 10,
+    order: "recommended",  // recommended | nearest
+    comparing: false,      // show the ticked dealers side by side
     // A caller returning to the picker passes the seller's earlier choice,
     // which then stands instead of being replaced by the nearest matches.
     selected: new Set(opts.selected || []),  // dealer ids the seller has chosen
@@ -70,14 +72,18 @@ function createDealerPicker(host, opts = {}) {
       } else {
         state.audiences = []; state.audience = null;
       }
+      /* The pool is the 30 nearest that match; "Recommended" then puts
+         the best buyers among them first, with a pull toward the
+         closer ones. "Nearest" is plain distance. */
+      const pool = Math.max(30, state.count);
       const [list, brands, within] = await Promise.all([
-        DealerNet.nearest(state.origin, state.count, withCar
+        DealerNet.nearest(state.origin, pool, withCar
           ? { brands: state.brands, audience: state.audience, car: state.car }
           : { brands: state.brands, type: state.type }),
         DealerNet.brandsNear(state.origin, 150),
         DealerNet.countWithin(state.origin, 100),
       ]);
-      state.results = list;
+      state.results = (state.order === "recommended" ? DealerNet.recommend(list, state.car) : list).slice(0, state.count);
       state.available = brands;
       state.within100 = within;
       // Until the seller edits it by hand, the selection tracks the matches.
@@ -191,8 +197,20 @@ function createDealerPicker(host, opts = {}) {
             (state.brands.length ? '<button type="button" class="fchip dp-clear" data-brand="">Clear</button>' : "") +
             brandChips + "</div></div>"
         : "") +
+      '<div class="dp-row"><span class="dp-label">Order</span><div class="chipbar">' +
+        [["recommended", "Recommended"], ["nearest", "Nearest"]].map((o) =>
+          '<button type="button" class="fchip ' + (state.order === o[0] ? "active" : "") + '" data-order="' + o[0] + '">' + o[1] + "</button>").join("") +
+      "</div></div>" +
       '<div class="dp-row"><span class="dp-label">How many</span><div class="chipbar">' + countChips + "</div></div>" +
     "</div>";
+  }
+
+  /* The buyer's take, one line, under each dealer. */
+  function takeLine(d) {
+    if (!DealerNet.buyerTake) return "";
+    const t = DealerNet.buyerTake(d, state.car);
+    return '<span class="dealer-take"><span class="take-chip take-' + t.tier + '">' + t.label + "</span> " +
+      t.summary + "</span>";
   }
 
   function renderList() {
@@ -219,7 +237,8 @@ function createDealerPicker(host, opts = {}) {
           '<span class="dealer-rank">' + String(i + 1).padStart(2, "0") + "</span></label>" +
         '<span class="dealer-body"><a class="dealer-link" href="/dealer.html?id=' + d.id + '">' + d.name + "</a>" +
           '<span class="dealer-meta">' + d.city + ", " + d.province +
-            (d.postal ? " · " + d.postal : "") + " · " + tags + "</span></span>" +
+            (d.postal ? " · " + d.postal : "") + " · " + tags + "</span>" +
+          takeLine(d) + "</span>" +
         '<span class="dealer-contact">' + contact + web + "</span>" +
         '<span class="dealer-km">' + dist + "</span>" +
       "</li>";
@@ -230,8 +249,15 @@ function createDealerPicker(host, opts = {}) {
         '<span class="dp-bulk">' +
           '<button type="button" class="link-btn" id="dp-all">Select all</button>' +
           '<button type="button" class="link-btn" id="dp-none">Clear</button>' +
+          (state.selected.size >= 2
+            ? '<button type="button" class="link-btn" id="dp-compare">' + (state.comparing ? "Hide comparison" : "Compare ticked") + "</button>"
+            : "") +
         "</span>" +
       "</div>" +
+      (state.comparing && state.selected.size >= 2
+        ? '<div class="dp-compare">' + DealerNet.compareHTML(selection().slice(0, 6), state.car) +
+          (state.selected.size > 6 ? '<p class="muted small">Showing the first six ticked.</p>' : "") + "</div>"
+        : "") +
       '<ol class="dealer-list dp-list">' + rows + "</ol>";
   }
 
@@ -269,6 +295,11 @@ function createDealerPicker(host, opts = {}) {
         state.touched = false;
         refresh();
       }));
+
+    host.querySelectorAll("[data-order]").forEach((b) =>
+      b.addEventListener("click", () => { state.order = b.dataset.order; state.touched = false; refresh(); }));
+    const cmp = host.querySelector("#dp-compare");
+    if (cmp) cmp.addEventListener("click", () => { state.comparing = !state.comparing; render(); });
 
     host.querySelectorAll("[data-count]").forEach((b) =>
       b.addEventListener("click", () => { state.count = Number(b.dataset.count); state.touched = false; refresh(); }));

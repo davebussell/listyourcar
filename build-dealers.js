@@ -28,7 +28,7 @@ const fsaCoords = fs.existsSync(path.join(DIR, "fsa-coords.json"))
 
 /* Single-token marques, keyed lower-case for direct lookup. */
 const ONE = {
-  toyota: "Toyota", honda: "Honda", ford: "Ford", chevrolet: "Chevrolet", chev: "Chevrolet",
+  toyota: "Toyota", honda: "Honda", ford: "Ford", chevrolet: "Chevrolet", chev: "Chevrolet", chevy: "Chevrolet",
   gmc: "GMC", buick: "Buick", cadillac: "Cadillac", chrysler: "Chrysler", dodge: "Dodge",
   jeep: "Jeep", ram: "Ram", nissan: "Nissan", infiniti: "Infiniti", mazda: "Mazda",
   subaru: "Subaru", hyundai: "Hyundai", kia: "Kia", genesis: "Genesis",
@@ -51,6 +51,8 @@ function brandsFor(name) {
   const tokens = String(name).toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
   const found = new Set();
   tokens.forEach((t) => { if (ONE[t]) found.add(ONE[t]); });
+  // "Thibault GM", "MacCarthy GM": a GM store in Canada sells these three.
+  if (tokens.includes("gm")) ["Chevrolet", "Buick", "GMC"].forEach((b) => found.add(b));
   for (let i = 0; i < tokens.length - 1; i++) {
     // "Land Rovers" -> land rover: a trailing plural must not hide a marque.
     const pair = tokens[i] + " " + tokens[i + 1].replace(/s$/, "");
@@ -310,6 +312,78 @@ function profileOf(d, brands) {
    data/dealer-emails.json, keyed by the dealer's website domain:
      { "pacifichonda.ca": "sales@pacifichonda.ca" }
    ============================================================ */
+/* ============================================================
+   Website research — see build-research.js.
+
+   Each dealer whose homepage was read gets "w:read", plus a code per
+   signal found: w:buys (says it buys cars from the public), w:page
+   (links a dedicated sell/trade page), w:trade (offers appraisals),
+   w:tool (runs an online valuation tool), w:used, w:cpo. A signal
+   that was not found is unknown, not negative — many dealer
+   homepages are drawn by JavaScript and say nothing to a plain read.
+
+   The short quotes behind the signals go to data/evidence/<c>.json,
+   which only the pages that show evidence load.
+   ============================================================ */
+const RESEARCH_FILE = path.join(DIR, ".research-cache.json");
+const RESEARCH = fs.existsSync(RESEARCH_FILE) ? JSON.parse(fs.readFileSync(RESEARCH_FILE, "utf8")) : {};
+const WEB_SIGNALS = ["buys", "page", "trade", "tool", "used", "cpo"];
+const WEB_BIT = { buys: 2, page: 4, trade: 8, tool: 16, used: 32, cpo: 64 };
+const evidence = {};
+let researchedAt = "";
+/* Quotes come straight off dealer pages: decode the entities they
+   carry, name appraisal vendors plainly, and drop the one phrase that
+   proved loose — "la valeur de votre véhicule" also appears in service
+   ads about keeping a car's value, which is not an offer to buy it. */
+const TOOL_VENDORS = ["Canadian Black Book", "Kelley Blue Book", "TradePending", "AutoVerify", "Accu-Trade", "CARFAX"];
+function tidyQuote(q) {
+  return String(q || "")
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(+n))
+    .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCharCode(parseInt(n, 16)))
+    .replace(/&amp;/g, "&").replace(/&rsquo;|&lsquo;/g, "'").replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ").trim();
+}
+/* Reduce a quote to the phrase that matched, exactly as the dealer
+   wrote it. On most sites the claim is a menu item ("Sell Us Your
+   Vehicle"), so the words around it are other menu items, not
+   context. Every pattern requires the whole claim, so the phrase
+   stands on its own. */
+const { SIGNALS: PHRASES } = require("./build-research.js");
+function tighten(sig, q) {
+  for (const re of PHRASES[sig] || []) {
+    const m = re.exec(q);
+    if (m) return m[0];
+  }
+  return q;
+}
+function plausible(sig, q) {
+  if (sig === "trade" && /valeur de votre v/i.test(q) && !/évalu|evalu|échange|estim|achet/i.test(q)) return false;
+  return true;
+}
+function researchCodes(d) {
+  const r = RESEARCH[domainOfSite(d.w)];
+  if (!r || !(r.status === "ok" || r.status === "thin")) return [];
+  let bits = 1;                     // W<bits>: read=1 buys=2 page=4 trade=8 tool=16 used=32 cpo=64
+  const e = {};
+  WEB_SIGNALS.forEach((s) => {
+    if (!(r.signals && r.signals[s])) return;
+    let q = r.evidence && r.evidence[s] ? tidyQuote(r.evidence[s]) : "";
+    if (q && !plausible(s, q)) return;
+    if (s === "tool") q = TOOL_VENDORS.find((v) => v === q) || "an online valuation tool";
+    else if (q) q = tighten(s, q);
+    bits |= WEB_BIT[s];
+    if (q && s !== "page") e[s] = q;
+  });
+  if (Object.keys(e).length || (r.pages && r.pages.length)) {
+    evidence[domainOfSite(d.w)] = { c: r.checked, e, p: (r.pages || []).slice(0, 2).map((p) => ({ u: p.url, l: tidyQuote(p.label) })) };
+  }
+  if (r.checked > researchedAt) researchedAt = r.checked;
+  return ["W" + bits];
+}
+function domainOfSite(w) {
+  return String(w || "").toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0].trim();
+}
+
 const EMAIL_FILE = path.join(DIR, "dealer-emails.json");
 const EMAILS = fs.existsSync(EMAIL_FILE) ? JSON.parse(fs.readFileSync(EMAIL_FILE, "utf8")) : {};
 const domainOf = (w) => String(w || "").toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0];
@@ -328,7 +402,7 @@ for (const d of dealers) {
   if (k === "P") viaPostal++; else if (k === "C") viaCity++; else viaFsa++;
   const bs = brandsFor(d.n);
   bs.forEach((b) => brandSet.add(b));
-  const prof = profileOf(d, bs);
+  const prof = profileOf(d, bs).concat(researchCodes(d));
   /* `spec` is the one-word summary older code reads; it now derives
      from the profile so the two can never disagree. A non-dealer role
      is "other"; otherwise the first stock-describing focus. */
@@ -346,9 +420,37 @@ const payload = {
   dealers: rows,
   brands: [...brandSet].sort(),
   built: new Date().toISOString().slice(0, 10),
+  researched: researchedAt || null,   // when dealer websites were last read
 };
 const file = path.join(DIR, "dealers.json");
 fs.writeFileSync(file, JSON.stringify(payload));
+/* Evidence is split by the first character of the website domain, so
+   a page showing one dealer loads one small file, not all of them. */
+const EV_DIR = path.join(DIR, "evidence");
+fs.mkdirSync(EV_DIR, { recursive: true });
+for (const f of fs.readdirSync(EV_DIR)) fs.unlinkSync(path.join(EV_DIR, f));
+const shards = {};
+for (const [dom, v] of Object.entries(evidence)) {
+  const k = /^[a-z0-9]/.test(dom) ? dom[0] : "_";
+  (shards[k] = shards[k] || {})[dom] = v;
+}
+for (const [k, sites] of Object.entries(shards)) {
+  fs.writeFileSync(path.join(EV_DIR, k + ".json"), JSON.stringify({ checked: researchedAt || null, sites }));
+}
+if (fs.existsSync(path.join(DIR, "dealer-evidence.json"))) fs.unlinkSync(path.join(DIR, "dealer-evidence.json"));
+{
+  const wb = (r) => { const c = r[8].find((x) => /^W\d+$/.test(x)); return c ? +c.slice(1) : 0; };
+  const read = rows.filter((r) => wb(r) & 1).length;
+  const BIT = { "w:buys": 2, "w:page": 4, "w:trade": 8, "w:tool": 16, "w:used": 32, "w:cpo": 64 };
+  const has = (c) => rows.filter((r) => wb(r) & BIT[c]).length;
+  console.log("websites read        : " + read + " of " + rows.length + (researchedAt ? "  (checked " + researchedAt + ")" : "  (run build-research.js)"));
+  if (read) console.log("  buys from public " + has("w:buys") + " · sell/trade page " + has("w:page") + " · appraisal " + has("w:trade") + " · valuation tool " + has("w:tool") + " · used stock " + has("w:used") + " · CPO " + has("w:cpo"));
+  {
+  const sizes = fs.readdirSync(EV_DIR).map((f) => fs.statSync(path.join(EV_DIR, f)).size);
+  console.log("data/evidence/        : " + Object.keys(evidence).length + " sites in " + sizes.length + " files, largest " +
+    (Math.max(...sizes) / 1024).toFixed(0) + " KB");
+}
+}
 
 const franchised = rows.filter((r) => r[6].length).length;
 console.log("positions            : " + positions.length);

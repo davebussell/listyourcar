@@ -23,7 +23,7 @@ const { estimateValue } = window.LYC_VAL;
 
 const ROOT = __dirname;
 const ORIGIN = "https://listyourcar.ca";
-const V = 31;
+const V = 33;
 const THIS_YEAR = new Date().getFullYear();
 
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -82,10 +82,12 @@ ${jsonld.map((j) => `<script type="application/ld+json">${j}</script>`).join("\n
           <div class="nm-group"><span class="nm-label">Selling</span>
             <a href="/how-it-works.html">How it works</a>
             <a href="/sell-my-car/">Sell by city</a>
+            <a href="/skip-the-dealer/">Skip the dealer</a>
           </div>
           <div class="nm-group"><span class="nm-label">Buying</span>
             <a href="/auctions.html">Live auctions</a>
             <a href="/find-buyers.html">Buyer map</a>
+            <a href="/skip-the-dealer/#buyers">Buy from an owner</a>
             <a href="/dealers.html">For dealers</a>
           </div>
           <div class="nm-group"><span class="nm-label">Your account</span>
@@ -107,7 +109,7 @@ ${body}
       <a href="/index.html" class="logo">List<span>Your</span>Car<span class="tld">.ca</span></a>
       <p class="muted" style="margin-top:1rem;max-width:32ch">List your car, set your reserve, and let dealers and private buyers bid it up. Canada-wide.</p>
     </div>
-    <div><h4>Sell</h4><a href="/value.html">What's my car worth</a><a href="/sell.html">List for auction</a><a href="/sell-my-car/">Sell by city</a><a href="/how-it-works.html">How it works</a></div>
+    <div><h4>Sell</h4><a href="/value.html">What's my car worth</a><a href="/sell.html">List for auction</a><a href="/sell-my-car/">Sell by city</a><a href="/skip-the-dealer/">Skip the dealer</a><a href="/how-it-works.html">How it works</a></div>
     <div><h4>Buy</h4><a href="/auctions.html">Live auctions</a><a href="/find-buyers.html">Buyer map</a><a href="/used-car-dealers/">Used car dealers</a><a href="/car-auctions/">Auctions by city</a><a href="/dealers.html">For dealers</a></div>
     <div><h4>Values</h4><a href="/what-is-my-car-worth/">Car values by model</a><a href="/about.html">About</a><a href="/contact.html">Contact</a></div>
   </div>
@@ -599,6 +601,102 @@ try {
    4b. Used car dealers by metro — see seo-dealer-guides.js
    ============================================================ */
 const guides = require("./seo-dealer-guides.js")({ ROOT, ORIGIN, shell, track, esc, breadcrumbLd });
+
+/* ============================================================
+   4c. Skip the dealer — selling to, and buying from, a person
+   ============================================================ */
+{
+  // One paperwork note per province we have one for, from the same
+  // city data the sell-my-car pages use.
+  const seen = new Set();
+  const paperwork = D.CITIES.filter((c) => !seen.has(c.province) && seen.add(c.province))
+    .map((c) => `<div class="ud-prov"><h3>${esc(c.provinceName)}</h3><p class="muted">${esc(c.paperwork)}</p></div>`).join("");
+  const body = `<main class="container section">
+  <nav class="crumbs"><a href="/index.html">Home</a> / Skip the dealer</nav>
+  <div class="page-head">
+    <span class="eyebrow">Skip the dealer</span>
+    <h1 class="has-mark"><span class="mark">Sell straight to a person.</span> Buy straight from the owner.</h1>
+    <p class="lead narrow">A private sale usually gets a seller the most money, and a buyer a better price than a lot can offer, because there's no dealer margin in the middle. It takes a little more of your time. Here's how to do it well, from either side.</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="/start.html?path=private">Sell my car privately</a>
+      <a class="btn btn-ghost" href="#buyers">I'm buying</a>
+    </div>
+  </div>
+
+  <section class="seo-block">
+    <span class="index">01</span>
+    <div>
+      <h2>Three ways to sell, side by side</h2>
+      <div class="table-scroll"><table class="valtable">
+        <thead><tr><th></th><th>Trade-in</th><th>Dealers bidding</th><th>Skip the dealer</th></tr></thead>
+        <tbody>
+          <tr><th>Who buys</th><td>One dealer</td><td>Several dealers, competing</td><td>A private buyer</td></tr>
+          <tr><th>Price</th><td>Lowest — one offer, no competition</td><td>Higher — each bid pushes the last</td><td>Usually highest — no dealer margin</td></tr>
+          <tr><th>Your time</th><td>An afternoon</td><td>A few days</td><td>Days to weeks: messages, viewings, test drives</td></tr>
+          <tr><th>Paperwork</th><td>The dealer does it</td><td>The buying dealer does most of it</td><td>You and the buyer, at the provincial registry</td></tr>
+          <tr><th>Best when</th><td>You're buying from the same dealer and want it done</td><td>You want a strong price without strangers at the door</td><td>You want every dollar and can manage the showings</td></tr>
+        </tbody>
+      </table></div>
+      <div class="hero-actions">
+        <a class="btn btn-ghost" href="/start.html?path=value">See all three numbers for my car</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="seo-block">
+    <span class="index">02</span>
+    <div>
+      <h2>Selling: how it works here</h2>
+      <div class="steps">
+        <div class="step"><span class="index">01</span><h3>Price it</h3><p>Our Smart Estimate shows the private-sale ceiling for your car next to the trade-in offer, so you know the gap you're working with.</p></div>
+        <div class="step"><span class="index">02</span><h3>Make your listing</h3><p>Describe the car and choose how buyers reach you: email, and your phone or texts only if you want. Your address is never included.</p></div>
+        <div class="step"><span class="index">03</span><h3>Share one link</h3><p>Post it on Kijiji, Marketplace or AutoTrader, or send it to people you know. It carries a price check and lets buyers make an offer straight to you.</p></div>
+      </div>
+      <div class="hero-actions"><a class="btn btn-primary" href="/start.html?path=private">Create my listing</a></div>
+    </div>
+  </section>
+
+  <section class="seo-block" id="buyers">
+    <span class="index">03</span>
+    <div>
+      <h2>Buying from an owner</h2>
+      <p class="muted">Every listing made here shows the asking price against our estimate for that car, and lets you email, call or text the owner — whichever they've allowed — or send an offer in one step. You can also bid on live auctions, where private buyers compete on equal terms with dealers.</p>
+      <div class="ud-prov"><h3>Before any money moves</h3><p class="muted">Check for a lien — a car sold with money owing can be repossessed from the new owner, and a vehicle history report includes a lien search. Have a mechanic you choose inspect it. See the car, the seller's ID and the ownership papers before paying anything, and never send a deposit for a car you haven't seen. Pay by bank draft or a transfer you can confirm with your own bank, and get a signed bill of sale.</p></div>
+      <div class="hero-actions">
+        <a class="btn btn-ghost" href="/auctions.html">Browse live auctions</a>
+        <a class="btn btn-ghost" href="/value.html">Check what a car is worth</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="seo-block">
+    <span class="index">04</span>
+    <div>
+      <h2>Private-sale paperwork by province</h2>
+      ${paperwork}
+      <p class="muted small">Rules change; confirm with your provincial registry before the handover.</p>
+    </div>
+  </section>
+
+  <section class="cta section-line">
+    <h2>Keep the dealer's margin for yourself.</h2>
+    <div class="hero-actions" style="justify-content:center">
+      <a class="btn btn-primary" href="/start.html?path=private">Sell my car privately</a>
+      <a class="btn btn-ghost" href="/start.html?path=dealers">Or get dealers bidding</a>
+    </div>
+  </section>
+</main>`;
+  shell({
+    file: "skip-the-dealer/index.html",
+    title: "Skip the dealer — sell to a person, buy from the owner | listyourcar.ca",
+    desc: "Sell your car straight to a private buyer, or buy directly from the owner. A price check against our estimate, a shareable listing, direct offers, and the paperwork for your province.",
+    canonical: `${ORIGIN}/skip-the-dealer/`,
+    dataPage: "static",
+    body,
+    jsonld: [breadcrumbLd([["Home", "/"], ["Skip the dealer", null]])],
+  });
+  track(`${ORIGIN}/skip-the-dealer/`, "0.8");
+}
 
 /* ============================================================
    5. Sitemap

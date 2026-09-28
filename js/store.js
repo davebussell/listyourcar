@@ -155,6 +155,23 @@ const Store = (() => {
     return rec;
   }
 
+  /* A private listing made in "Skip the dealer". The listing itself
+     lives in its link; this keeps the seller's own copy of that link. */
+  function saveListing({ id, vehicle, price, place, url }) {
+    const list = read(KEYS.invites);
+    const i = id ? list.findIndex((x) => x.id === id) : -1;
+    const prev = i >= 0 ? list[i] : null;
+    const rec = {
+      id: prev ? prev.id : uid("lst"), kind: "listing", auctionId: null,
+      vehicle, price, place, url, dealers: [],
+      created: prev ? prev.created : new Date().toISOString(),
+      updated: new Date().toISOString(), status: "listed",
+    };
+    if (i >= 0) list[i] = rec; else list.unshift(rec);
+    write(KEYS.invites, list);
+    return rec;
+  }
+
   /* The seller says they contacted a dealer. "sent" means at least one
      was, by the seller's own account — the only evidence we have. */
   function markContacted(requestId, dealerId, on) {
@@ -188,7 +205,7 @@ const Store = (() => {
     allAuctions, userAuctions, getAuction, addAuction,
     addBid, bidsFor, myBids,
     watchlist, isWatching, toggleWatch,
-    invites, invitesFor, addInvite, markInviteSent, saveRequest, markContacted,
+    invites, invitesFor, addInvite, markInviteSent, saveRequest, markContacted, saveListing,
     resetAll,
   };
 })();

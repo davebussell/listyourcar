@@ -311,9 +311,14 @@ const BuyerMap = (() => {
     const web = d.website
       ? '<a class="dealer-web" href="https://' + d.website + '" target="_blank" rel="noopener">' + d.website + "</a>"
       : "";
+    // The same buyer's take the dealer page and picker show, for the car
+    // in the header if there is one.
+    const t = DealerNet.buyerTake ? DealerNet.buyerTake(d, state.car) : null;
     return '<li class="bm-dealer">' +
       '<a class="dealer-link" href="/dealer.html?id=' + d.id + '"><strong>' + d.name + "</strong></a>" +
       '<span class="bm-tags">' + tags + "</span>" +
+      (t ? '<span class="dealer-take"><span class="take-chip take-' + t.tier + '">' + t.label + "</span> " +
+        (t.reasons[0] ? t.reasons[0].text.split(" — ")[0] : "") + "</span>" : "") +
       '<span class="bm-contact">' + [tel, web].filter(Boolean).join(" · ") + "</span>" +
       (km != null ? '<span class="bm-km">' + (km < 1 ? "&lt;1" : Math.round(km)) + "<i>km</i></span>" : "") +
       "</li>";

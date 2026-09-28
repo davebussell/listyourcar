@@ -234,9 +234,15 @@ const DealerNet = (() => {
   const SITES_LABEL = { 1: "Single location", 2: "2–5 locations", 3: "6+ locations" };
   function profileOf(codes) {
     const p = { role: "dealer", size: 2, sites: 1, group: "", french: false, focus: [],
-                multi: false, tollfree: false, confidence: "medium" };
+                multi: false, tollfree: false, confidence: "medium",
+                // What the dealer's own website says; read=false means unknown.
+                web: { read: false, buys: false, page: false, trade: false, tool: false, used: false, cpo: false } };
     (codes || []).forEach((c) => {
-      if (c.startsWith("r:")) p.role = c.slice(2);
+      if (/^W\d+$/.test(c)) {          // what the dealer website says, as bits
+        const b = +c.slice(1);
+        p.web = { read: !!(b & 1), buys: !!(b & 2), page: !!(b & 4), trade: !!(b & 8), tool: !!(b & 16), used: !!(b & 32), cpo: !!(b & 64) };
+      }
+      else if (c.startsWith("r:")) p.role = c.slice(2);
       else if (/^s[1-5]$/.test(c)) p.size = +c[1];
       else if (/^l[1-3]$/.test(c)) p.sites = +c[1];
       else if (c.startsWith("g:")) p.group = c.slice(2);
@@ -346,12 +352,127 @@ const DealerNet = (() => {
      so a filter that reads a profile field works everywhere at once. */
   async function all() { return hydrate(await load()); }
 
+  /* The same records from an already-loaded bundle, without fetching.
+     The page builder uses this in Node to write the same takes the
+     browser shows. */
+  const fromBundle = (d) => hydrate(d);
+
+  /* ============================================================
+     Buyer's take — how good a buyer this dealer is likely to be for
+     a seller, and why.
+
+     Every point comes from a stated, checkable fact: what the
+     dealer's own website says, what it sells, how it is organised,
+     and — when the seller has told us — how well that matches their
+     car. Nothing here judges honesty, service or price; those are
+     not in the data and the take does not pretend otherwise.
+
+     A website signal that was not found scores nothing rather than
+     counting against the dealer: plenty of good buyers have homepages
+     a plain read cannot see into.
+     ============================================================ */
+  const TIERS = [[50, "strong", "Strong fit"], [30, "good", "Good fit"], [0, "ask", "Worth asking"]];
+  const KIND_WORD = { classic: "classic cars", truck: "trucks", performance: "performance cars",
+                      ev: "electric and hybrid cars", luxury: "luxury marques", exotic: "exotic marques" };
+
+  function buyerTake(d, car) {
+    const reasons = [];
+    const add = (pts, text, source, key) => reasons.push({ pts, text, source, key });
+    const web = d.web || {};
+    const make = car && car.make ? canonMake(car.make) : "";
+    const kind = car && (car.make || car.year) ? (car.kind || guessKind(car)) : "";
+
+    if (make && d.brands.includes(make)) add(25, `Sells ${make} new — usually the strongest buyer for a used one`, "network", "make");
+    if (web.buys) add(30, "Says on its website that it buys cars from the public", "website", "buys");
+    if (web.page) add(10, "Has a page on its site for selling or trading in your car", "website", "page");
+    if (web.trade || web.tool) add(10, "Offers trade-in appraisals online", "website", web.tool ? "tool" : "trade");
+    if ((kind === "luxury" || kind === "exotic") && (d.tier === "luxury" || d.tier === "exotic") && !(make && d.brands.includes(make)))
+      add(12, `Deals in ${d.tier} marques`, "network", "tier");
+    const spec = { classic: "classic", truck: "truck", performance: "performance" }[kind];
+    if (spec && (d.spec === spec || (d.focus || []).includes(spec))) add(20, `Specialises in ${KIND_WORD[kind]}`, "network", "spec");
+    if (web.used) add(8, "Lists used inventory on its site", "website", "used");
+    if (!d.brands.length) add(8, "Independent — buys across every make", "network", "indep");
+    if (d.group) add(8, `Part of the ${d.group} group — can move a car between its lots`, "network", "group");
+    else if (d.sites >= 2) add(8, "Runs more than one location", "network", "sites");
+    if (web.cpo) add(4, "Runs a certified pre-owned program, so it wants clean late-model trades", "website", "cpo");
+    if (d.size >= 4) add(4, "A larger operation", "network", "size");
+
+    reasons.sort((a, b) => b.pts - a.pts);
+    const score = reasons.reduce((a, r) => a + r.pts, 0);
+    const [, tier, label] = TIERS.find(([min]) => score >= min);
+    const top = reasons.slice(0, 2).map((r) => r.text.charAt(0).toLowerCase() + r.text.slice(1).split(" — ")[0]);
+    const headline = top.length
+      ? label + ": " + top.join(", and ") + "."
+      : label + ": in our network, near you.";
+    // The same reasons as a sentence that stands after a verdict chip.
+    const summary = top.length
+      ? top.join(", and ").replace(/^./, (c) => c.toUpperCase()) + "."
+      : "In our network, near you.";
+    return {
+      score, tier, label, headline, summary, reasons,
+      unknown: !web.read,
+      note: web.read ? "" : "We couldn't read this dealer's website, so this take uses our network data only.",
+    };
+  }
+
+  /* Recommended order: the best fits among the dealers nearby, with a
+     gentle pull toward the closer ones (about 10 points per 25 km). */
+  function recommend(list, car) {
+    return list.map((d) => ({ d, t: buyerTake(d, car) }))
+      .sort((a, b) => (b.t.score - (b.d.km || 0) * 0.4) - (a.t.score - (a.d.km || 0) * 0.4))
+      .map((x) => x.d);
+  }
+
+  /* Evidence quotes, fetched only by the pages that show them. */
+  let _evidence = null;
+  function evidence() {
+    if (_evidence) return _evidence;
+    _evidence = {};   // shard key -> promise
+    return _evidence;
+  }
+  const siteKey = (w) => String(w || "").toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0].trim();
+  async function evidenceFor(d) {
+    const dom = siteKey(d.website);
+    if (!dom) return null;
+    const shards = evidence();
+    const k = /^[a-z0-9]/.test(dom) ? dom[0] : "_";
+    if (!shards[k]) shards[k] = fetch("/data/evidence/" + k + ".json")
+      .then((r) => (r.ok ? r.json() : { sites: {} })).catch(() => ({ sites: {} }));
+    const e = await shards[k];
+    return (e.sites || {})[dom] || null;
+  }
+
+  /* A side-by-side comparison of a few dealers, as an HTML table. Used
+     by the start flow, the sell form and the dealer page. */
+  function compareHTML(dealers, car) {
+    const esc = (s) => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const yes = '<span class="cmp-yes">Yes</span>', unk = '<span class="cmp-unk">Not stated</span>', no = '<span class="cmp-no">No</span>';
+    const takes = dealers.map((d) => buyerTake(d, car));
+    const make = car && car.make ? canonMake(car.make) : "";
+    const row = (label, cells) => `<tr><th scope="row">${label}</th>${cells.map((c) => `<td>${c}</td>`).join("")}</tr>`;
+    const w = (d, k) => (d.web && d.web.read ? (d.web[k] ? yes : unk) : '<span class="cmp-unk">Site not read</span>');
+    return `<div class="table-scroll cmp-scroll"><table class="cmp-table">
+      <thead><tr><th></th>${dealers.map((d) => `<th scope="col"><a class="dealer-link" href="/dealer.html?id=${d.id}">${esc(d.name)}</a><span>${esc(d.city)}, ${esc(d.province)}</span></th>`).join("")}</tr></thead>
+      <tbody>
+        ${row("Buyer's take", takes.map((t) => `<span class="take-chip take-${t.tier}">${t.label}</span>`))}
+        ${d0(dealers, "km") ? row("Distance", dealers.map((d) => d.km == null ? "—" : (d.km < 1 ? "Under 1" : Math.round(d.km)) + " km")) : ""}
+        ${make ? row(`Sells ${esc(make)} new`, dealers.map((d) => (d.brands.includes(make) ? yes : no))) : ""}
+        ${row("Says it buys cars", dealers.map((d) => w(d, "buys")))}
+        ${row("Online appraisal", dealers.map((d) => (d.web && d.web.read ? (d.web.trade || d.web.tool ? yes : unk) : '<span class="cmp-unk">Site not read</span>')))}
+        ${row("Used stock listed", dealers.map((d) => w(d, "used")))}
+        ${row("Makes sold", dealers.map((d) => (d.brands.length ? esc(d.brands.join(", ")) : "Independent")))}
+        ${row("Group", dealers.map((d) => (d.group ? esc(d.group) : d.sites >= 2 ? "Multi-site" : "—")))}
+        ${row("Phone", dealers.map((d) => (d.phone ? `<a href="tel:${d.phone.replace(/[^0-9+]/g, "")}">${esc(d.phone)}</a>` : "—")))}
+      </tbody></table></div>`;
+  }
+  const d0 = (list, k) => list.some((d) => d[k] != null);
+
   /* The marques in the network, once loaded; empty before that. */
   const brands = () => (_data ? _data.brands : []);
 
   return { load, nearest, ranked, countWithin, brandsNear, fromPostal, fromDevice, fromCity, haversine,
            byId, audiencesFor, audienceCounts, guessKind, canonMake, KINDS, KIND_LABEL, tierOfBrands, brands,
-           SIZE_LABEL, SITES_LABEL, all };
+           SIZE_LABEL, SITES_LABEL, all, fromBundle, buyerTake, recommend, evidenceFor, compareHTML, TIERS };
 })();
 
 window.DealerNet = DealerNet;

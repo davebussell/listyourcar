@@ -1015,7 +1015,15 @@ function pageAuctionDashboard() {
   const mi = $("#my-invites");
   if (mi) {
     const invites = Store.invites();
-    mi.innerHTML = invites.length ? invites.map((v) => v.kind === "request" ? `
+    mi.innerHTML = invites.length ? invites.map((v) => v.kind === "listing" ? `
+      <div class="row-card invite-row">
+        <div class="grow">
+          <strong>${v.vehicle}</strong>
+          <span class="rc-state">Private listing · ${money(v.price)}</span>
+          <div class="muted small">Skip the dealer${v.place ? " · " + v.place : ""} · created ${relTime(v.created)}</div>
+        </div>
+        <a class="btn btn-sm btn-ghost" href="${v.url}" target="_blank" rel="noopener">Open listing</a>
+      </div>` : v.kind === "request" ? `
       <div class="row-card invite-row">
         <div class="grow">
           <strong>${v.vehicle}</strong>
@@ -1191,6 +1199,7 @@ async function pageDealer() {
         ${m ? `<div><dt>Auction market</dt><dd>${m.name} · ${m.km} km</dd></div>` : ""}
       </dl>
       ${profileBlock(d)}
+      <section class="dealer-takebox" id="dealer-take"><span class="eyebrow">Buyer's take</span><p class="muted">Weighing this dealer as a buyer…</p></section>
       <aside class="dealer-cta">
         <span class="eyebrow">Sell to them</span>
         <h3>Put your car in front of ${d.name}.</h3>
@@ -1208,8 +1217,52 @@ async function pageDealer() {
     ...(d.brands.length ? { brand: d.brands.map((b) => ({ "@type": "Brand", name: b })) } : {}),
   };
   const s = document.createElement("script"); s.type = "application/ld+json"; s.textContent = JSON.stringify(ld);
+  fillTake(d);
   document.head.appendChild(s);
 }
+/* The buyer's take for one dealer: the verdict, every reason with
+   where it came from, the dealer's own words where its website said
+   so, and how it compares with the nearest alternatives. */
+async function fillTake(d) {
+  const box = $("#dealer-take");
+  if (!box) return;
+  const esc = (x) => String(x == null ? "" : x).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const car = window.Locator && Locator.car ? Locator.car() : null;
+  const t = DealerNet.buyerTake(d, car);
+  const ev = await DealerNet.evidenceFor(d);
+  const quoteFor = (key) => ev && ev.e && ev.e[key === "page" ? "buys" : key];
+  const SRC = { website: "Their website", network: "Our dealer network" };
+  const reasons = t.reasons.map((r) => {
+    const q = r.source === "website" ? quoteFor(r.key) : null;
+    const page = r.key === "page" && ev && ev.p && ev.p[0] ? ev.p[0] : null;
+    return `<li><strong>${esc(r.text)}</strong>
+      <span class="take-src">${SRC[r.source] || ""}${q ? ` · “${esc(q)}”` : ""}${page ? ` · <a href="${esc(page.u)}" target="_blank" rel="noopener nofollow">${esc(page.l || "their page")} ↗</a>` : ""}</span></li>`;
+  }).join("");
+
+  // The nearest alternatives of the same kind, for comparison.
+  let compare = "";
+  try {
+    // Distance from the seller only means something if they're nearby;
+    // from a pin across the country it's noise, so the row is left out.
+    const pin = window.Locator && Locator.get ? Locator.get() : null;
+    const here = pin && pin.lat && DealerNet.haversine(pin.lat, pin.lon, d.lat, d.lon) <= 300 ? pin : null;
+    const origin = here || { lat: d.lat, lon: d.lon };
+    const near = (await DealerNet.ranked({ lat: d.lat, lon: d.lon }, {}))
+      .filter((x) => x.id !== d.id && x.role === "dealer" && (d.brands.length ? x.brands.some((b) => d.brands.includes(b)) || !x.brands.length : true))
+      .slice(0, 12);
+    const alts = DealerNet.recommend(near, car).slice(0, 3);
+    const withKm = [d, ...alts].map((x) => ({ ...x, km: here && here.lat ? DealerNet.haversine(origin.lat, origin.lon, x.lat, x.lon) : null }));
+    compare = `<div class="take-compare"><h3>How it compares nearby</h3>${DealerNet.compareHTML(withKm, car)}</div>`;
+  } catch { compare = ""; }
+
+  box.innerHTML = `
+    <span class="eyebrow">Buyer's take${car && car.make ? " · for your " + esc([car.year, car.make].filter(Boolean).join(" ")) : ""}</span>
+    <p class="take-verdict"><span class="take-chip take-${t.tier}">${t.label}</span> ${esc(t.summary)}</p>
+    ${reasons ? `<ul class="take-reasons">${reasons}</ul>` : ""}
+    <p class="muted small take-foot">${t.note ? esc(t.note) + " " : ""}${ev && ev.c ? "Website checked " + esc(ev.c) + ". " : ""}The take weighs how likely this dealer is to want your car, from what it says and sells. It says nothing about service or price — ask a few and compare the offers.${car && car.make ? "" : ' <a class="link-inline" href="/start.html?path=dealers">Tell us your car</a> for a take on your car specifically.'}</p>
+    ${compare}`;
+}
+
 window.pageDealer = pageDealer;
 
 window.pageCity = pageCity;
