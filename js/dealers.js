@@ -250,6 +250,7 @@ const DealerNet = (() => {
         const b = +c.slice(1);
         p.web = { read: !!(b & 1), buys: !!(b & 2), page: !!(b & 4), trade: !!(b & 8), tool: !!(b & 16), used: !!(b & 32), cpo: !!(b & 64) };
       }
+      else if (c === "z") p.siteLost = true;   // its listed website now belongs to someone else
       else if (c.startsWith("r:")) p.role = c.slice(2);
       else if (/^s[1-5]$/.test(c)) p.size = +c[1];
       else if (/^l[1-3]$/.test(c)) p.sites = +c[1];
@@ -419,7 +420,9 @@ const DealerNet = (() => {
     return {
       score, tier, label, headline, summary, reasons,
       unknown: !web.read,
-      note: web.read ? "" : "We couldn't read this dealer's website, so this take uses our network data only.",
+      note: d.siteLost
+        ? "The website we had for this dealer now belongs to someone else, so it may have closed. Call before relying on it."
+        : web.read ? "" : "We couldn't read this dealer's website, so this take uses our network data only.",
     };
   }
 

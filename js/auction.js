@@ -1111,6 +1111,7 @@ function pageCity() {
    PAGE: For dealers — figures computed from the live book
    ============================================================ */
 function pageDealers() {
+  if (window.initDealerClaim) window.initDealerClaim();
   const box = $("#dealer-stats");
   if (!box) return;
   const all = Store.allAuctions();
@@ -1142,7 +1143,8 @@ window.pageDealers = pageDealers;
 function profileBlock(d) {
   const ROLE = { service: "Repair, collision or towing — not a car buyer", finance: "Financing and credit — not a car buyer",
     salvage: "Salvage and parts — buys wrecks, not retail cars", broker: "Broker or consignment", rental: "Rental, leasing or fleet — not a retail buyer",
-    auction: "Auction house", media: "Marketing or media company — not a dealer" };
+    auction: "Auction house", media: "Media or marketing — not a dealer",
+    notcar: "Not a car business, by its name and its own website" };
   const FOCUS = { ev: "Electric and hybrid", truck: "Trucks and commercial", classic: "Classic and collector", exotic: "Exotic",
     import: "Imports", performance: "Performance and motorsport", budget: "Budget and wholesale", premium: "Premium and luxury" };
   const facts = [];
@@ -1193,7 +1195,9 @@ async function pageDealer() {
     <div class="dealer-grid">
       <dl class="dealer-facts">
         <div><dt>Phone</dt><dd>${tel ? `<a class="link-inline" href="tel:${tel}">${d.phone}</a>` : `<span class="muted">Not on file</span>`}</dd></div>
-        <div><dt>Website</dt><dd>${site ? `<a class="link-inline" href="${site}" target="_blank" rel="noopener">${d.website}</a>` : `<span class="muted">Not on file</span>`}</dd></div>
+        <div><dt>Website</dt><dd>${site ? `<a class="link-inline" href="${site}" target="_blank" rel="noopener">${d.website}</a>`
+          : d.siteLost ? `<span class="muted">The address we had now belongs to someone else, so we don't link to it. Call ahead.</span>`
+          : `<span class="muted">Not on file</span>`}</dd></div>
         <div><dt>Marques</dt><dd>${d.brands.length ? d.brands.join(", ") : "None — buys across makes"}</dd></div>
         <div><dt>Location</dt><dd>${d.city}, ${d.province}${d.postal ? "<br>" + d.postal : ""}</dd></div>
         ${m ? `<div><dt>Auction market</dt><dd>${m.name} · ${m.km} km</dd></div>` : ""}
@@ -1203,8 +1207,8 @@ async function pageDealer() {
       <aside class="dealer-cta">
         <span class="eyebrow">Sell to them</span>
         <h3>Put your car in front of ${d.name}.</h3>
-        <p class="muted">List it, set your reserve, and they are invited to bid against every other buyer in range — until your closing time.</p>
-        <a class="btn btn-primary" href="/sell.html">List my car</a>
+        <p class="muted">Send them your car in a few steps, alongside the other buyers near you, and let them compete for it. You send it from your own email; they reply to you.</p>
+        <a class="btn btn-primary" href="/start.html?path=dealers">Get dealers bidding</a>
         <a class="link" href="/find-buyers.html">See every buyer nearby →</a>
       </aside>
     </div>

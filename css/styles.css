@@ -1495,3 +1495,24 @@ p{margin:0 0 1rem;max-width:66ch;}
   .ud-rec{grid-template-columns:2rem minmax(0,1fr);}
   .ud-rec-tel{grid-column:2;}
 }
+
+.bm-order{margin:.6rem 0 0;}
+
+/* -- For dealers: the opt-in -------------------------------------- */
+.dealer-claim-wrap{margin-top:3rem;padding-top:2.5rem;}
+.dealer-claim-wrap h2{margin:.4rem 0 1.25rem;}
+.dealer-claim{max-width:46rem;}
+.claim-search input{max-width:28rem;}
+.claim-results{list-style:none;margin:1rem 0 0;padding:0;border-top:1px solid var(--line);}
+.claim-pick{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.2rem 1rem;width:100%;text-align:left;
+  padding:.8rem 0;border:0;border-bottom:1px solid var(--line);background:none;cursor:pointer;color:var(--ink);}
+.claim-pick:hover strong{text-decoration:underline;}
+.claim-pick strong{grid-column:1;font-weight:600;}
+.claim-pick span:not(.take-chip){grid-column:1;font-size:.875rem;color:var(--ink-3);}
+.claim-pick .take-chip{grid-column:2;grid-row:1 / span 2;align-self:center;}
+.claim-card{border-top:1px solid var(--ink);padding-top:1rem;margin-bottom:1.5rem;}
+.claim-card h3{font-size:1.375rem;margin:.25rem 0 1rem;}
+.claim-back{margin:0;}
+.claim-form{margin-top:.5rem;}
+.claim-ok,.claim-note{margin-top:1.25rem;padding:1rem 1.1rem;border:1px solid var(--line);background:var(--paper-2);border-left:3px solid var(--gold-bright);}
+.claim-note{border-left-color:var(--signal);}

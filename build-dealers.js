@@ -190,9 +190,11 @@ const ROLE = [
   ["finance", /\b(credit|crédit|loans?|financ(e|ing|ement)|approvals?|approved|lending)\b/i],
   ["salvage", /\b(salvage|wreckers?|recycl(ing|ers?)|scrap|auto parts|pièces|pick.?a.?part|junk)\b/i],
   ["broker",  /\b(brokers?|courtiers?|consignment|consignation)\b/i],
-  ["rental",  /\b(rentals?|rent-a-car|leasing|lease|fleet|rvs?|trailers?|marine|boats?|powersports?|motorcycles?|atvs?|snowmobiles?)\b/i],
+  ["rental",  /\b(rentals?|rent-a-car|leasing|lease|fleet|rvs?|trailers?|marine|boats?|powersports?|motorcycles?|atvs?|snowmobiles?|car ?share|carsharing|loopshare|communauto)\b/i],
   ["auction", /\b(auctions?|enchères?|encan)\b/i],
-  ["media",   /\b(media|marketing|advertising|publicité)\b/i],
+  ["media",   /\b(media|marketing|advertising|publicité|newspapers?|magazines?|ming pao)\b/i],
+  // In the export, but not in the car trade at all.
+  ["notcar",  /\b(foods?|renewables?|development|town of|municipality|university|conference|ieee|software|realty|real estate|insurance|consulting|properties)\b/i],
 ];
 const FOCUS = [
   ["ev",          /\b(electric|électrique|evs?|hybrids?|hybrides?|green)\b/i],
@@ -360,6 +362,37 @@ function plausible(sig, q) {
   if (sig === "trade" && /valeur de votre v/i.test(q) && !/évalu|evalu|échange|estim|achet/i.test(q)) return false;
   return true;
 }
+/* ============================================================
+   What the website says about the business itself.
+
+   lost    the listed domain no longer belongs to the dealer: parked,
+           a server's default page, gambling spam, or a car-named
+           business whose text-heavy homepage never mentions a
+           vehicle. We stop linking to it and say so; the dealer may
+           still trade, so the phone number stays.
+   notcar  a business whose name isn't a car name and whose readable
+           homepage never mentions a vehicle: a town, a conference,
+           a software firm. It leaves the buyer network.
+   Both only fire on the recheck measures (words, carTerms, spam);
+   a site with little readable text is never judged either way.
+   ============================================================ */
+const TITLE_SPAM = /\b(?:slots?|casinos?|kasyno|togel|gacor|stake|poker|jackpot|uncrossable|toto ?4d|betting)\b/i;
+const DEAD_TITLE = /(?:test page|default page|it works|domain default|un site utilisant wordpress|^page title$)/i;
+// A title that is just the domain is typical of a parked page — but also of
+// small sites made with a website builder, so it only counts with no car words.
+const BARE_TITLE = /^[a-z0-9-]+\.(?:com|ca|net)$/i;
+const CAR_NAME = /\b(?:auto|autos|automobiles?|automotive|motors?|motorcars?|cars?|trucks?|garage|dealers?|v[ée]hicules?|camions?|gm|chev|chevy|vw|rv)\b/i;
+function siteVerdict(d, brands) {
+  const r = RESEARCH[domainOfSite(d.w)];
+  if (!r || r.spam == null || !(r.status === "ok" || r.status === "thin")) return { lost: false, notcar: false };
+  const carName = brands.length > 0 || CAR_NAME.test(d.n);
+  const silent = r.words >= 150 && r.carTerms === 0;
+  const lost = !!(r.parked || TITLE_SPAM.test(r.title || "") || DEAD_TITLE.test(r.title || "") ||
+    (BARE_TITLE.test(r.title || "") && r.carTerms === 0) ||
+    (r.spam >= 10 && r.spam > r.carTerms) || (silent && carName));
+  return { lost, notcar: !lost && silent && !carName };
+}
+
 function researchCodes(d) {
   const r = RESEARCH[domainOfSite(d.w)];
   if (!r || !(r.status === "ok" || r.status === "thin")) return [];
@@ -388,7 +421,9 @@ const EMAIL_FILE = path.join(DIR, "dealer-emails.json");
 const EMAILS = fs.existsSync(EMAIL_FILE) ? JSON.parse(fs.readFileSync(EMAIL_FILE, "utf8")) : {};
 const domainOf = (w) => String(w || "").toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0];
 function emailFor(d) {
-  const e = EMAILS[domainOf(d.w)];
+  // Keyed by website domain, or "Name|postal" for a dealer with no site —
+  // the For dealers opt-in hands over whichever applies.
+  const e = EMAILS[domainOf(d.w)] || EMAILS[d.n + "|" + (d.z || "")];
   return e && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) ? e : "";
 }
 
@@ -402,14 +437,19 @@ for (const d of dealers) {
   if (k === "P") viaPostal++; else if (k === "C") viaCity++; else viaFsa++;
   const bs = brandsFor(d.n);
   bs.forEach((b) => brandSet.add(b));
-  const prof = profileOf(d, bs).concat(researchCodes(d));
+  const site = siteVerdict(d, bs);
+  // A lost site says nothing true about the dealer: no signals, no evidence.
+  const prof = profileOf(d, bs).concat(site.lost ? ["z"] : researchCodes(d));
+  if (site.notcar && !prof.some((c) => c.startsWith("r:"))) prof.unshift("r:notcar");
   /* `spec` is the one-word summary older code reads; it now derives
      from the profile so the two can never disagree. A non-dealer role
      is "other"; otherwise the first stock-describing focus. */
   const role = (prof.find((c) => c.startsWith("r:")) || "").slice(2);
   const focus = prof.filter((c) => c.startsWith("x:")).map((c) => c.slice(2));
   const spec = role ? "other" : (focus.find((f) => ["classic", "truck", "performance", "import"].includes(f)) || "");
-  const row = [d.n, pi, d.z, d.t, d.w, d.e || 0, bs, spec, prof];
+  // A lost domain is not published: every page that shows a website
+  // would otherwise send visitors to whatever squats on it now.
+  const row = [d.n, pi, d.z, d.t, site.lost ? "" : d.w, d.e || 0, bs, spec, prof];
   const email = emailFor(d);
   if (email) row.push(email);            // row[9] only when there is one, to keep the bundle lean
   rows.push(row);

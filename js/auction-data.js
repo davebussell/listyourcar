@@ -14,7 +14,7 @@
 const CAR_IMG = (key) => "/assets/cars/" + key + ".jpg";
 
 /* ---------- The bidder pool ----------
-   Verified dealers bid under their business name; the public bids
+   Dealers bid under their business name; the public bids
    under a masked handle. Both compete in the same auction. */
 const DEALERS = [
   { id: "d-01", name: "Maple Ridge Auto Group",   city: "toronto",   type: "dealer", since: 2016, deals: 1840, rating: 4.8 },

@@ -368,16 +368,35 @@ const BuyerMap = (() => {
         list.forEach((d) => near.push({ d, km, g }));
       });
       near.sort((a, b) => a.km - b.km);
-      const top = near.slice(0, 12);
+      /* Recommended: the best buyers among the 30 nearest, by the same
+         take the picker uses. Nearest: plain distance. */
+      const recommended = state.order !== "nearest";
+      let top = near.slice(0, 12);
+      if (recommended && DealerNet.recommend) {
+        const pool = near.slice(0, 30);
+        const byId = new Map(pool.map((n) => [n.d.id, n]));
+        top = DealerNet.recommend(pool.map((n) => ({ ...n.d, km: n.km })), state.car)
+          .slice(0, 12).map((d) => byId.get(d.id));
+      }
       host.innerHTML =
         '<div class="bm-panel-head">' +
-          '<span class="eyebrow">Closest to you</span>' +
+          '<span class="eyebrow">' + (recommended ? "Recommended near you" : "Closest to you") + "</span>" +
           "<h3>" + (shortPlace(state.origin.place) || state.origin.label || "Your location") + "</h3>" +
-          '<p class="muted small">Showing the ' + Math.min(top.length, near.length) +
-            " closest of " + num(near.length) + " matching buyers</p>" +
+          '<p class="muted small">' + (recommended
+            ? "The best buyers among the 30 nearest, by our buyer's take"
+            : "The " + Math.min(top.length, near.length) + " closest") +
+            " · " + num(near.length) + " matching buyers</p>" +
+          '<div class="chipbar bm-order">' +
+            [["recommended", "Recommended"], ["nearest", "Nearest"]].map((o) =>
+              '<button type="button" class="fchip' + ((o[0] === "nearest") === !recommended ? " active" : "") +
+              '" data-order="' + o[0] + '">' + o[1] + "</button>").join("") +
+          "</div>" +
         "</div>" +
         '<ul class="bm-list">' + top.map((n) => dealerRow(n.d, n.km)).join("") + "</ul>" +
-        '<a class="btn btn-primary btn-sm bm-cta" href="/sell.html">List a car for these buyers</a>';
+        '<a class="btn btn-primary btn-sm bm-cta" href="/start.html?path=dealers">Get these buyers bidding</a>';
+      host.querySelectorAll("[data-order]").forEach((b) => b.addEventListener("click", () => {
+        state.order = b.dataset.order; renderPanel();
+      }));
       return;
     }
 

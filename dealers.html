@@ -3,22 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>For dealers — bid on private Canadian inventory | listyourcar.ca</title>
-  <meta name="description" content="Source fresh private-seller inventory across Canada. Bid on cars direct from owners, see full disclosure, and win at your number. Free to register." />
+  <title>For dealers — get cars straight from owners near you | listyourcar.ca</title>
+  <meta name="description" content="Get cars straight from private owners near you. Find your dealership in our network, see what sellers see, and choose where seller requests are sent. Free for dealers." />
   <link rel="canonical" href="https://listyourcar.ca/dealers.html" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="listyourcar.ca" />
-  <meta property="og:title" content="For dealers — bid on private Canadian inventory" />
-  <meta property="og:description" content="Source fresh private-seller inventory across Canada. Free to register." />
+  <meta property="og:title" content="For dealers — get cars straight from owners near you" />
+  <meta property="og:description" content="Find your dealership, see what sellers see, and choose where seller requests go. Free for dealers." />
   <meta property="og:url" content="https://listyourcar.ca/dealers.html" />
   <meta property="og:image" content="https://listyourcar.ca/assets/cars/model3.jpg" />
   <meta property="og:image:width" content="960" />
   <meta property="og:image:height" content="498" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="For dealers — bid on private Canadian inventory" />
-  <meta name="twitter:description" content="Source fresh private-seller inventory across Canada. Free to register." />
+  <meta name="twitter:title" content="For dealers — get cars straight from owners near you" />
+  <meta name="twitter:description" content="Find your dealership, see what sellers see, and choose where seller requests go. Free for dealers." />
   <meta name="twitter:image" content="https://listyourcar.ca/assets/cars/model3.jpg" />
-  <link rel="stylesheet" href="css/styles.css?v=34" />
+  <link rel="stylesheet" href="css/styles.css?v=35" />
 </head>
 <body data-page="dealers">
   <header class="site-header">
@@ -58,24 +58,29 @@
   <main class="container section">
     <div class="page-head">
       <span class="eyebrow">For dealers</span>
-      <h1>Inventory, direct from owners.</h1>
-      <p class="lead narrow">Private Canadian cars, listed by the people who own them, with a hard closing time and a disclosed reserve. No wholesale middleman standing between you and the car.</p>
+      <h1>Get cars straight from the owners near you.</h1>
+      <p class="lead narrow">Sellers here pick the dealers they want offers from, then send them their car. If your dealership is in our network, you may already be on their list. Tell us where to send requests, and sellers can email you in one click.</p>
+    </div>
+    <div class="steps" data-stagger>
+      <div class="step"><span class="index">01</span><h3>Find your dealership</h3><p>Search our network of 4,300+ Canadian dealers by name or postal code.</p></div>
+      <div class="step"><span class="index">02</span><h3>Check what sellers see</h3><p>Your makes, location, phone and website, and the buyer's take we show sellers, with the evidence behind it.</p></div>
+      <div class="step"><span class="index">03</span><h3>Choose where requests go</h3><p>Give the address you want seller requests at. We review each one before it goes live.</p></div>
+      <div class="step"><span class="index">04</span><h3>Hear from sellers</h3><p>Sellers who pick you email that address directly, with the car's details written out. You reply to them.</p></div>
     </div>
 
-    <div class="steps" data-stagger>
-      <div class="step"><span class="index">01</span><h3>Register your rooftop</h3><p>Verify your dealer licence once. Your bids then carry your business name and rating.</p></div>
-      <div class="step"><span class="index">02</span><h3>Get matched lots</h3><p>Auctions opening in your market land in your feed, filtered to the segments you actually retail.</p></div>
-      <div class="step"><span class="index">03</span><h3>Bid in the open</h3><p>You see every competing bid and whether the reserve is met. No proxy games, no hidden floor.</p></div>
-      <div class="step"><span class="index">04</span><h3>Win and collect</h3><p>Clear the reserve at close and you get the seller's details immediately. Inspect, pay, transfer.</p></div>
-    </div>
+    <section class="section-line dealer-claim-wrap" id="claim">
+      <span class="eyebrow">Opt in</span>
+      <h2>Find your dealership</h2>
+      <div id="dealer-claim" class="dealer-claim"><p class="muted">Loading the dealer network…</p></div>
+    </section>
 
     <section class="section-line section-alt" style="margin-top:4rem;padding:3rem var(--gutter) 3rem">
       <div class="container-flush editorial">
         <div class="editorial-copy">
           <span class="eyebrow">Why it's better stock</span>
-          <h2>One owner, full history, no auction-lane roulette.</h2>
-          <p class="muted">Wholesale lanes are full of cars dealers already decided not to retail. This is the opposite pool: private owners who would otherwise have traded in, listing directly because the auction beats the trade-in number. You're seeing the car before it becomes someone else's problem.</p>
-          <p class="muted">Every listing carries the owner's own disclosure, distance, condition grade and location. You bid knowing what you're buying.</p>
+          <h2>One owner, and a seller who came to you.</h2>
+          <p class="muted">These are private owners who would otherwise have traded in. They've seen our estimate, so they know the range, and they chose you because you sell their make or buy their kind of car. You're seeing the car before it reaches a wholesale lane.</p>
+          <p class="muted">Sellers can also run an auction with a reserve and closing time. Dealers and private buyers bid in the same book.</p>
         </div>
         <div class="editorial-media">
           <div class="est-preview" id="dealer-stats" aria-hidden="true"></div>
@@ -84,11 +89,11 @@
     </section>
 
     <section class="cta section-line" style="margin-top:4rem;padding-top:3rem">
-      <h2>Register your dealership.</h2>
-      <p class="lead">Free to join. Bid on your first lot the same day.</p>
+      <h2>Free for dealers.</h2>
+      <p class="lead">No fee to be listed, to receive requests, or to bid.</p>
       <div class="hero-actions" style="justify-content:center">
-        <a class="btn btn-primary" href="contact.html?subject=dealer">Register as a dealer</a>
-        <a class="btn btn-ghost" href="auctions.html">Browse the book first</a>
+        <a class="btn btn-primary" href="#claim">Find my dealership</a>
+        <a class="btn btn-ghost" href="auctions.html">Browse the auction book</a>
       </div>
     </section>
   </main>
@@ -106,14 +111,16 @@
     <div class="footer-bottom"><p>&copy; <span id="year"></span> listyourcar.ca — All rights reserved.</p></div>
   </footer>
 
-  <script src="js/data.js?v=34"></script>
-  <script src="js/auction-data.js?v=34"></script>
-  <script src="js/valuation.js?v=34"></script>
-  <script src="js/store.js?v=34"></script>
-  <script src="js/config.js?v=34"></script>
-  <script src="js/analytics.js?v=34"></script>
-  <script src="js/app.js?v=34"></script>
-  <script src="js/auction.js?v=34"></script>
-  <script src="js/locator.js?v=34"></script>
+  <script src="js/data.js?v=35"></script>
+  <script src="js/auction-data.js?v=35"></script>
+  <script src="js/valuation.js?v=35"></script>
+  <script src="js/store.js?v=35"></script>
+  <script src="js/config.js?v=35"></script>
+  <script src="js/analytics.js?v=35"></script>
+  <script src="js/app.js?v=35"></script>
+  <script src="js/dealers.js?v=35"></script>
+  <script src="js/dealer-claim.js?v=35"></script>
+  <script src="js/auction.js?v=35"></script>
+  <script src="js/locator.js?v=35"></script>
 </body>
 </html>

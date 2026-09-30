@@ -69,6 +69,14 @@ const SIGNALS = {
     /\bcertified pre-owned\b/i, /\bvéhicules? d'occasion certifiés?\b/i,
   ],
 };
+/* Any sign the business deals in vehicles, English or French. Broad on
+   purpose: it only has to be absent for a business to be flagged. */
+const VEHICLE_WORDS = /\b(?:cars?|vehicles?|autos?|automobiles?|automotive|trucks?|suvs?|vans?|inventory|pre-?owned|dealers?|dealership|financing|lease|trade-?ins?|mileage|kilomet(?:er|re)s?|km|sedans?|motors?|v[ée]hicules?|voitures?|camions?|inventaire|concession(?:naire)?|occasion)\b/gi;
+
+/* Signs a domain now belongs to someone else. */
+const SPAM_WORDS = /\b(?:slots?|casino|kasyno|jackpot|gacor|togel|maxwin|judi|betting|sportsbook|poker|baccarat|roulette|bonus deposit|viagra|cialis|escort|replica watches|payday loans?)\b/gi;
+const PARKED = /\b(?:this domain (?:is|may be) for sale|buy this domain|domain (?:name )?is for sale|parked (?:free|domain)|hugedomains|sedo(?:parking)?\.com|dan\.com|afternic|domain has expired|this domain has been registered)\b/i;
+
 /* A link to a dedicated buying or appraisal page is the strongest sign. */
 const PAGE_HREF = /(?:sell-?(?:us-)?your-?(?:car|vehicle)|sell-?my-?car|we-?buy|webuy|instant-?(?:cash-?)?offer|value-?your-?trade|trade-?in|tradein|appraisal|evaluation|vendez|achat-de-vehicule)/i;
 
@@ -171,6 +179,20 @@ async function research(domain) {
   const text = textOf(page.body);
   if (text.length < 200) { rec.status = "thin"; }
   else rec.status = "ok";
+  /* Is this a car business at all? Count words of visible text and
+     uses of any vehicle vocabulary. A readable homepage with real text
+     that never once says car, vehicle, auto, truck, inventory or km is
+     not a dealer — a food distributor, a conference, a software firm. */
+  rec.words = text.split(/\s+/).filter(Boolean).length;
+  rec.carTerms = (text.match(VEHICLE_WORDS) || []).length;
+  /* Has the domain been lost? An expired dealer domain is often bought
+     for gambling spam or parked for sale. Either way it is no longer
+     the dealer's site, and must not be linked to. */
+  const title = ((page.body.match(/<title[^>]*>([^<]*)/i) || [])[1] || "").trim().slice(0, 120);
+  rec.spam = ((title + " " + text).match(SPAM_WORDS) || []).length;
+  rec.parked = PARKED.test(title + " " + text.slice(0, 3000));
+  rec.title = title;
+  rec.finalHost = (() => { try { return new URL(page.url).hostname.replace(/^www\./, ""); } catch { return ""; } })();
 
   for (const [sig, res] of Object.entries(SIGNALS)) {
     for (const re of res) {
@@ -203,6 +225,19 @@ if (require.main === module) (async () => {
   const only = (process.argv.find((a) => a.startsWith("--only=")) || "").slice(7);
   if (only) {
     for (const d of only.split(",")) console.log(JSON.stringify(await research(d), null, 1));
+    return;
+  }
+  // --recheck=file.json re-checks a list of domains and updates the cache.
+  const recheck = (process.argv.find((a) => a.startsWith("--recheck=")) || "").slice(10);
+  if (recheck) {
+    const list = JSON.parse(fs.readFileSync(recheck, "utf8"));
+    const cache = JSON.parse(fs.readFileSync(OUT, "utf8"));
+    let i = 0;
+    await Promise.all(Array.from({ length: CONCURRENCY }, async () => {
+      while (i < list.length) { const d = list[i++]; try { cache[d] = await research(d); } catch { /* keep the old entry */ } }
+    }));
+    fs.writeFileSync(OUT, JSON.stringify(cache));
+    console.log("rechecked " + list.length + " domains");
     return;
   }
   const raw = JSON.parse(fs.readFileSync(RAW, "utf8"));

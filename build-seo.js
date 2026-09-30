@@ -23,7 +23,7 @@ const { estimateValue } = window.LYC_VAL;
 
 const ROOT = __dirname;
 const ORIGIN = "https://listyourcar.ca";
-const V = 34;
+const V = 35;
 const THIS_YEAR = new Date().getFullYear();
 
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -259,7 +259,7 @@ CITIES_LOOP: for (const c of D.CITIES) {
   shell({
     file: `sell-my-car/${c.slug}/index.html`,
     title: `Sell your car in ${c.name} — dealers bid, you set the reserve | listyourcar.ca`,
-    desc: `Sell your car in ${c.name} by auction. Verified dealers and private buyers bid against each other; you set the reserve and the closing time. Free estimate first — see what it should fetch.`,
+    desc: `Sell your car in ${c.name} by auction. Dealers and private buyers bid against each other; you set the reserve and the closing time. Free estimate first — see what it should fetch.`,
     canonical: `${ORIGIN}/sell-my-car/${c.slug}/`,
     dataPage: "city",
     dataAttrs: ` data-city="${c.slug}"`,
