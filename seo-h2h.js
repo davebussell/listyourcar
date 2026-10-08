@@ -8,7 +8,7 @@
      /compare/                       every head-to-head, by metro
      /compare/<a>-vs-<b>/            one page per pair
      data/h2h-index.json             dealer id -> its head-to-heads,
-                                     for dealer pages and compare.html
+                                     for dealer pages and head-to-head.html
 
    The comparison itself is rendered by js/h2h.js — the same code the
    browser runs for any two dealers — so a static page and the live
@@ -147,7 +147,7 @@ module.exports = function buildH2H({ ROOT, ORIGIN, shell, track, esc, breadcrumb
     <h2>More head-to-heads</h2>
     <div class="lf-links">${sameMetro.map(link).join("")}${sameMake.slice(0, 8).map(link).join("")}
       <a href="/used-car-dealers/${esc(metro)}/">Every used car dealer in ${esc(city)}</a>
-      <a href="/compare.html">Compare any two dealers</a></div>
+      <a href="/head-to-head.html">Compare any two dealers</a></div>
   </section>
 </main>`;
     const pickLine = v.sell && v.buy && v.sell === v.buy ? `${nm(v.sell)} edges it on both selling and buying.`
@@ -187,7 +187,7 @@ module.exports = function buildH2H({ ROOT, ORIGIN, shell, track, esc, breadcrumb
     <h1 class="has-mark"><span class="mark">Two dealers. Both ends of the deal.</span></h1>
     <p class="lead narrow">Selling a car usually means buying one, often in the same afternoon. Each comparison puts two rival stores side by side on both: which is the likelier buyer for your car, which offers more when you buy, and what trading in where you buy saves you in tax. Every row comes from the dealer's own website or our dealer network, with the source shown.</p>
     <div class="hero-actions">
-      <a class="btn btn-primary" href="/compare.html">Compare any two dealers</a>
+      <a class="btn btn-primary" href="/head-to-head.html">Compare any two dealers</a>
       <a class="btn btn-ghost" href="/start.html?path=dealers">Send my car to dealers</a>
     </div>
   </div>

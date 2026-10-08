@@ -18,7 +18,7 @@
    Nothing here judges price, honesty or service: those aren't in the
    data, and the page says so and points to where to look.
 
-   Runs in the browser (compare.html, dealer pages) and in Node
+   Runs in the browser (head-to-head.html, dealer pages) and in Node
    (build-seo.js writes the static head-to-head pages), so the two
    never disagree. Needs DealerNet (js/dealers.js) loaded first.
    ============================================================ */

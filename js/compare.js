@@ -2,7 +2,7 @@
    listyourcar.ca — compare any two dealers, and the dealer page's
    website profile and rivals
 
-   compare.html?a=d12&b=d34 renders the same head-to-head as the
+   head-to-head.html?a=d12&b=d34 renders the same head-to-head as the
    static /compare/ pages (js/h2h.js), for any pair. With one or no
    dealer chosen it offers a picker, and suggests the obvious rivals.
 
@@ -35,10 +35,10 @@
   const compareHref = async (a, b) => {
     const idx = await DealerNet.h2hIndex();
     const hit = (idx[a.id] || []).find((p) => p[1] === b.name);
-    return hit ? `/compare/${hit[0]}/` : `/compare.html?a=${encodeURIComponent(a.id)}&b=${encodeURIComponent(b.id)}`;
+    return hit ? `/compare/${hit[0]}/` : `/head-to-head.html?a=${encodeURIComponent(a.id)}&b=${encodeURIComponent(b.id)}`;
   };
 
-  /* ---------- compare.html ---------- */
+  /* ---------- head-to-head.html ---------- */
   async function pageCompare() {
     const host = document.getElementById("compare-root");
     if (!host) return;
@@ -64,7 +64,7 @@
           <span class="eyebrow">Head to head${car && car.make ? " · for your " + esc([car.year, car.make].filter(Boolean).join(" ")) : ""}</span>
           <h1>${esc(a.name)} vs ${esc(b.name)}</h1>
           <p class="lead narrow">Who's the better buyer for your car, and the better place to buy your next one, from what each store's own website says and what our network knows.${pub ? ` <a class="link-inline" href="/compare/${esc(pub[0])}/">Shareable page for this pair →</a>` : ""}</p>
-          <p><a class="link" href="/compare.html?a=${esc(a.id)}">Compare ${esc(a.name)} with someone else</a> · <a class="link" href="/compare.html?a=${esc(b.id)}">Compare ${esc(b.name)} with someone else</a></p>
+          <p><a class="link" href="/head-to-head.html?a=${esc(a.id)}">Compare ${esc(a.name)} with someone else</a> · <a class="link" href="/head-to-head.html?a=${esc(b.id)}">Compare ${esc(b.name)} with someone else</a></p>
         </div>
         ${out.html}`;
       H2H.bind(host);
@@ -117,7 +117,7 @@
     };
     const pick = (side, d) => {
       chosen[side] = d;
-      if (chosen.a && chosen.b) { location.href = `/compare.html?a=${encodeURIComponent(chosen.a.id)}&b=${encodeURIComponent(chosen.b.id)}`; return; }
+      if (chosen.a && chosen.b) { location.href = `/head-to-head.html?a=${encodeURIComponent(chosen.a.id)}&b=${encodeURIComponent(chosen.b.id)}`; return; }
       draw(side); suggest();
     };
     /* With one dealer chosen, its obvious rivals are one click away. */
@@ -180,12 +180,12 @@
     const pub = idx[d.id] || [];
     const rivals = (await rivalsOf(d, 4)).filter((r) => !pub.some((p) => p[1] === r.name)).slice(0, 3);
     const items = pub.map((p) => `<li><a href="/compare/${esc(p[0])}/">${esc(d.name)} vs ${esc(p[1])}</a><span class="h2h-mk">${esc(p[2])}</span><span>Full head-to-head</span></li>`)
-      .concat(rivals.map((r) => `<li><a href="/compare.html?a=${esc(d.id)}&amp;b=${esc(r.id)}">${esc(d.name)} vs ${esc(r.name)}</a><span class="h2h-mk">${esc(r.brands.join(", ") || "Independent")}</span><span>${esc(r.city)}</span></li>`));
+      .concat(rivals.map((r) => `<li><a href="/head-to-head.html?a=${esc(d.id)}&amp;b=${esc(r.id)}">${esc(d.name)} vs ${esc(r.name)}</a><span class="h2h-mk">${esc(r.brands.join(", ") || "Independent")}</span><span>${esc(r.city)}</span></li>`));
     box.innerHTML = `<span class="eyebrow">Head to head</span>
       <h3 style="margin:.4rem 0 .25rem;font-size:1.25rem">Compare it with its rivals</h3>
       <p class="muted">As a buyer for your car and as a place to buy your next one.</p>
       ${items.length ? `<ul class="h2h-list">${items.join("")}</ul>` : ""}
-      <p style="margin-top:.75rem"><a class="link" href="/compare.html?a=${esc(d.id)}">Compare with any dealer →</a></p>`;
+      <p style="margin-top:.75rem"><a class="link" href="/head-to-head.html?a=${esc(d.id)}">Compare with any dealer →</a></p>`;
   }
 
   window.pageCompare = pageCompare;
