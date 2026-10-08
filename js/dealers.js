@@ -478,12 +478,21 @@ const DealerNet = (() => {
   }
   const d0 = (list, k) => list.some((d) => d[k] != null);
 
+  /* Which dealers have a published head-to-head page, and with whom:
+     { d12: [[slug, rival name, make], ...] }. Small; fetched on demand. */
+  let _h2h = null;
+  function h2hIndex() {
+    if (!_h2h) _h2h = fetch(withV("/data/h2h-index.json")).then((r) => (r.ok ? r.json() : {})).catch(() => ({}));
+    return _h2h;
+  }
+
   /* The marques in the network, once loaded; empty before that. */
   const brands = () => (_data ? _data.brands : []);
 
   return { load, nearest, ranked, countWithin, brandsNear, fromPostal, fromDevice, fromCity, haversine,
            byId, audiencesFor, audienceCounts, guessKind, canonMake, KINDS, KIND_LABEL, tierOfBrands, brands,
-           SIZE_LABEL, SITES_LABEL, all, fromBundle, buyerTake, recommend, evidenceFor, compareHTML, TIERS };
+           SIZE_LABEL, SITES_LABEL, all, fromBundle, buyerTake, recommend, evidenceFor, compareHTML, TIERS, withV,
+           h2hIndex };
 })();
 
 window.DealerNet = DealerNet;

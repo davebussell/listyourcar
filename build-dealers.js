@@ -186,6 +186,8 @@ function specialtyOf(name, brands) {
    ============================================================ */
 
 const ROLE = [
+  // A manufacturer's head office ("Nissan Canada") sells to dealers, not to or from the public.
+  ["maker",   /^(?:toyota|honda|nissan|ford|hyundai|kia|mazda|subaru|volkswagen|bmw|mercedes-benz|lexus|audi|general motors|gm|stellantis|fca|chrysler|volvo|porsche|mitsubishi|acura|infiniti|genesis|jaguar land rover)(?: motor)?(?: cars?)?(?: of)? canada(?: inc\.?| ltd\.?| limited| corporation| corp\.?)?$/i],
   ["service", /\b(collision|body ?shop|carrosserie|repairs?|réparations?|service centre|mechanics?|mécanique|tires?|pneus|glass|vitres|detailing|esthétique|towing|remorquage|garage|lube|mufflers?|transmissions?|alignment)\b/i],
   ["finance", /\b(credit|crédit|loans?|financ(e|ing|ement)|approvals?|approved|lending)\b/i],
   ["salvage", /\b(salvage|wreckers?|recycl(ing|ers?)|scrap|auto parts|pièces|pick.?a.?part|junk)\b/i],
@@ -413,6 +415,74 @@ function researchCodes(d) {
   if (r.checked > researchedAt) researchedAt = r.checked;
   return ["W" + bits];
 }
+/* ============================================================
+   Deeper profiles from build-profiles.js — the facts behind the
+   head-to-head pages: street address, sales hours, founding year,
+   family ownership, awards, languages, and what the store offers a
+   buyer. Published under "f" in the same evidence file as the
+   quotes, so a page showing one dealer still loads one small file.
+
+   The dealer's own structured data is trusted only where it agrees
+   with what we know: an address in another postal district or a map
+   point more than 25 km from the store's postal code is a template
+   default or a typo (Parkway Honda's points to Milton), and is left out.
+   ============================================================ */
+const PROFILE_FILE = path.join(DIR, ".profile-cache.json");
+const PROFILES = fs.existsSync(PROFILE_FILE) ? JSON.parse(fs.readFileSync(PROFILE_FILE, "utf8")) : {};
+let profiled = 0;
+function kmBetween(a, b, c, e) {
+  const r = Math.PI / 180;
+  const x = Math.sin((c - a) * r / 2) ** 2 + Math.cos(a * r) * Math.cos(c * r) * Math.sin((e - b) * r / 2) ** 2;
+  return 2 * 6371 * Math.asin(Math.sqrt(x));
+}
+function attachProfile(d, pi) {
+  const dom = domainOfSite(d.w);
+  const p = PROFILES[dom];
+  if (!p || p.status !== "ok") return;
+  const pos = positions[pi];
+  const f = { c: p.checked, pg: (p.pages || []).slice(0, 4) };
+  const fsa = (z) => String(z || "").replace(/\s+/g, "").toUpperCase().slice(0, 3);
+  const fold = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z]/g, "");
+  if (p.address && p.address.street) {
+    const samePostal = p.address.postal && fsa(p.address.postal) === fsa(d.z);
+    const sameTown = fold(p.address.city) && (fold(p.address.city) === fold(d.c) || fold(p.address.city) === fold(pos[0]));
+    if (samePostal || (sameTown && !p.address.postal)) {
+      f.a = { s: tidyQuote(p.address.street), l: tidyQuote(p.address.city), pc: p.address.postal || "" };
+    }
+  }
+  if (p.geo && p.geo.length === 2 && isFinite(p.geo[0]) && kmBetween(p.geo[0], p.geo[1], pos[2], pos[3]) <= 25) {
+    f.g = [+p.geo[0].toFixed(5), +p.geo[1].toFixed(5)];
+  }
+  if (p.hours) { f.h = p.hours.map((x) => (x ? [x[0], x[1]] : 0)); f.hs = p.hoursFrom || ""; }
+  if (p.founded) f.y = { v: p.founded.v, q: tidyQuote(p.founded.q), s: p.founded.s };
+  if (p.family) f.fam = { q: tidyQuote(p.family.q), s: p.family.s };
+  // One entry per award: a site that mentions it twice ("21 times", "22 times") keeps the first.
+  if (p.awards && p.awards.length) {
+    const seen = new Set();
+    f.aw = p.awards.filter((a) => !seen.has(a.name.toLowerCase()) && seen.add(a.name.toLowerCase()))
+      .map((a) => ({ n: tidyQuote(a.name), q: tidyQuote(a.q), s: a.s }));
+  }
+  /* Languages count only when the quoted sentence names them: a staff
+     filter's dropdown ("All Languages") or a list further down the page
+     is not the dealer saying its team speaks them. */
+  if (p.langs) {
+    const q = tidyQuote(p.langs.q).replace(/\s*\([^)]*�[^)]*\)/g, "").replace(/�/g, "");
+    const FR = { French: "fran[cç]ais", English: "anglais", Spanish: "espagnol", Arabic: "arabe", Italian: "italien", Portuguese: "portugais" };
+    const v = p.langs.v.filter((l) => new RegExp("\\b(?:" + l + (FR[l] ? "|" + FR[l] : "") + ")", "i").test(q));
+    if (v.length && !/all languages/i.test(q)) f.ln = { v, q, s: p.langs.s };
+  }
+  const o = {};
+  for (const [k, v] of Object.entries(p.offers || {})) {
+    // A menu link to "commercial vehicles" isn't a commercial department.
+    if (k === "commercial" && !/centre|center|department|sales|fleet|elite|ventes|centre/i.test(v.q)) continue;
+    o[k] = { q: tidyQuote(v.q), s: v.s };
+  }
+  if (Object.keys(o).length) f.o = o;
+  evidence[dom] = evidence[dom] || { c: p.checked, e: {}, p: [] };
+  evidence[dom].f = f;
+  profiled++;
+}
+
 function domainOfSite(w) {
   return String(w || "").toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0].trim();
 }
@@ -426,6 +496,26 @@ function emailFor(d) {
   const e = EMAILS[domainOf(d.w)] || EMAILS[d.n + "|" + (d.z || "")];
   return e && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) ? e : "";
 }
+
+/* The export sometimes lists one store twice, once with no postal
+   code ("Chevrolet Buick GMC West Island" in "Quebec"). The record
+   without a postal code can't be placed, so it is marked a duplicate
+   rather than dropped — dropping a row would renumber every dealer
+   link after it. */
+/* Same name and the same website name (chevroletwestisland.com and
+   .ca): "Owasco" in Pickering (owasco.com) and Whitby (owascoaudi.ca)
+   are two stores, not one. */
+const siteLabel = (w) => String(w || "").toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0].replace(/\.[a-z.]+$/, "");
+const withPostal = new Set(dealers.filter((d) => d.z).map((d) => d.n.trim().toLowerCase() + "|" + siteLabel(d.w)));
+const isDupe = (d) => !d.z && withPostal.has(d.n.trim().toLowerCase() + "|" + siteLabel(d.w));
+/* "Subaru Canada" in the export is sometimes a local store with a bad
+   name (concessionsubaru.ca). It's the head office only when the
+   website is the maker's own national site: nissan.ca, acura.ca. */
+const isMakerSite = (d) => {
+  const label = siteLabel(d.w).replace(/-/g, "");
+  const lead = String(d.n).toLowerCase().split(/\s+/)[0].replace(/[^a-z]/g, "");
+  return !!label && (label === lead || (lead === "mercedesbenz" && label === "mercedesbenz") || (lead === "general" && label === "gm"));
+};
 
 const brandSet = new Set();
 const rows = [];
@@ -441,6 +531,9 @@ for (const d of dealers) {
   // A lost site says nothing true about the dealer: no signals, no evidence.
   const prof = profileOf(d, bs).concat(site.lost ? ["z"] : researchCodes(d));
   if (site.notcar && !prof.some((c) => c.startsWith("r:"))) prof.unshift("r:notcar");
+  if (prof.includes("r:maker") && !isMakerSite(d)) prof.splice(prof.indexOf("r:maker"), 1);
+  if (isDupe(d)) { for (let i = prof.length - 1; i >= 0; i--) if (prof[i].startsWith("r:")) prof.splice(i, 1); prof.unshift("r:dupe"); }
+  if (!site.lost) attachProfile(d, pi);
   /* `spec` is the one-word summary older code reads; it now derives
      from the profile so the two can never disagree. A non-dealer role
      is "other"; otherwise the first stock-describing focus. */
@@ -487,6 +580,7 @@ if (fs.existsSync(path.join(DIR, "dealer-evidence.json"))) fs.unlinkSync(path.jo
   if (read) console.log("  buys from public " + has("w:buys") + " · sell/trade page " + has("w:page") + " · appraisal " + has("w:trade") + " · valuation tool " + has("w:tool") + " · used stock " + has("w:used") + " · CPO " + has("w:cpo"));
   {
   const sizes = fs.readdirSync(EV_DIR).map((f) => fs.statSync(path.join(EV_DIR, f)).size);
+  console.log("deeper profiles       : " + profiled + (Object.keys(PROFILES).length ? "" : "  (run build-profiles.js)"));
   console.log("data/evidence/        : " + Object.keys(evidence).length + " sites in " + sizes.length + " files, largest " +
     (Math.max(...sizes) / 1024).toFixed(0) + " KB");
 }

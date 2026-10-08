@@ -1,0 +1,713 @@
+{
+ "built": "2026-10-08",
+ "pairs": [
+  {
+   "metro": "toronto",
+   "make": "Toyota",
+   "a": "markville.com",
+   "b": "donvalleynorthtoyota.com"
+  },
+  {
+   "metro": "toronto",
+   "make": "Honda",
+   "a": "parkwayhonda.com",
+   "b": "roadsporthonda.ca"
+  },
+  {
+   "metro": "toronto",
+   "make": "Ford",
+   "a": "oaklandfordlincoln.ca",
+   "b": "kennedyford.ca"
+  },
+  {
+   "metro": "toronto",
+   "make": "Kia",
+   "a": "401dixiekia.com",
+   "b": "airportkia.ca"
+  },
+  {
+   "metro": "toronto",
+   "make": "Mazda",
+   "a": "yorkdaledufferinmazda.ca",
+   "b": "gyromazda.ca"
+  },
+  {
+   "metro": "toronto",
+   "make": "Chevrolet",
+   "a": "markvillechevrolet.com",
+   "b": "eastsidegm.ca"
+  },
+  {
+   "metro": "toronto",
+   "make": "Subaru",
+   "a": "subarudowntown.com",
+   "b": "scarborosubaru.ca"
+  },
+  {
+   "metro": "toronto",
+   "make": "Volkswagen",
+   "a": "maplevw.com",
+   "b": "richmondhillvw.ca"
+  },
+  {
+   "metro": "toronto",
+   "make": "Mercedes-Benz",
+   "a": "mercedes-benz-thornhill.ca",
+   "b": "mercedes-benz-markham.ca"
+  },
+  {
+   "metro": "toronto",
+   "make": "Lexus",
+   "a": "lexusofvaughan.com",
+   "b": "lexusofrichmondhill.com"
+  },
+  {
+   "metro": "montreal",
+   "make": "Toyota",
+   "a": "alixtoyota.com",
+   "b": "chassetoyota.com"
+  },
+  {
+   "metro": "montreal",
+   "make": "Honda",
+   "a": "hondadessources.ca",
+   "b": "spinellihonda.com"
+  },
+  {
+   "metro": "montreal",
+   "make": "Ford",
+   "a": "olivierford.com",
+   "b": "montmorencyford.com"
+  },
+  {
+   "metro": "montreal",
+   "make": "Hyundai",
+   "a": "albihyundailavalvimont.com",
+   "b": "chomedeyhyundai.com"
+  },
+  {
+   "metro": "montreal",
+   "make": "Kia",
+   "a": "lallierkia.com",
+   "b": "spinellikia.com"
+  },
+  {
+   "metro": "montreal",
+   "make": "Mazda",
+   "a": "mazdapat.com",
+   "b": "mazdagabrielanjou.com"
+  },
+  {
+   "metro": "montreal",
+   "make": "Nissan",
+   "a": "longueuilnissan.com",
+   "b": "nissanprestige.com"
+  },
+  {
+   "metro": "montreal",
+   "make": "Chevrolet",
+   "a": "lerelaischevrolet.com",
+   "b": "albichevrolet.com"
+  },
+  {
+   "metro": "montreal",
+   "make": "Subaru",
+   "a": "subaru-montreal.com",
+   "b": "subarudessources.ca"
+  },
+  {
+   "metro": "montreal",
+   "make": "Volkswagen",
+   "a": "campbellandcameron.ca",
+   "b": "volkswagendessources.ca"
+  },
+  {
+   "metro": "vancouver",
+   "make": "Toyota",
+   "a": "regencytoyota.com",
+   "b": "granvilletoyota.com"
+  },
+  {
+   "metro": "vancouver",
+   "make": "Honda",
+   "a": "carterhonda.com",
+   "b": "kingswayhonda.ca"
+  },
+  {
+   "metro": "vancouver",
+   "make": "Ford",
+   "a": "mainlandford.com",
+   "b": "titaniumford.ca"
+  },
+  {
+   "metro": "vancouver",
+   "make": "Kia",
+   "a": "downtownkia.com",
+   "b": "nskia.ca"
+  },
+  {
+   "metro": "vancouver",
+   "make": "Mazda",
+   "a": "destinationmazda.ca",
+   "b": "morreymazda.com"
+  },
+  {
+   "metro": "vancouver",
+   "make": "Nissan",
+   "a": "southsidenissan.ca",
+   "b": "applewoodnissanrichmond.ca"
+  },
+  {
+   "metro": "vancouver",
+   "make": "Chevrolet",
+   "a": "gonorthsurreygm.ca",
+   "b": "mapleridgegm.com"
+  },
+  {
+   "metro": "vancouver",
+   "make": "Subaru",
+   "a": "richmondsubaru.com",
+   "b": "docksteadersubaru.ca"
+  },
+  {
+   "metro": "vancouver",
+   "make": "Volkswagen",
+   "a": "capilanovw.com",
+   "b": "openroadvolkswagen.ca"
+  },
+  {
+   "metro": "vancouver",
+   "make": "Jeep",
+   "a": "mapleridgechrysler.com",
+   "b": "jpchrysler.com"
+  },
+  {
+   "metro": "vancouver",
+   "make": "BMW",
+   "a": "brianjesselbmw.com",
+   "b": "parkshorebmw.com"
+  },
+  {
+   "metro": "vancouver",
+   "make": "Mercedes-Benz",
+   "a": "mercedes-benz-boundary.ca",
+   "b": "mercedes-benz-vancouver.ca"
+  },
+  {
+   "metro": "vancouver",
+   "make": "Lexus",
+   "a": "regencylexus.com",
+   "b": "openroadlexusrichmond.com"
+  },
+  {
+   "metro": "ottawa-gatineau",
+   "make": "Toyota",
+   "a": "villatoyota.com",
+   "b": "toyotagatineau.ca"
+  },
+  {
+   "metro": "ottawa-gatineau",
+   "make": "Honda",
+   "a": "lallierhondahull.com",
+   "b": "gatineauhonda.com"
+  },
+  {
+   "metro": "ottawa-gatineau",
+   "make": "Ford",
+   "a": "lincolnheights.com",
+   "b": "campbellford.com"
+  },
+  {
+   "metro": "ottawa-gatineau",
+   "make": "Hyundai",
+   "a": "hullhyundai.com",
+   "b": "hyundaigatineau.ca"
+  },
+  {
+   "metro": "ottawa-gatineau",
+   "make": "Kia",
+   "a": "bankstreetkia.com",
+   "b": "kiaonhuntclub.com"
+  },
+  {
+   "metro": "ottawa-gatineau",
+   "make": "Mazda",
+   "a": "elite-mazda.ca",
+   "b": "argusmazda.com"
+  },
+  {
+   "metro": "ottawa-gatineau",
+   "make": "Nissan",
+   "a": "manissan.ca",
+   "b": "hullnissangatineau.ca"
+  },
+  {
+   "metro": "ottawa-gatineau",
+   "make": "Chevrolet",
+   "a": "gatineaugm.com",
+   "b": "surgenorgatineau.com"
+  },
+  {
+   "metro": "ottawa-gatineau",
+   "make": "Subaru",
+   "a": "subaruottawa.ca",
+   "b": "subaruoutaouais.com"
+  },
+  {
+   "metro": "ottawa-gatineau",
+   "make": "Volkswagen",
+   "a": "bytekvolkswagen.com",
+   "b": "huntclubvw.ca"
+  },
+  {
+   "metro": "ottawa-gatineau",
+   "make": "Jeep",
+   "a": "kollbecgatineau.com",
+   "b": "ottawachryslerjeepdodge.com"
+  },
+  {
+   "metro": "ottawa-gatineau",
+   "make": "BMW",
+   "a": "bmwottos.ca",
+   "b": "elitebmw.com"
+  },
+  {
+   "metro": "ottawa-gatineau",
+   "make": "Mercedes-Benz",
+   "a": "mercedes-benz-gatineau.ca",
+   "b": "mercedes-benz-ottawa-downtown.ca"
+  },
+  {
+   "metro": "ottawa-gatineau",
+   "make": "Lexus",
+   "a": "belairlexus.com",
+   "b": "tonygrahamlexus.com"
+  },
+  {
+   "metro": "calgary",
+   "make": "Toyota",
+   "a": "stampedetoyotacalgary.com",
+   "b": "chtoyota.com"
+  },
+  {
+   "metro": "calgary",
+   "make": "Honda",
+   "a": "calgaryhonda.ca",
+   "b": "wheatonhondawest.ca"
+  },
+  {
+   "metro": "calgary",
+   "make": "Hyundai",
+   "a": "precisionhyundai.com",
+   "b": "hyundaigallery.ca"
+  },
+  {
+   "metro": "calgary",
+   "make": "Mazda",
+   "a": "sunridgemazda.com",
+   "b": "northhillmazda.com"
+  },
+  {
+   "metro": "calgary",
+   "make": "Nissan",
+   "a": "brassonissan.com",
+   "b": "fishcreeknissancalgary.ca"
+  },
+  {
+   "metro": "calgary",
+   "make": "Chevrolet",
+   "a": "shaganappi.com",
+   "b": "gslgmcity.com"
+  },
+  {
+   "metro": "calgary",
+   "make": "Subaru",
+   "a": "subarucalgary.com",
+   "b": "centaur.subarudealer.ca"
+  },
+  {
+   "metro": "calgary",
+   "make": "Volkswagen",
+   "a": "tazaparkvw.com",
+   "b": "northland-vw.ca"
+  },
+  {
+   "metro": "calgary",
+   "make": "Jeep",
+   "a": "courtesychrysler.com",
+   "b": "towerchrysler.com"
+  },
+  {
+   "metro": "calgary",
+   "make": "BMW",
+   "a": "bmwgallery.ca",
+   "b": "calgarybmw.ca"
+  },
+  {
+   "metro": "calgary",
+   "make": "Mercedes-Benz",
+   "a": "mercedes-benz-downtowncalgary.ca",
+   "b": "mercedes-benz-lonestarcalgary.ca"
+  },
+  {
+   "metro": "calgary",
+   "make": "Lexus",
+   "a": "lexusofroyaloak.com",
+   "b": "lexusofcalgary.com"
+  },
+  {
+   "metro": "edmonton",
+   "make": "Toyota",
+   "a": "gatewaytoyota.ca",
+   "b": "toyotaonthetrail.ca"
+  },
+  {
+   "metro": "edmonton",
+   "make": "Honda",
+   "a": "albertahonda.com",
+   "b": "stalberthonda.ca"
+  },
+  {
+   "metro": "edmonton",
+   "make": "Ford",
+   "a": "niskuford.ca",
+   "b": "dkford.com"
+  },
+  {
+   "metro": "edmonton",
+   "make": "Hyundai",
+   "a": "westedmontonhyundai.com",
+   "b": "gohyundai.ca"
+  },
+  {
+   "metro": "edmonton",
+   "make": "Kia",
+   "a": "gokia.ca",
+   "b": "kiawestedmonton.com"
+  },
+  {
+   "metro": "edmonton",
+   "make": "Mazda",
+   "a": "gomazda.ca",
+   "b": "sundancemazda.com"
+  },
+  {
+   "metro": "edmonton",
+   "make": "Nissan",
+   "a": "gonissan.ca",
+   "b": "ericksennissan.com"
+  },
+  {
+   "metro": "edmonton",
+   "make": "Chevrolet",
+   "a": "northgategm.com",
+   "b": "ronhodgson.com"
+  },
+  {
+   "metro": "edmonton",
+   "make": "Volkswagen",
+   "a": "westedmontonvw.com",
+   "b": "nordenvw.ca"
+  },
+  {
+   "metro": "edmonton",
+   "make": "BMW",
+   "a": "bavariabmw.ca",
+   "b": "edmontonbmw.com"
+  },
+  {
+   "metro": "edmonton",
+   "make": "Mercedes-Benz",
+   "a": "mercedes-benz-edmontonwest.ca",
+   "b": "mercedes-benz-heritagevalley.ca"
+  },
+  {
+   "metro": "edmonton",
+   "make": "Lexus",
+   "a": "lexusofedmonton.ca",
+   "b": "lexussouthpointe.com"
+  },
+  {
+   "metro": "quebec-city",
+   "make": "Toyota",
+   "a": "levistoyota.ca",
+   "b": "boulevardtoyota.com"
+  },
+  {
+   "metro": "quebec-city",
+   "make": "Honda",
+   "a": "hondacharlesbourg.com",
+   "b": "levishonda.com"
+  },
+  {
+   "metro": "quebec-city",
+   "make": "Ford",
+   "a": "desjardinsfordstefoy.com",
+   "b": "levisford.net"
+  },
+  {
+   "metro": "quebec-city",
+   "make": "Hyundai",
+   "a": "hyundaivalbelair.com",
+   "b": "stefoyhyundai.com"
+  },
+  {
+   "metro": "quebec-city",
+   "make": "Kia",
+   "a": "kiastefoy.com",
+   "b": "kiaquebec.com"
+  },
+  {
+   "metro": "quebec-city",
+   "make": "Mazda",
+   "a": "levismazda.com",
+   "b": "mazdachatel.com"
+  },
+  {
+   "metro": "quebec-city",
+   "make": "Nissan",
+   "a": "paquetnissan.com",
+   "b": "capitalenissan.ca"
+  },
+  {
+   "metro": "quebec-city",
+   "make": "Chevrolet",
+   "a": "theetgechevrolet.com",
+   "b": "marlinchevroletbuickgmc.ca"
+  },
+  {
+   "metro": "quebec-city",
+   "make": "Subaru",
+   "a": "desjardinssubaru.com",
+   "b": "levissubaru.com"
+  },
+  {
+   "metro": "quebec-city",
+   "make": "Volkswagen",
+   "a": "lavalvw.com",
+   "b": "rinfretvw.ca"
+  },
+  {
+   "metro": "quebec-city",
+   "make": "BMW",
+   "a": "bmwvilledequebec.com",
+   "b": "bmwlevis.com"
+  },
+  {
+   "metro": "winnipeg",
+   "make": "Toyota",
+   "a": "mcphillipstoyota.com",
+   "b": "crowntoyota.ca"
+  },
+  {
+   "metro": "winnipeg",
+   "make": "Honda",
+   "a": "hondaonregent.ca",
+   "b": "winnipeghonda.ca"
+  },
+  {
+   "metro": "winnipeg",
+   "make": "Hyundai",
+   "a": "birchwoodhyundai.com",
+   "b": "focushyundai.net"
+  },
+  {
+   "metro": "winnipeg",
+   "make": "Kia",
+   "a": "winnipegkia.com",
+   "b": "jimgauthierkia.com"
+  },
+  {
+   "metro": "winnipeg",
+   "make": "Mazda",
+   "a": "crownmazda.ca",
+   "b": "gerrymazda.com"
+  },
+  {
+   "metro": "winnipeg",
+   "make": "Nissan",
+   "a": "mcphillipsnissan.com",
+   "b": "crownnissan.ca"
+  },
+  {
+   "metro": "winnipeg",
+   "make": "Chevrolet",
+   "a": "jimgauthierchev.com",
+   "b": "murraychevrolet.ca"
+  },
+  {
+   "metro": "winnipeg",
+   "make": "Volkswagen",
+   "a": "stjamesvw.ca",
+   "b": "goautohausvw.ca"
+  },
+  {
+   "metro": "winnipeg",
+   "make": "Jeep",
+   "a": "easternchrysler.com",
+   "b": "winnipegdodge.com"
+  },
+  {
+   "metro": "hamilton",
+   "make": "Toyota",
+   "a": "redhilltoyota.ca",
+   "b": "upperjamestoyota.ca"
+  },
+  {
+   "metro": "hamilton",
+   "make": "Honda",
+   "a": "sterlinghonda.com",
+   "b": "haltonhonda.com"
+  },
+  {
+   "metro": "hamilton",
+   "make": "Ford",
+   "a": "terracefordlincoln.com",
+   "b": "leggatdiscoveryford.ca"
+  },
+  {
+   "metro": "hamilton",
+   "make": "Hyundai",
+   "a": "hamiltonhyundai.ca",
+   "b": "mountainhyundai.com"
+  },
+  {
+   "metro": "hamilton",
+   "make": "Kia",
+   "a": "leggatkia.ca",
+   "b": "kiaofhamilton.com"
+  },
+  {
+   "metro": "hamilton",
+   "make": "Mazda",
+   "a": "mazdaofhamilton.com",
+   "b": "burlingtonmazda.com"
+  },
+  {
+   "metro": "hamilton",
+   "make": "Nissan",
+   "a": "plazanissan.ca",
+   "b": "parkwaynissan.com"
+  },
+  {
+   "metro": "hamilton",
+   "make": "Chevrolet",
+   "a": "willschev.com",
+   "b": "leggatgm.ca"
+  },
+  {
+   "metro": "kitchener-cambridge-waterloo",
+   "make": "Toyota",
+   "a": "cambridgetoyota.com",
+   "b": "forbestoyota.com"
+  },
+  {
+   "metro": "kitchener-cambridge-waterloo",
+   "make": "Honda",
+   "a": "kitchenerhonda.com",
+   "b": "waterloohonda.com"
+  },
+  {
+   "metro": "kitchener-cambridge-waterloo",
+   "make": "Kia",
+   "a": "cambridgekia.com",
+   "b": "kitchenerkia.com"
+  },
+  {
+   "metro": "kitchener-cambridge-waterloo",
+   "make": "Mazda",
+   "a": "kieswettermazda.com",
+   "b": "forbesmazda.com"
+  },
+  {
+   "metro": "kitchener-cambridge-waterloo",
+   "make": "Nissan",
+   "a": "waterloonissan.com",
+   "b": "gregvannnissan.com"
+  },
+  {
+   "metro": "kitchener-cambridge-waterloo",
+   "make": "Chevrolet",
+   "a": "fairwayautomall.com",
+   "b": "bennettgm.com"
+  },
+  {
+   "metro": "kitchener-cambridge-waterloo",
+   "make": "Volkswagen",
+   "a": "crosbyvw.com",
+   "b": "vwwaterloo.com"
+  },
+  {
+   "metro": "london",
+   "make": "Toyota",
+   "a": "northlondontoyota.com",
+   "b": "toyota-town.com"
+  },
+  {
+   "metro": "london",
+   "make": "Honda",
+   "a": "westgatehonda.ca",
+   "b": "londonhonda.com"
+  },
+  {
+   "metro": "london",
+   "make": "Ford",
+   "a": "oakridgeford.com",
+   "b": "courtesyfordlincoln.com"
+  },
+  {
+   "metro": "london",
+   "make": "Hyundai",
+   "a": "finchhyundai.com",
+   "b": "londonairporthyundai.com"
+  },
+  {
+   "metro": "london",
+   "make": "Mazda",
+   "a": "leavensmazda.com",
+   "b": "forestcitymazda.ca"
+  },
+  {
+   "metro": "london",
+   "make": "Nissan",
+   "a": "daledownienissan.ca",
+   "b": "finchnissan.com"
+  },
+  {
+   "metro": "london",
+   "make": "Chevrolet",
+   "a": "raycullen.com",
+   "b": "finchchev.com"
+  },
+  {
+   "metro": "london",
+   "make": "Jeep",
+   "a": "finchchrysler.ca",
+   "b": "leavenschrysler.com"
+  },
+  {
+   "metro": "halifax",
+   "make": "Ford",
+   "a": "macpheeford.com",
+   "b": "steeleford.com"
+  },
+  {
+   "metro": "halifax",
+   "make": "Mazda",
+   "a": "centurymazda.ca",
+   "b": "steelemazda.com"
+  },
+  {
+   "metro": "halifax",
+   "make": "Chevrolet",
+   "a": "oreganschevrolet.com",
+   "b": "steelechev.com"
+  },
+  {
+   "metro": "halifax",
+   "make": "Volkswagen",
+   "a": "steelevw.ca",
+   "b": "oregansvolkswagenhalifax.com"
+  }
+ ]
+}

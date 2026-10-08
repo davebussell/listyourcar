@@ -136,7 +136,23 @@ function parseProfile(codes) {
   return p;
 }
 
-module.exports = function buildDealerGuides({ ROOT, ORIGIN, shell, track, esc, breadcrumbLd }) {
+const BY_SLUG = Object.fromEntries(METROS.map((m) => [m[0], m]));
+/* The metro a dealer position belongs to, or null. A known town wins
+   within 80 km of its metro; otherwise the nearest metro whose radius
+   covers the point. Exported so the head-to-head builder groups
+   dealers exactly as these pages do. */
+function metroOfPosition(pos) {
+  const override = TOWN_METRO[fold(pos[0])];
+  if (override && hav(pos[2], pos[3], BY_SLUG[override][3], BY_SLUG[override][4]) <= 80) return override;
+  let slug = null, best = Infinity;
+  for (const m of METROS) {
+    const km = hav(pos[2], pos[3], m[3], m[4]);
+    if (km <= m[5] && km < best) { best = km; slug = m[0]; }
+  }
+  return slug;
+}
+
+module.exports = function buildDealerGuides({ ROOT, ORIGIN, shell, track, esc, breadcrumbLd, h2h = { byMetro: {} } }) {
   const bundle = JSON.parse(fs.readFileSync(path.join(ROOT, "data", "dealers.json"), "utf8"));
   /* The buyer's take comes from js/dealers.js — the same function the
      browser runs — so a page and the live site never disagree. */
@@ -151,7 +167,7 @@ module.exports = function buildDealerGuides({ ROOT, ORIGIN, shell, track, esc, b
   }
   const siteKey = (w) => String(w || "").toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0].trim();
   const evidenceOf = (d) => EVIDENCE.sites[siteKey(d.web)] || null;   // d.web is the website address here
-  const bySlug = Object.fromEntries(METROS.map((m) => [m[0], m]));
+  const bySlug = BY_SLUG;
   const coreSlug = Object.fromEntries(METROS.map((m) => [fold(coreTown(m[1])), m[0]]));
 
   /* ---------- Assign every car dealer to at most one metro ---------- */
@@ -165,16 +181,7 @@ module.exports = function buildDealerGuides({ ROOT, ORIGIN, shell, track, esc, b
     nationalUsed++;
     if (!row[6].length) nationalIndep++;
 
-    let slug = null;
-    const override = TOWN_METRO[fold(pos[0])];
-    if (override && hav(pos[2], pos[3], bySlug[override][3], bySlug[override][4]) <= 80) slug = override;
-    if (!slug) {
-      let best = Infinity;
-      for (const m of METROS) {
-        const km = hav(pos[2], pos[3], m[3], m[4]);
-        if (km <= m[5] && km < best) { best = km; slug = m[0]; }
-      }
-    }
+    const slug = metroOfPosition(pos);
     if (!slug) return;
     /* A town field naming a different metro is an export error, not a
        location: L'Ange-Gardien Ford is filed as "Montreal" but its
@@ -331,7 +338,7 @@ module.exports = function buildDealerGuides({ ROOT, ORIGIN, shell, track, esc, b
           ? `On what their own websites say and what they sell, ${recommended.slice(0, 3).map((d) => d.name).join(", ")} rank highest in our network. For a specific car, the dealers that sell that make new are usually the strongest buyers.`
           : `Dealers that sell your make new are usually the strongest buyers for it.`],
       [`Can I get ${name} dealers to compete for my car?`,
-        `Yes. List your car on listyourcar.ca, set a reserve and a closing time, and the dealerships nearest to you are invited to bid against each other and against private buyers. Nothing sells below your reserve.`],
+        `Yes. Tell us your car on listyourcar.ca, pick the ${name} dealers you want offers from, and send them your car in one message from your own email. Each replies to you, and you take the best offer or none.`],
     ];
     const faqHtml = faq.map(([q, a]) => `<div class="ud-faq"><h3>${esc(q)}</h3><p class="muted">${esc(a)}</p></div>`).join("");
     const faqLd = JSON.stringify({
@@ -359,7 +366,7 @@ module.exports = function buildDealerGuides({ ROOT, ORIGIN, shell, track, esc, b
     <h1>Used car dealers in ${esc(name)}</h1>
     <p class="lead narrow">${num(list.length)} dealerships in the ${esc(name)} area sell used cars — ${num(indep.length)} independent lots and ${num(franch.length)} franchised stores. Every one is listed below, with a way to reach them, and a way to get them bidding against each other for your car.</p>
     <div class="hero-actions">
-      <a class="btn btn-primary" href="/sell.html">Get these dealers bidding</a>
+      <a class="btn btn-primary" href="/start.html?path=dealers">Get these dealers bidding</a>
       <a class="btn btn-ghost" href="/find-buyers.html">See them on the map</a>
     </div>
   </div>
@@ -384,6 +391,9 @@ module.exports = function buildDealerGuides({ ROOT, ORIGIN, shell, track, esc, b
       <p class="muted">The dealers most likely to want a seller's car, ranked by our buyer's take. We read ${num(researched)} of these ${num(list.length)} dealers' websites${researched ? `; ${num(sayBuy)} say outright that they buy cars from the public` : ""}. The take weighs what a dealer says and sells, not its service or prices — ask several and compare the offers.</p>
       <ol class="ud-recs">${recCards}</ol>
       <p class="muted small">Tell us your car in <a class="link-inline" href="/start.html?path=dealers">Get dealers bidding</a> and the ranking re-weighs for your make and kind of car.</p>
+      ${(h2h.byMetro[slug] || []).length ? `<h3 class="ud-marque">Head to head in ${esc(name)}</h3>
+      <p class="muted">Rival stores selling the same make, side by side: who's the better buyer for your car, and the better place to buy your next one.</p>
+      <ul class="h2h-list">${h2h.byMetro[slug].map((x) => `<li><a href="/compare/${x.slug}/">${esc(x.a)} vs ${esc(x.b)}</a><span class="h2h-mk">${esc(x.make)}</span><span>${esc(x.pick)}</span></li>`).join("")}</ul>` : ""}
     </div>
   </section>
 
@@ -423,10 +433,10 @@ module.exports = function buildDealerGuides({ ROOT, ORIGIN, shell, track, esc, b
     <span class="index">06</span>
     <div>
       <h2>Selling instead?</h2>
-      <p class="muted">A trade-in is one offer from one dealer. List your car here instead: set a reserve and a closing time, and the ${esc(name)} dealers nearest you are invited to bid against each other — and against private buyers. You see every bid, and nothing sells below your floor.</p>
+      <p class="muted">A trade-in is one offer from one dealer. Get several instead: pick the ${esc(name)} dealers you'd sell to, send them your car in one message from your own email, and compare what comes back. Know your car's value first, so you can tell a good offer from a lowball.</p>
       <div class="hero-actions">
-        <a class="btn btn-primary" href="/value.html">What's my car worth?</a>
-        <a class="btn btn-ghost" href="/sell.html">List it for auction</a>
+        <a class="btn btn-primary" href="/start.html?path=value">What's my car worth?</a>
+        <a class="btn btn-ghost" href="/start.html?path=dealers">Get offers from these dealers</a>
         ${cityLinks}
       </div>
     </div>
@@ -491,7 +501,7 @@ module.exports = function buildDealerGuides({ ROOT, ORIGIN, shell, track, esc, b
   <section class="cta section-line">
     <h2>Make them compete for your car.</h2>
     <div class="hero-actions" style="justify-content:center">
-      <a class="btn btn-primary" href="/sell.html">List my car</a>
+      <a class="btn btn-primary" href="/start.html?path=dealers">Get dealers bidding</a>
       <a class="btn btn-ghost" href="/find-buyers.html">See every buyer on the map</a>
     </div>
   </section>
@@ -502,3 +512,7 @@ module.exports = function buildDealerGuides({ ROOT, ORIGIN, shell, track, esc, b
 
   return { metros: summaries.length, dealers: total };
 };
+
+module.exports.METROS = METROS;
+module.exports.metroOfPosition = metroOfPosition;
+module.exports.tidyTown = tidyTown;

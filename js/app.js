@@ -195,6 +195,7 @@ document.addEventListener("DOMContentLoaded", () => {
     dealers:   () => window.pageDealers && window.pageDealers(),
     buyers:    () => window.pageBuyerMap && window.pageBuyerMap(),
     dealer:    () => window.pageDealer && window.pageDealer(),
+    compare:   () => window.pageCompare && window.pageCompare(),
     start:     () => window.pageStart && window.pageStart(),
     listing:   () => window.pageListing && window.pageListing(),
     city:      () => window.pageCity && window.pageCity(),

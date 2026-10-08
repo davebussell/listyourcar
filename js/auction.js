@@ -1144,7 +1144,9 @@ function profileBlock(d) {
   const ROLE = { service: "Repair, collision or towing — not a car buyer", finance: "Financing and credit — not a car buyer",
     salvage: "Salvage and parts — buys wrecks, not retail cars", broker: "Broker or consignment", rental: "Rental, leasing or fleet — not a retail buyer",
     auction: "Auction house", media: "Media or marketing — not a dealer",
-    notcar: "Not a car business, by its name and its own website" };
+    notcar: "Not a car business, by its name and its own website",
+    maker: "A manufacturer's head office — it doesn't buy from or sell to the public",
+    dupe: "A second, incomplete listing for a store we list elsewhere" };
   const FOCUS = { ev: "Electric and hybrid", truck: "Trucks and commercial", classic: "Classic and collector", exotic: "Exotic",
     import: "Imports", performance: "Performance and motorsport", budget: "Budget and wholesale", premium: "Premium and luxury" };
   const facts = [];
@@ -1203,6 +1205,8 @@ async function pageDealer() {
         ${m ? `<div><dt>Auction market</dt><dd>${m.name} · ${m.km} km</dd></div>` : ""}
       </dl>
       ${profileBlock(d)}
+      <section class="dealer-site" id="dealer-site"><span class="eyebrow">From its website</span><p class="muted">Reading what this dealer says about itself…</p></section>
+      <section class="dealer-rivals" id="dealer-rivals"></section>
       <section class="dealer-takebox" id="dealer-take"><span class="eyebrow">Buyer's take</span><p class="muted">Weighing this dealer as a buyer…</p></section>
       <aside class="dealer-cta">
         <span class="eyebrow">Sell to them</span>
@@ -1222,6 +1226,7 @@ async function pageDealer() {
   };
   const s = document.createElement("script"); s.type = "application/ld+json"; s.textContent = JSON.stringify(ld);
   fillTake(d);
+  if (window.dealerExtras) window.dealerExtras(d);
   document.head.appendChild(s);
 }
 /* The buyer's take for one dealer: the verdict, every reason with

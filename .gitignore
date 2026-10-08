@@ -7,3 +7,4 @@ data/cities-todo.json
 .netlify/
 data/.ne-cache.geojson
 data/.research-cache.json
+data/.profile-cache.json
