@@ -1,16 +1,14 @@
 /* ============================================================
    listyourcar.ca — runtime configuration
    ------------------------------------------------------------
-   Set FORM_ENDPOINT to a real endpoint to make forms submit for
-   real. Formspree is the quickest path:
-     1. Create a free form at https://formspree.io
-     2. Paste its endpoint below, e.g.
-        FORM_ENDPOINT: "https://formspree.io/f/abcdwxyz"
-   Any endpoint that accepts a JSON POST and returns 2xx works
-   (Formspree, Basin, Netlify Forms function, your own API).
+   Forms submit to the Netlify Form "lead" (registered by the hidden
+   form at the bottom of index.html; Netlify emails each submission
+   per the project's form notifications). Every submission keeps the
+   full payload as JSON in the "details" field.
 
-   While FORM_ENDPOINT is empty, forms fall back to demo mode
-   (data still saves to localStorage so the prototype works).
+   Set FORM_ENDPOINT only to send submissions somewhere else instead:
+   any endpoint that accepts a JSON POST and returns 2xx works
+   (Formspree, Basin, your own API).
    ============================================================ */
 window.LYC_CONFIG = {
   FORM_ENDPOINT: "", // e.g. "https://formspree.io/f/xxxxxxxx"
@@ -45,7 +43,7 @@ window.LYC_CONFIG = {
    - ok:false   → endpoint configured but the request failed       */
 window.submitForm = async function submitForm(payload) {
   const url = window.LYC_CONFIG.FORM_ENDPOINT;
-  if (!url) return { ok: false, demo: true };
+  if (!url) return submitToNetlify(payload || {});
   try {
     const res = await fetch(url, {
       method: "POST",
@@ -57,3 +55,31 @@ window.submitForm = async function submitForm(payload) {
     return { ok: false, demo: false };
   }
 };
+
+/* Default destination: Netlify Forms. Field names must match the hidden
+   <form name="lead"> in index.html, or Netlify drops them. */
+async function submitToNetlify(p) {
+  const kind = p.kind || p.type || (p._subject ? String(p._subject).split(":")[0] : "") || "contact";
+  const body = new URLSearchParams({
+    "form-name": "lead",
+    "bot-field": "",
+    kind: String(kind),
+    subject: String(p.subject || p._subject || ""),
+    name: String(p.name || p.contact_name || ""),
+    email: String(p.email || ""),
+    phone: String(p.phone || ""),
+    message: String(p.message || p.corrections || ""),
+    page: location.pathname,
+    details: JSON.stringify(p),
+  });
+  try {
+    const res = await fetch("/", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString(),
+    });
+    return { ok: res.ok, demo: false };
+  } catch {
+    return { ok: false, demo: false };
+  }
+}

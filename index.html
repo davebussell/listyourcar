@@ -209,5 +209,10 @@
   <script src="js/app.js?v=37"></script>
   <script src="js/auction.js?v=37"></script>
   <script src="js/locator.js?v=37"></script>
+<!-- Registers the Netlify Form "lead" that js/config.js posts to. Keep the field names in sync. -->
+<form name="lead" data-netlify="true" netlify-honeypot="bot-field" hidden aria-hidden="true">
+  <input name="bot-field"><input name="kind"><input name="subject"><input name="name"><input type="email" name="email">
+  <input name="phone"><textarea name="message"></textarea><input name="page"><textarea name="details"></textarea>
+</form>
 </body>
 </html>
